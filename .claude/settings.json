@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./setup.sh)",
+      "Bash(python3 capcut/build_project.py:*)",
+      "Bash(negen/download_export.sh:*)",
+      "Bash(pgrep -x CapCut)"
+    ]
+  }
+}

@@ -1,0 +1,4 @@
+work/*
+!work/.keep
+.DS_Store
+__pycache__/
