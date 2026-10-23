@@ -24,10 +24,14 @@ except ImportError:
     say("Pillow (Python)", "installed" if r.returncode == 0 else "FAILED: run  " + sys.executable + " -m pip install --user Pillow")
     if r.returncode: problems.append("Pillow")
 
-WINGET = " --accept-source-agreements --accept-package-agreements  (then quit and reopen Claude Desktop)"
+WINGET = " --accept-source-agreements --accept-package-agreements"
+GIT_EXE = "C:/Program Files/Git/cmd/git.exe"  # where winget puts Git; found here before a restart puts it on PATH
 for tool, need, how in (("git", True, "winget install -e --id Git.Git" + WINGET if WINDOWS else "xcode-select --install"),
                         ("ffmpeg", WINDOWS, "winget install -e --id Gyan.FFmpeg" + WINGET if WINDOWS else "brew install ffmpeg")):
-    found = shutil.which(tool)
+    found = shutil.which(tool) or (WINDOWS and tool == "git" and os.path.exists(GIT_EXE) and GIT_EXE)
+    if tool == "ffmpeg" and WINDOWS and not found:
+        winget = os.environ.get("LOCALAPPDATA", "") + "/Microsoft/WinGet"  # same search as build_project.find_ffmpeg
+        found = (glob.glob(winget + "/Links/ffmpeg.exe") + glob.glob(winget + "/Packages/Gyan.FFmpeg*/*/bin/ffmpeg.exe") + [None])[0]
     if found or not WINDOWS and tool == "ffmpeg" and shutil.which("afconvert"):
         say(tool, "ok" if found else "not needed on Mac (afconvert is used)")
     else:
@@ -71,6 +75,6 @@ os.makedirs(os.path.join(ROOT, "work"), exist_ok=True)
 print()
 for n in notes: print("NOTE:", n, "\n")
 print("Setup OK. Next: start a NEW session in Claude Desktop > Code, choose the folder " + ROOT
-      + ", sign in to Negen in the browser pane and type /fastlane" if not problems
+      + " and type /fastlane" if not problems
       else "Fix these, then run the check again: " + ", ".join(problems))
 sys.exit(1 if problems else 0)

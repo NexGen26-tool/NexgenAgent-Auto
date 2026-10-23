@@ -23,18 +23,24 @@ outside this folder, so this section is all it has: follow it in order.
    - Git: `winget install -e --id Git.Git --accept-source-agreements --accept-package-agreements`
    - Python: `winget install -e --id Python.Python.3.12 --override "/quiet PrependPath=1" --accept-source-agreements --accept-package-agreements`
    - ffmpeg: `winget install -e --id Gyan.FFmpeg --accept-source-agreements --accept-package-agreements`
-3. **One restart.** Programs installed by winget are only found after Claude Desktop restarts; a new terminal is not
-   enough. Ask the person to quit Claude Desktop completely (Windows: also from the tray), open it again, reopen this
-   same conversation and write "tiếp tục setup". Check step 1 again. If `python` still prints "Python was not found",
-   ask them to turn off the two "python" shortcuts in Windows Settings > Apps > Advanced app settings > App execution
-   aliases, then check again.
+3. **Carry on without a restart.** A fresh winget install is not on PATH until Claude Desktop restarts, so never
+   ask for a restart: call the new program by its full path (see "Programs just installed" below) and go straight on.
 4. **Get the repo** if it is not there yet: `git clone https://github.com/NexGen26-tool/NexgenAgent-Auto.git
    ~/NexgenAgent-Auto` (on Windows that is `C:\Users\<name>\NexgenAgent-Auto`).
 5. **Run the check** from the repo folder: Windows `python setup_check.py`, Mac `./setup.sh`. Fix what it lists and
    run it again; a missing CapCut font or animation is a NOTE, not a blocker (the person picks each once in CapCut).
-6. **Hand over.** On "Setup OK", tell the person: open a NEW session in Claude Desktop > Code, choose the
-   `NexgenAgent-Auto` folder (give the full path), sign in to Negen in the browser pane, and type `/fastlane`. The
-   commands only exist in a session opened in this folder.
+6. **Hand over.** On "Setup OK", tell the person in two steps: open a NEW session in Claude Desktop > Code with the
+   folder `NexgenAgent-Auto` (give the full path), and type `/fastlane`. Nothing else: `/fastlane` opens Negen for
+   them. The commands only exist in a session opened in this folder.
+
+**Programs just installed (Windows).** Until Claude Desktop happens to restart, in this session and in new ones, a
+program winget just installed is not found by name. Use the full path instead and do not ask for a restart:
+- Python: the newest `%LOCALAPPDATA%\Programs\Python\Python3*\python.exe`, in place of `python` everywhere.
+- Git: `C:\Program Files\Git\cmd\git.exe`.
+- ffmpeg: nothing to do; the scripts find it themselves.
+If `python` prints "Python was not found" and no `python.exe` exists there either, Python is not installed: go back to
+step 2. If it still fails after a restart, ask the person to turn off the two "python" shortcuts in Windows Settings >
+Apps > Advanced app settings > App execution aliases.
 
 Updates: `/fastlane-update` pulls the latest version and runs the check again.
 
