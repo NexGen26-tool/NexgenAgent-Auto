@@ -59,7 +59,9 @@ CapCut, mà sẽ gửi video sạch kèm một bảng chữ (text sheet) ghi t�
 Claude tự mở trang Negen ở khung bên phải. Nếu chưa đăng nhập, bạn đăng nhập ở đó rồi nhắn **"xong"**. Sau đó Claude
 hướng dẫn bạn chọn sản phẩm, tạo storyboard, chuẩn bị brief, duyệt Hook và chạy tạo video.
 
-Bạn chỉ cần làm theo hướng dẫn và xác nhận khi Claude yêu cầu. Những thao tác tốn credits hoặc tiền sẽ cần được bạn đồng ý trước.
+Claude hỏi bạn bằng popup có sẵn đáp án gợi ý (chọn, hoặc gõ ý mình vào **Other**), nhiều nhất 3 lần trước khi
+sang CapCut. Lần cuối là duyệt cho chạy video: không có gì tốn tiền chạy trước khi bạn đồng ý. Tiến độ hiện ở danh
+sách việc (checklist) của phiên, tự tick dần khi xong từng bước.
 
 **Bước 3:** Khi Claude chuẩn bị project CapCut, hãy thoát hẳn CapCut nếu được yêu cầu:
 

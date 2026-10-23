@@ -9,9 +9,20 @@ short sentences, in Vietnamese when they write Vietnamese. Ask only when a decis
 which angle, approving a batch name list, anything that costs money).
 
 **Ask with the popup.** Every question to the person goes through the AskUserQuestion tool (the multiple-choice
-popup), never as a numbered list of questions in chat: 2-4 ready answers per question, the likeliest first, and the
-person types their own in "Other". Questions that do not depend on each other go in the same popup (up to 4). Write
-the options in the person's language.
+popup), never as a numbered list of questions in chat: 2-4 ready answers per question, your suggested answer first
+and marked "(Khuyên dùng)" / "(Recommended)", and the person types their own in "Other". Questions that do not depend
+on each other go in the same popup (up to 4). Write the options in the person's language.
+
+**Show progress as a checklist, not as chat.** At the start of /fastlane, put the week's steps in Claude Code's task
+checklist (TodoWrite, or TaskCreate/TaskUpdate where that is what this version has): name, products, storyboards,
+briefs, one line per video batch, download, CapCut. Tick each item as it finishes; it is the person's progress bar.
+In chat, write only at a milestone (storyboards done, all videos started, videos downloaded, CapCut ready) or when
+something needs them, in one or two lines. Never narrate tool steps, page scripts, ids, retries or a workaround that
+worked; record problems in `log.md` instead.
+
+**Stops.** The person is asked at most three times a week before CapCut: the step-0 popup, the product and angle
+popup (only when they asked for suggestions), and one go-ahead popup before any video batch starts. Everything else
+runs without asking.
 
 ## Setup (first install, or when something is missing)
 
@@ -64,8 +75,11 @@ Updates: `/fastlane-update` pulls the latest version and runs the check again.
 ## Tools you use
 
 - A browser you can drive: the Claude desktop app's built-in browser, or Claude in Chrome. Negen pages are read
-  with get_page_text; forms are filled by running the routines in `negen/` with the javascript tool: read the file,
-  then run `(<file contents>)(<argument>)` on the right page.
+  with get_page_text; forms are filled by running the routines in `negen/` with the javascript tool. Load each
+  routine once per session instead of pasting it every call: on any Negen page run
+  `localStorage.setItem('fl_<name>', String.raw`<file contents>`)`, then call it with
+  `await (eval('(' + localStorage.getItem('fl_<name>') + ')'))(<argument>)`. Reload it after `/fastlane-update`.
+- `negen/read_storyboard.js` reads one product's storyboard (angle, shots, VO) and its poster id in one call.
 - `negen/fill_batch.js` fills and starts one video batch (inputs documented at the top of the file).
 - `negen/batch_status.js` one line per batch with its state and step counts.
 - `negen/export_batch.js` makes a share link for one batch's videos; `python negen/download_export.py <link>
@@ -108,14 +122,22 @@ read the value of the matching `input[name=products]` checkbox.
 **2. Storyboards** (about 5-7 minutes, one batch can hold all 4 products):
 open `/generate/new?skill=8742da5f-3f5e-45aa-8a01-ecc289a697f1&products=<pid>,<pid>,...`
 (skill "Product Storyboard Reference + VO"), Output: Storyboard, 9:16, voice-over off,
-name "<Mon DD> - Storyboards", Start. When done, open each storyboard in Review: read the angle, the 8 panels
-(JOB, DIRECT) and the VO with get_page_text, and take the poster's media id from the Poster tab image
-(`/media/<id>/...`). Product pages: Negen Products > the product > Details.
+name "<Mon DD> - Storyboards", Start. When done, open `/generate/<storyboard batch id>/review` and run
+`read_storyboard.js` once per product (navigate to the Review page again between products); it returns the angle, the
+8 panels (JOB, DIRECT), the VO and the poster id. Only if it returns an error, read the storyboard by hand (Review >
+the storyboard > Poster tab image `/media/<id>/...`) and note the error in `log.md`. Product pages: Negen Products >
+the product > Details.
 
 **3. Briefs** (write them while storyboards or videos run): follow the ad-brief-compiler skill. Three briefs per
-group, V1-V3, same job/proof/offer/CTA and Lines 2-5, a different hook and delivery each. Show the person the
-3-row variant summary per group before launching, with the batch names, then one popup with a question per group:
-"Duyệt" (first), "Sửa hook", "Đổi angle"; a fix they type goes in "Other". Store each brief in `week.json`.
+group, V1-V3, same job/proof/offer/CTA and Lines 2-5, a different hook and delivery each. Write them straight into
+`week.json` and `work/<week>/briefs.md` with the file tools, no throwaway scripts. Do not ask about a draft plan while
+the storyboards run; finish the briefs first.
+
+**The go-ahead (the one stop before spending).** Show, per group, one short table (V1-V3: on-screen hook, hook action,
+delivery) and one line with the shared Lines 2-5, then a single line with the batch names (checked against the naming
+rule by you, not by the person), time and cost. Full shot lists stay in `briefs.md`, linked, not pasted. Then one
+popup with a question per group: "Chạy cả 3 video (Khuyên dùng)", "Sửa hook", "Đổi angle"; a fix they type goes in
+"Other". Start the approved groups while you fix the others.
 
 **4. Video batches** (about 6-8 minutes each; Grok makes 2 parts at a time, so 12 batches take about 30-40 minutes):
 for each brief open `/generate/new?from_batch=<video_template_batch of that store>`, run `fill_batch.js` with
