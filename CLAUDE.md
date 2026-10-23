@@ -169,7 +169,11 @@ First run `python capcut/build_project.py --check`. If it says CapCut keeps its 
 the videos folder: every line, time and style to type in by hand. Otherwise ask the person to quit CapCut (Mac:
 Cmd+Q; Windows: close it and quit it from the tray), run `python capcut/build_project.py work/<week>/capcut.json`
 (dry run), then with `--save`. Tell them to open CapCut, check one timeline end to end (text fits, VO plays at
-normal speed), and finish by hand. Every timeline has the voice-over on its own track and the clip's sound off.
+normal speed), and finish by hand. Every timeline has the voice-over on its own track and the clip's sound off, is
+cut to the voice-over (pauses shortened, voice at 1.08x, text fitted to the speech, CTA for 1.5 s after the last
+word, about 16-17 s in all) and has the brand's music bed from `brand/brands.json`. If the build says a track is not
+downloaded, ask the person to use it once in CapCut (Audio > search its name) and build again. Rule changes:
+`references/rule-changes.md`.
 The first time this runs on a Windows computer, say that the Windows build is new and ask them to check the whole
 first timeline carefully.
 

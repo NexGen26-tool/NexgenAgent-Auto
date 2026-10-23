@@ -17,3 +17,12 @@
   of credits; video parts stop. Both resume by themselves once fixed. Plan storyboards early in the week.
 - Negen has no rename and no delete. A wrong batch name stays; cancel it and run again with the right name.
 - Downloads from the browser get blocked; the Exports share link + curl always works.
+
+# CapCut finishing (first build, Oct 23)
+
+- The first build kept Negen's full 20 s and needed a lot of hand work: the voice-over stops at about 16-17 s,
+  so the person cut every video to 14-16 s, re-timed every text line and added music (Spry "Neon Meow's Jazz Club
+  [Bonus]" at 24%, ETW "Soulful Groove" at 100%). The builder now cuts to the voice-over, plays it at 1.08x
+  and adds that music, so videos come out at about 16-17 s.
+- Still by hand: the person sped footage 1.2-1.3x on some and swapped weak shots
+  for shots from the sibling V1/V2/V3 video of the same product.

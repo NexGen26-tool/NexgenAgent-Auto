@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Build a CapCut project (CapCut 9.x on Mac or Windows) with one timeline per video, every timeline already in the house edit:
 Montserrat text with black stroke, a big/small/orange hook (Line 1), the animated two-part title (Line 2), the split
-Line 3, the yellow last phrase of Line 5, the CTA, the brand logo on top, Smoke out at the end, and the voice-over on
-its own track with the clip's own sound off.
+Line 3, the yellow last phrase of Line 5, the CTA, the brand logo on top, Smoke out at the end, the voice-over on
+its own track with the clip's own sound off, and the brand's music bed (brand/brands.json "music").
+
+Each timeline is cut to its voice-over: pauses are shortened, the text lines are fitted to the speech, and the
+timeline ends CTA_HOLD seconds after the last word (Negen's 20 s video usually has 3-4 s of silence at the end).
 
 The house edit is a real edited timeline (capcut/templates/house_edit.json). It is cloned for each video and only the
 words, the footage and the logo change, so every timeline opens looking like the approved one.
@@ -31,8 +34,13 @@ else:
     EFFECTS = HOME + "/Library/Containers/com.lemon.lvoverseas/Data/Movies/CapCut/User Data/Cache/effect"
     MEDIA = HOME + "/Movies/CapCut Media"  # CapCut on Mac is sandboxed: it reads ~/Movies without asking
 DRAFTS = os.environ.get("CAPCUT_DRAFTS", DRAFTS).replace("\\", "/")  # override if CapCut keeps projects elsewhere
+MUSIC = os.path.dirname(EFFECTS) + "/music"  # CapCut's library tracks, saved here once they are used in the app
 TEMPLATE_EFFECTS = "{HOME}/Library/Containers/com.lemon.lvoverseas/Data/Movies/CapCut/User Data/Cache/effect"
 US = 1_000_000
+PAUSE = 0.4     # a voice-over pause at least this long is shortened ...
+GAP = 0.25      # ... to this
+CTA_HOLD = 1.5  # the CTA stays this long after the voice-over ends; the timeline ends there
+VO_SPEED = 1.08 # the Negen voice-over is a little slow for a ~16 s ad
 BRANDS = json.load(open(ROOT + "/brand/brands.json", encoding="utf-8"))
 ROLES = json.load(open(HERE + "/templates/house_edit_roles.json", encoding="utf-8"))
 UUID = re.compile(r"^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$")
@@ -165,23 +173,63 @@ def mat(d, key, mid): return next(x for x in d["materials"][key] if x["id"] == m
 def seg_of(d, mid): return next(s for t in d["tracks"] for s in t["segments"] if s["material_id"] == mid)
 
 
-def add_vo(d, path):
+def speech_spans(path, dur):
+    """The parts of the voice-over to keep, in seconds: everything except the start and end silence, with every
+    pause of PAUSE or more cut down to GAP. Without ffmpeg the voice-over stays whole."""
+    ffmpeg = find_ffmpeg()
+    if not ffmpeg: return [(0.0, dur)]
+    err = subprocess.run([ffmpeg, "-hide_banner", "-i", path, "-af", "silencedetect=n=-35dB:d=%s" % PAUSE, "-f", "null", "-"],
+                         capture_output=True, text=True).stderr
+    starts = [float(x) for x in re.findall(r"silence_start: (-?[\d.]+)", err)]
+    ends = [float(x) for x in re.findall(r"silence_end: ([\d.]+)", err)]
+    pad, spans, pos = GAP / 2, [], 0.0
+    for a, b in zip(starts, ends + [dur] * (len(starts) - len(ends))):
+        if a <= 0.05: pos = max(0.0, b - pad); continue  # silence before the first word
+        spans.append((pos, min(dur, a + pad))); pos = b - pad
+    if pos < dur - 0.05 and (not ends or len(ends) == len(starts) and ends[-1] < dur - 0.05): spans.append((pos, dur))
+    return [(a, b) for a, b in spans if b - a > 0.05] or [(0.0, dur)]
+
+
+def add_audio(d, tp, mat, spans, volume, name, speed=1.0):
+    """One audio track; spans = [(source start, source end)] in microseconds, laid end to end from 0."""
+    m = copy.deepcopy(tp["mat"]); m["id"] = uid(); m.update(mat)
+    d["materials"].setdefault("audios", []).append(m)
+    segs, at = [], 0
+    for a, b in spans:
+        s = copy.deepcopy(tp["seg"]); s["id"] = uid(); s["material_id"] = m["id"]; refs = []
+        for k, items in tp["extra"].items():
+            for it in items:
+                n = copy.deepcopy(it); n["id"] = uid(); d["materials"].setdefault(k, []).append(n); refs.append(n["id"])
+                if k == "speeds": n["speed"] = speed
+        s["extra_material_refs"] = refs; length = int((b - a) / speed)
+        s["source_timerange"] = {"start": a, "duration": b - a}; s["target_timerange"] = {"start": at, "duration": length}
+        s["volume"] = volume; s["last_nonzero_volume"] = 1.0; s["speed"] = speed
+        s["render_index"] = 0; s["track_render_index"] = len(d["tracks"])
+        segs.append(s); at += length
+    d["tracks"].append({"id": uid(), "type": "audio", "segments": segs, "flag": 0, "attribute": 0,
+                        "name": name, "is_default_name": False})
+
+
+def add_vo(d, path, spans):
     tp = json.load(open(HERE + "/templates/vo_track.json", encoding="utf-8"))
     dur = mp4_info(path)[0]  # an .m4a has the same header as an .mp4
-    m = copy.deepcopy(tp["mat"]); m["id"] = uid()
-    m.update({"path": path, "name": os.path.splitext(os.path.basename(path))[0], "duration": us(dur)})
-    d["materials"].setdefault("audios", []).append(m)
-    s = copy.deepcopy(tp["seg"]); s["id"] = uid(); s["material_id"] = m["id"]; refs = []
-    for k, items in tp["extra"].items():
-        for it in items:
-            n = copy.deepcopy(it); n["id"] = uid(); d["materials"].setdefault(k, []).append(n); refs.append(n["id"])
-    s["extra_material_refs"] = refs
-    span = min(us(dur), d["duration"])
-    s["source_timerange"] = {"start": 0, "duration": span}; s["target_timerange"] = {"start": 0, "duration": span}
-    s["volume"] = 1.0; s["last_nonzero_volume"] = 1.0; s["speed"] = 1.0
-    s["render_index"] = 0; s["track_render_index"] = len(d["tracks"])
-    d["tracks"].append({"id": uid(), "type": "audio", "segments": [s], "flag": 0, "attribute": 0,
-                        "name": "Voice-over", "is_default_name": False})
+    cut, at = [], 0
+    for a, b in spans:  # keep inside the timeline
+        a, b = us(a), us(b); b = min(b, a + int((d["duration"] - at) * VO_SPEED))
+        if b > a: cut.append((a, b)); at += int((b - a) / VO_SPEED)
+    add_audio(d, tp, {"path": path, "name": os.path.splitext(os.path.basename(path))[0], "duration": us(dur)}, cut, 1.0,
+              "Voice-over", VO_SPEED)
+
+
+def add_music(d, music):
+    """The brand's music bed (a CapCut library track) under the whole timeline, with a short fade out."""
+    path = MUSIC + "/" + music["file"]
+    if not os.path.exists(path): return False
+    tp = json.load(open(HERE + "/templates/music_track.json", encoding="utf-8"))
+    mat = {"path": path, "name": music["name"], "music_id": music["music_id"],
+           "duration": us(music["duration"])}
+    add_audio(d, tp, mat, [(0, min(d["duration"], us(music["duration"])))], music["volume"], "Music")
+    return True
 
 
 class Timeline:
@@ -242,8 +290,46 @@ class Timeline:
         p, q = cfg["line5"]; set_text(mat(d, "texts", r["line5"]), [(p + "\n", 0), (q, 1)])
         set_text(mat(d, "texts", r["cta"]), [(cfg.get("cta") or brand["cta"], 0)])
 
-        add_vo(d, self.vo)
+        # cut to the voice-over: pauses shortened, the timeline ends CTA_HOLD after the last word
+        spans = speech_spans(self.vo, mp4_info(self.vo)[0])
+        total = min(dur, us(sum(b - a for a, b in spans) / VO_SPEED + CTA_HOLD)); self.dur = total
+        joints, at = [], 0  # where the shortened pauses sit on the timeline
+        for a, b in spans[:-1]: at += us((b - a) / VO_SPEED); joints.append(at)
+        self.retime(d, r, total, joints)
+        add_vo(d, self.vo, spans)
+        self.music = add_music(d, brand["music"]) if brand.get("music") else None
         self.d = d
+
+    @staticmethod
+    def retime(d, r, total, joints):
+        """Shrink the house edit's 0-17 s text block to end where the voice ends; a change of line lands on a pause
+        in the voice-over when one is within 0.8 s. Line 2's animated title keeps its own length."""
+        def seg(role):  # the title clip's segment points at its draft through extra_material_refs
+            return next(s for t in d["tracks"] for s in t["segments"]
+                        if r[role] == s["material_id"] or r[role] in s["extra_material_refs"])
+        def place(s, start, end): s["target_timerange"] = {"start": int(start), "duration": int(end - start)}
+        def snap(t, lo, hi):
+            near = [j for j in joints if lo < j < hi and abs(j - t) <= us(0.8)]
+            return min(near, key=lambda j: abs(j - t)) if near else t
+        tt = lambda role: seg(role)["target_timerange"]
+        end5 = tt("line5")["start"] + tt("line5")["duration"]
+        content = total - us(CTA_HOLD); f = content / end5
+        t = {k: (tt(k)["start"] * f, (tt(k)["start"] + tt(k)["duration"]) * f) for k in ("line1", "line3a", "line3b", "line4", "line5")}
+        c = seg("compound"); cdur = c["target_timerange"]["duration"]
+        c0 = snap(tt("compound")["start"] * f, us(1.2), content); place(seg("line1"), 0, c0)
+        c["target_timerange"]["start"] = int(c0)
+        a3 = max(t["line3a"][0], c0 + cdur); b3 = a3 + (t["line3b"][0] - t["line3a"][0])
+        e3 = snap(t["line3a"][1], b3 + us(1), content - us(2))
+        e4 = snap(t["line4"][1], e3 + us(1), content - us(1))
+        place(seg("line3a"), a3, e3); place(seg("line3b"), b3, e3); place(seg("line4"), e3, e4); place(seg("line5"), e4, content)
+        place(seg("cta"), content + us(0.1), total)
+        for role in ("video", "logo"):
+            s = seg(role); s["target_timerange"]["duration"] = total; s["source_timerange"]["duration"] = total
+            for a in d["materials"]["material_animations"]:
+                if a["id"] in s["extra_material_refs"]:
+                    for an in a["animations"]:
+                        if an["type"] == "out": an["start"] = total - an["duration"]
+        d["duration"] = total
 
     def check(self):
         d = self.d
@@ -318,5 +404,9 @@ if __name__ == "__main__":
     tls = [Timeline(c, media_dir) for c in cfg["timelines"]]
     for t in tls:
         miss, ok = t.check()
-        print("%-34s %.1fs | VO %s | missing refs %d | media ok %s" % (t.name, t.dur / US, os.path.basename(t.vo), miss, ok))
+        print("%-34s %.1fs | VO %s | music %s | missing refs %d | media ok %s" % (
+            t.name, t.dur / US, os.path.basename(t.vo), {None: "-", True: "yes", False: "NOT DOWNLOADED"}[t.music], miss, ok))
+    gone = sorted({BRANDS[c["brand"]]["music"]["name"] for c, t in zip(cfg["timelines"], tls) if t.music is False})
+    if gone: print("NOTE: music not in CapCut yet, so left out: %s. Use it once in CapCut (Audio > search the name), "
+                   "then build again." % ", ".join(gone))
     if "--save" in sys.argv: save(cfg["project"], tls)
