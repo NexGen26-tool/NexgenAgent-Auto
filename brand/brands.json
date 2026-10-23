@@ -5,7 +5,9 @@
     "logo_scale": 0.425,
     "cta": "Explore the Collection",
     "negen_brand_prefix": "cbc46335",
-    "video_template_batch": "384c0d91-14bb-4a8e-92c7-361c8eee8465"
+    "video_template_batch": "384c0d91-14bb-4a8e-92c7-361c8eee8465",
+    "music": {"name": "Soulful Groove", "music_id": "7376302170939082803", "file": "03aa56b8b26768daeb925e211fb88658.mp3",
+              "duration": 115.2, "volume": 1.0}
   },
   "spry": {
     "store": "Spryinterior",
@@ -13,6 +15,8 @@
     "logo_scale": 0.30,
     "cta": "Shop now",
     "negen_brand_prefix": "9dbb2f20",
-    "video_template_batch": "3d48dd14-b0fa-4396-b140-fc5650d00ff7"
+    "video_template_batch": "3d48dd14-b0fa-4396-b140-fc5650d00ff7",
+    "music": {"name": "Neon Meow's Jazz Club [Bonus]", "music_id": "7415842767157463041",
+              "file": "2a1031f76673c7bcb46b30323c6ad34a.mp3", "duration": 149.67, "volume": 0.24}
   }
 }
