@@ -10,11 +10,13 @@ Bạn chỉ cần chọn sản phẩm, duyệt ý tưởng và kiểm tra video 
 
 Trước khi bắt đầu, bạn cần:
 
-- Máy Mac.
+- Máy Windows (Mac cũng dùng được).
 - [Claude Desktop](https://claude.ai/download) — sử dụng mục **Code**.
 - [Tài khoản Negen](https://marketing-tool.nexgenbros.com).
-- CapCut cho Mac (phiên bản 9.x), đã mở ít nhất một lần.
+- CapCut bản máy tính (phiên bản 9.x), đã mở ít nhất một lần và đã tạo thử một project.
 - Quyền truy cập repo NexgenAgent Auto.
+
+Máy Windows cần thêm Git, Python và ffmpeg. Nếu thiếu, Claude sẽ báo và hướng dẫn cài trong lúc setup.
 
 ## 2. Cài đặt lần đầu
 
@@ -44,6 +46,9 @@ Sau đó nhắn Claude: **"Chạy lại setup và kiểm tra giúp mình."**
 
 Khi xuất hiện **Setup OK** là hoàn tất. Bạn chỉ cần cài đặt một lần.
 
+Nếu setup báo **"CapCut can take built projects: NO"**, công cụ vẫn dùng được. Khi đó Claude không tạo được project
+CapCut, mà sẽ gửi video sạch kèm một bảng chữ (text sheet) ghi từng dòng chữ và thời gian để bạn gõ vào CapCut.
+
 ## 3. Tạo video quảng cáo
 
 **Bước 1:** Mở Claude Desktop → Code → chọn thư mục `NexgenAgent-Auto`.
@@ -58,7 +63,10 @@ Claude sẽ hướng dẫn bạn chọn sản phẩm, tạo storyboard, chuẩn 
 
 Bạn chỉ cần làm theo hướng dẫn và xác nhận khi Claude yêu cầu. Những thao tác tốn credits hoặc tiền sẽ cần được bạn đồng ý trước.
 
-**Bước 4:** Khi Claude chuẩn bị project CapCut, hãy thoát hẳn CapCut bằng **Cmd + Q** nếu được yêu cầu.
+**Bước 4:** Khi Claude chuẩn bị project CapCut, hãy thoát hẳn CapCut nếu được yêu cầu:
+
+- Windows: đóng CapCut, rồi bấm chuột phải vào biểu tượng CapCut ở khay hệ thống (góc phải dưới) → Thoát.
+- Mac: bấm **Cmd + Q**.
 
 **Bước 5:** Mở project CapCut do Claude chuẩn bị và kiểm tra:
 
@@ -83,7 +91,8 @@ Chỉnh sửa nếu cần, sau đó xuất video.
 |---|---|
 | Hết Grok credits | Liên hệ admin |
 | ChatGPT bị đăng xuất | Liên hệ admin |
-| CapCut đang mở | Thoát bằng Cmd + Q rồi chạy lại |
+| CapCut đang mở | Thoát hẳn CapCut (Windows: thoát cả ở khay hệ thống; Mac: Cmd + Q) rồi chạy lại |
+| Setup báo CapCut không nhận project | Vẫn dùng được: Claude gửi video kèm bảng chữ để bạn gõ vào CapCut |
 | Font hiển thị sai | Tải font trong CapCut, nhờ Claude kiểm tra setup rồi tạo lại project |
 | Không hiểu lỗi | Copy thông báo lỗi và gửi Claude nhờ hướng dẫn |
 
