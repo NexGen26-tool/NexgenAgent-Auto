@@ -2,9 +2,14 @@
   "permissions": {
     "allow": [
       "Bash(./setup.sh)",
+      "Bash(python setup_check.py)",
+      "Bash(python3 setup_check.py)",
+      "Bash(python capcut/build_project.py:*)",
       "Bash(python3 capcut/build_project.py:*)",
-      "Bash(negen/download_export.sh:*)",
-      "Bash(pgrep -x CapCut)"
+      "Bash(python capcut/text_sheet.py:*)",
+      "Bash(python3 capcut/text_sheet.py:*)",
+      "Bash(python negen/download_export.py:*)",
+      "Bash(python3 negen/download_export.py:*)"
     ]
   }
 }

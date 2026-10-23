@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a CapCut project (macOS, CapCut 9.x) with one timeline per video, every timeline already in the house edit:
+"""Build a CapCut project (CapCut 9.x on Mac or Windows) with one timeline per video, every timeline already in the house edit:
 Montserrat text with black stroke, a big/small/orange hook (Line 1), the animated two-part title (Line 2), the split
 Line 3, the yellow last phrase of Line 5, the CTA, the brand logo on top, Smoke out at the end, and the voice-over on
 its own track with the clip's own sound off.
@@ -7,8 +7,11 @@ its own track with the clip's own sound off.
 The house edit is a real edited timeline (capcut/templates/house_edit.json). It is cloned for each video and only the
 words, the footage and the logo change, so every timeline opens looking like the approved one.
 
-  python3 capcut/build_project.py work/<week>/capcut.json            # dry run, prints what it would build
-  python3 capcut/build_project.py work/<week>/capcut.json --save     # writes the project (CapCut must be closed)
+  python capcut/build_project.py work/<week>/capcut.json            # dry run, prints what it would build
+  python capcut/build_project.py work/<week>/capcut.json --save     # writes the project (CapCut must be closed)
+  python capcut/build_project.py --check                            # can this computer's CapCut take built projects?
+
+On a Mac use python3. Windows needs ffmpeg (setup_check.py says how to install it).
 
 Config format: see capcut/example.json.
 """
@@ -16,13 +19,22 @@ import json, os, sys, copy, shutil, subprocess, time, re, uuid, struct, glob
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-HOME = os.path.expanduser("~")
-DRAFTS = HOME + "/Movies/CapCut/User Data/Projects/com.lveditor.draft"
-EFFECTS = HOME + "/Library/Containers/com.lemon.lvoverseas/Data/Movies/CapCut/User Data/Cache/effect"
-MEDIA = HOME + "/Movies/CapCut Media"  # CapCut is sandboxed: it reads ~/Movies without asking
+WINDOWS = os.name == "nt"
+HOME = os.path.expanduser("~").replace("\\", "/")  # CapCut writes paths with forward slashes on both systems
+if WINDOWS:
+    _CAPCUT = os.environ.get("LOCALAPPDATA", HOME + "/AppData/Local").replace("\\", "/") + "/CapCut/User Data"
+    DRAFTS = _CAPCUT + "/Projects/com.lveditor.draft"
+    EFFECTS = _CAPCUT + "/Cache/effect"
+    MEDIA = HOME + "/Videos/CapCut Media"
+else:
+    DRAFTS = HOME + "/Movies/CapCut/User Data/Projects/com.lveditor.draft"
+    EFFECTS = HOME + "/Library/Containers/com.lemon.lvoverseas/Data/Movies/CapCut/User Data/Cache/effect"
+    MEDIA = HOME + "/Movies/CapCut Media"  # CapCut on Mac is sandboxed: it reads ~/Movies without asking
+DRAFTS = os.environ.get("CAPCUT_DRAFTS", DRAFTS).replace("\\", "/")  # override if CapCut keeps projects elsewhere
+TEMPLATE_EFFECTS = "{HOME}/Library/Containers/com.lemon.lvoverseas/Data/Movies/CapCut/User Data/Cache/effect"
 US = 1_000_000
-BRANDS = json.load(open(ROOT + "/brand/brands.json"))
-ROLES = json.load(open(HERE + "/templates/house_edit_roles.json"))
+BRANDS = json.load(open(ROOT + "/brand/brands.json", encoding="utf-8"))
+ROLES = json.load(open(HERE + "/templates/house_edit_roles.json", encoding="utf-8"))
 UUID = re.compile(r"^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$")
 
 # fonts and animations the house edit uses; CapCut downloads them the first time they are picked in the app
@@ -39,7 +51,8 @@ def u16(s): return len(s.encode("utf-16-le")) // 2
 def _measure_font():
     from PIL import ImageFont
     found = glob.glob(EFFECTS + "/7542214368361057553/*/font.ttf")
-    path = found[0] if found else "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
+    fallback = "C:/Windows/Fonts/arialbd.ttf" if WINDOWS else "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
+    path = found[0] if found else fallback
     return ImageFont.truetype(path, 100)
 
 
@@ -62,8 +75,33 @@ def mp4_info(p):
 
 
 def image_size(p):
-    out = subprocess.check_output(["sips", "-g", "pixelWidth", "-g", "pixelHeight", p]).decode().split()
-    return int(out[-3]), int(out[-1])
+    from PIL import Image
+    with Image.open(p) as im: return im.size
+
+
+def capcut_running():
+    if WINDOWS:
+        out = subprocess.run(["tasklist", "/FI", "IMAGENAME eq CapCut.exe"], capture_output=True, text=True).stdout
+        return "CapCut.exe" in out
+    return subprocess.run(["pgrep", "-x", "CapCut"], capture_output=True).returncode == 0
+
+
+def draft_format():
+    """Which file CapCut keeps a project in here (draft_info.json on Mac, often draft_content.json on Windows),
+    and whether it is plain JSON. Newer CapCut builds can encrypt it; then no script can build projects here."""
+    names = ("draft_info.json", "draft_content.json")
+    projects = sorted((p for p in glob.glob(DRAFTS + "/*/") if any(os.path.exists(p + n) for n in names)),
+                      key=os.path.getmtime, reverse=True)
+    if not projects: return None, "No CapCut project found in " + DRAFTS + ". Make any project in CapCut, then retry."
+    for p in projects[:5]:
+        for n in names:
+            if os.path.exists(p + n):
+                try:
+                    json.load(open(p + n, encoding="utf-8")); return n, "ok"
+                except (ValueError, UnicodeDecodeError):
+                    pass
+    return None, ("This CapCut keeps its projects encrypted, so projects cannot be built for it. "
+                  "Use the text sheet instead: python capcut/text_sheet.py work/<week>/capcut.json")
 
 
 def link_media(src, folder, name=None):
@@ -79,7 +117,12 @@ def extract_vo(video, folder):
     """The Negen file has the voice-over mixed in; pull it out as its own audio file."""
     dst = folder + "/" + os.path.splitext(os.path.basename(video))[0] + " - VO.m4a"
     if not os.path.exists(dst):
-        subprocess.run(["afconvert", "-f", "m4af", "-d", "aac", "-b", "192000", video, dst], check=True)
+        if shutil.which("ffmpeg"):
+            subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", video, "-vn", "-c:a", "copy", dst], check=True)
+        elif shutil.which("afconvert"):
+            subprocess.run(["afconvert", "-f", "m4af", "-d", "aac", "-b", "192000", video, dst], check=True)
+        else:
+            raise SystemExit("ffmpeg is missing: run setup_check.py and install it.")
     return dst
 
 
@@ -113,8 +156,8 @@ def seg_of(d, mid): return next(s for t in d["tracks"] for s in t["segments"] if
 
 
 def add_vo(d, path):
-    tp = json.load(open(HERE + "/templates/vo_track.json"))
-    dur = float(subprocess.check_output(["afinfo", path]).decode().split("estimated duration: ")[1].split()[0])
+    tp = json.load(open(HERE + "/templates/vo_track.json", encoding="utf-8"))
+    dur = mp4_info(path)[0]  # an .m4a has the same header as an .mp4
     m = copy.deepcopy(tp["mat"]); m["id"] = uid()
     m.update({"path": path, "name": os.path.splitext(os.path.basename(path))[0], "duration": us(dur)})
     d["materials"].setdefault("audios", []).append(m)
@@ -138,7 +181,8 @@ class Timeline:
         video = link_media(os.path.expanduser(cfg["video"]), media_dir)
         logo = link_media(ROOT + "/brand/" + brand["logo"], media_dir)
         self.vo = extract_vo(video, media_dir)
-        raw = open(HERE + "/templates/house_edit.json").read().replace("{HOME}", HOME)
+        raw = open(HERE + "/templates/house_edit.json", encoding="utf-8").read()
+        raw = raw.replace(TEMPLATE_EFFECTS, EFFECTS).replace("{HOME}", HOME)
         d, idm = remap_ids(json.loads(raw)); r = {k: idm[v] for k, v in ROLES.items()}
 
         # footage, clip sound off, Smoke out moved to the real end
@@ -200,8 +244,12 @@ class Timeline:
 
 
 def save(project, tls):
-    if subprocess.run(["pgrep", "-x", "CapCut"], capture_output=True).returncode == 0:
-        raise SystemExit("CapCut is open. Quit it first (Cmd+Q), or it overwrites the new project.")
+    if capcut_running():
+        raise SystemExit("CapCut is open. Quit it first (Cmd+Q on Mac; on Windows close it and check the tray), "
+                         "or it overwrites the new project.")
+    name, msg = draft_format()
+    if not name: raise SystemExit(msg)
+    files = (name, name + ".bak", "template-2.tmp")
     out = DRAFTS + "/" + project
     if os.path.exists(out): raise SystemExit("A CapCut project with this name exists already: " + project)
     shutil.copytree(HERE + "/skeleton", out, ignore=shutil.ignore_patterns(".keep"))
@@ -210,43 +258,50 @@ def save(project, tls):
         tid = uid(); ids.append(tid); folder = out + "/Timelines/" + tid
         shutil.copytree(tmpl, folder)
         t.d["id"] = tid; raw = json.dumps(t.d, ensure_ascii=False)
-        for p in ("draft_info.json", "draft_info.json.bak", "template-2.tmp"): open(folder + "/" + p, "w").write(raw)
+        for p in files: open(folder + "/" + p, "w", encoding="utf-8").write(raw)
         sub_id, inner = t.compound; sub = out + "/subdraft/" + sub_id
         os.makedirs(sub); shutil.copy(HERE + "/templates/compound/draft_cover.jpg", sub)
-        open(sub + "/draft_content.json", "w").write(json.dumps(inner, ensure_ascii=False))
-        sc = json.load(open(HERE + "/templates/compound/sub_draft_config.json")); sc.update({"id": sub_id, "project_id": sub_id})
-        open(sub + "/sub_draft_config.json", "w").write(json.dumps(sc))
+        open(sub + "/draft_content.json", "w", encoding="utf-8").write(json.dumps(inner, ensure_ascii=False))
+        sc = json.load(open(HERE + "/templates/compound/sub_draft_config.json", encoding="utf-8")); sc.update({"id": sub_id, "project_id": sub_id})
+        open(sub + "/sub_draft_config.json", "w", encoding="utf-8").write(json.dumps(sc))
         entries.append({"create_time": now, "id": tid, "is_marked_delete": False, "name": t.name, "update_time": now})
     shutil.rmtree(tmpl)
     raw = json.dumps(tls[0].d, ensure_ascii=False)
-    for p in ("draft_info.json", "draft_info.json.bak", "template-2.tmp"): open(out + "/" + p, "w").write(raw)
-    pj = json.load(open(out + "/Timelines/project.json"))
+    for p in files: open(out + "/" + p, "w", encoding="utf-8").write(raw)
+    pj = json.load(open(out + "/Timelines/project.json", encoding="utf-8"))
     pj.update({"id": uid(), "main_timeline_id": ids[0], "timelines": entries, "create_time": now, "update_time": now})
-    for p in ("Timelines/project.json", "Timelines/project.json.bak"): open(out + "/" + p, "w").write(json.dumps(pj))
+    for p in ("Timelines/project.json", "Timelines/project.json.bak"): open(out + "/" + p, "w", encoding="utf-8").write(json.dumps(pj))
     layout = {"dockItems": [{"dockIndex": 0, "ratio": 1, "timelineIds": ids, "timelineNames": [t.name for t in tls]}], "layoutOrientation": 1}
-    open(out + "/timeline_layout.json", "w").write(json.dumps(layout, ensure_ascii=False))
+    open(out + "/timeline_layout.json", "w", encoding="utf-8").write(json.dumps(layout, ensure_ascii=False))
     total = max(t.dur for t in tls); did = uid()
-    meta = json.load(open(out + "/draft_meta_info.json"))
+    meta = json.load(open(out + "/draft_meta_info.json", encoding="utf-8"))
     meta.update({"draft_id": did, "draft_name": project, "draft_fold_path": out, "draft_root_path": DRAFTS,
                  "tm_duration": total, "tm_draft_create": now, "tm_draft_modified": now})
-    open(out + "/draft_meta_info.json", "w").write(json.dumps(meta, ensure_ascii=False))
+    open(out + "/draft_meta_info.json", "w", encoding="utf-8").write(json.dumps(meta, ensure_ascii=False))
     rootp = DRAFTS + "/root_meta_info.json"
+    if not os.path.exists(rootp):
+        print("saved:", out, "(CapCut has no project list file here; if the project does not show, restart CapCut)")
+        return
     shutil.copy(rootp, rootp + ".bak-fastlane-" + time.strftime("%Y%m%d-%H%M%S"))
-    root = json.load(open(rootp))
-    e = json.load(open(HERE + "/templates/root_entry.json"))
-    e.update({"draft_cover": out + "/draft_cover.jpg", "draft_fold_path": out, "draft_id": did, "draft_json_file": out + "/draft_info.json",
+    root = json.load(open(rootp, encoding="utf-8"))
+    e = json.load(open(HERE + "/templates/root_entry.json", encoding="utf-8"))
+    e.update({"draft_cover": out + "/draft_cover.jpg", "draft_fold_path": out, "draft_id": did, "draft_json_file": out + "/" + name,
               "draft_name": project, "draft_root_path": DRAFTS, "tm_draft_create": now, "tm_draft_modified": now,
               "tm_duration": total, "draft_timeline_materials_size": 0})
     root["all_draft_store"].insert(0, e); root["draft_ids"] = root.get("draft_ids", 0) + 1
-    open(rootp, "w").write(json.dumps(root, ensure_ascii=False))
+    open(rootp, "w", encoding="utf-8").write(json.dumps(root, ensure_ascii=False))
     print("saved:", out)
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 2: raise SystemExit(__doc__)
     missing = [n for k, n in NEEDED.items() if not glob.glob(EFFECTS + "/" + k + "/*")]
-    if missing: print("WARNING, not in CapCut yet (see SETUP.md step 4):", ", ".join(missing))
-    cfg = json.load(open(sys.argv[1]))
+    if missing: print("WARNING, not downloaded in CapCut yet (see README, Install):", ", ".join(missing))
+    if sys.argv[1] == "--check":
+        name, msg = draft_format()
+        print("CapCut projects: " + (name + " readable, building works here" if name else msg))
+        sys.exit(0 if name else 1)
+    cfg = json.load(open(sys.argv[1], encoding="utf-8"))
     if not cfg.get("project") or "<" in cfg["project"] or "<" in cfg.get("media", ""):
         raise SystemExit("Set the project name first: ask the person what to call this week's outputs.")
     media_dir = MEDIA + "/" + cfg.get("media", cfg["project"])
