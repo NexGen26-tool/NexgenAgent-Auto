@@ -24,8 +24,9 @@ except ImportError:
     say("Pillow (Python)", "installed" if r.returncode == 0 else "FAILED: run  " + sys.executable + " -m pip install --user Pillow")
     if r.returncode: problems.append("Pillow")
 
-for tool, need, how in (("git", True, "Windows: winget install Git.Git   Mac: xcode-select --install"),
-                        ("ffmpeg", WINDOWS, "Windows: winget install Gyan.FFmpeg  (then open a new terminal)   Mac: brew install ffmpeg")):
+WINGET = " --accept-source-agreements --accept-package-agreements  (then quit and reopen Claude Desktop)"
+for tool, need, how in (("git", True, "winget install -e --id Git.Git" + WINGET if WINDOWS else "xcode-select --install"),
+                        ("ffmpeg", WINDOWS, "winget install -e --id Gyan.FFmpeg" + WINGET if WINDOWS else "brew install ffmpeg")):
     found = shutil.which(tool)
     if found or not WINDOWS and tool == "ffmpeg" and shutil.which("afconvert"):
         say(tool, "ok" if found else "not needed on Mac (afconvert is used)")
@@ -69,6 +70,7 @@ if missing:
 os.makedirs(os.path.join(ROOT, "work"), exist_ok=True)
 print()
 for n in notes: print("NOTE:", n, "\n")
-print("Setup OK. Open Claude Code in this folder and type /fastlane" if not problems
+print("Setup OK. Next: start a NEW session in Claude Desktop > Code, choose the folder " + ROOT
+      + ", sign in to Negen in the browser pane and type /fastlane" if not problems
       else "Fix these, then run the check again: " + ", ".join(problems))
 sys.exit(1 if problems else 0)

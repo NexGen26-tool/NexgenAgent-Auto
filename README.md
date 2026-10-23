@@ -16,42 +16,44 @@ Trước khi bắt đầu, bạn cần:
 - CapCut bản máy tính (phiên bản 9.x), đã mở ít nhất một lần và đã tạo thử một project.
 - Quyền truy cập repo NexgenAgent Auto.
 
-Máy Windows cần thêm Git, Python và ffmpeg. Nếu thiếu, Claude sẽ báo và hướng dẫn cài trong lúc setup.
+Máy Windows cần thêm Git, Python và ffmpeg. Nếu thiếu, Claude sẽ báo và cài giúp sau khi bạn đồng ý (miễn phí).
 
-## 2. Cài đặt lần đầu
+## 2. Cài đặt lần đầu (khoảng 10–15 phút, chỉ làm một lần)
 
 **Bước 1:** Mở Claude Desktop → chọn **Code**.
 
 **Bước 2:** Copy và gửi tin nhắn sau cho Claude:
 
 ```text
-Hãy cài đặt công cụ này giúp mình:
-
+Mình là thành viên team NexGen, cần cài công cụ nội bộ của team:
 https://github.com/NexGen26-tool/NexgenAgent-Auto
-
-Lưu vào ~/NexgenAgent-Auto và chạy setup.
-
-Mình không có kiến thức kỹ thuật, hãy hướng dẫn
-từng bước bằng tiếng Việt nếu cần mình thao tác.
+Clone vào ~/NexgenAgent-Auto, đọc phần Setup trong CLAUDE.md rồi làm theo.
+Hướng dẫn mình bằng tiếng Việt khi cần mình thao tác.
 ```
 
-**Bước 3:** Làm theo hướng dẫn của Claude.
+**Bước 3:** Làm theo hướng dẫn của Claude. Khi Claude hỏi quyền chạy lệnh, bấm cho phép.
 
-Nếu được yêu cầu tải font hoặc hiệu ứng, hãy mở CapCut và sử dụng từng mục sau một lần:
+**Bước 4 (chỉ khi Claude vừa cài thêm Git, Python hoặc ffmpeg):** thoát hẳn Claude Desktop (Windows: thoát cả ở khay
+hệ thống, góc phải dưới), mở lại, bấm vào đúng cuộc trò chuyện cài đặt vừa rồi và nhắn **"tiếp tục setup"**. Máy chỉ
+nhận phần mềm mới sau khi mở lại app.
+
+**Bước 5 (chỉ khi được yêu cầu tải font hoặc hiệu ứng):** mở CapCut và dùng thử từng mục sau một lần:
 
 - Font: Montserrat, PT Sans, HV-Analogue-Bold-Italic.
 - Hiệu ứng chữ: Zoom 1 (In), Smoke (Out).
 
 Sau đó nhắn Claude: **"Chạy lại setup và kiểm tra giúp mình."**
 
-Khi xuất hiện **Setup OK** là hoàn tất. Bạn chỉ cần cài đặt một lần.
+Khi xuất hiện **Setup OK** là hoàn tất. Từ giờ, mỗi lần làm video bạn mở một **phiên mới** trong thư mục
+`NexgenAgent-Auto` (xem mục 3), không dùng lại cuộc trò chuyện cài đặt.
 
 Nếu setup báo **"CapCut can take built projects: NO"**, công cụ vẫn dùng được. Khi đó Claude không tạo được project
 CapCut, mà sẽ gửi video sạch kèm một bảng chữ (text sheet) ghi từng dòng chữ và thời gian để bạn gõ vào CapCut.
 
 ## 3. Tạo video quảng cáo
 
-**Bước 1:** Mở Claude Desktop → Code → chọn thư mục `NexgenAgent-Auto`.
+**Bước 1:** Mở Claude Desktop → Code → bắt đầu phiên mới và chọn thư mục `NexgenAgent-Auto`
+(Windows: `C:\Users\<tên bạn>\NexgenAgent-Auto`).
 
 **Bước 2:** Đăng nhập Negen trong trình duyệt Claude sử dụng.
 
@@ -84,6 +86,7 @@ Chỉnh sửa nếu cần, sau đó xuất video.
 | `/fastlane` | Bắt đầu tạo video |
 | `/fastlane-status` | Kiểm tra tiến độ |
 | `/fastlane-capcut` | Tạo lại project CapCut |
+| `/fastlane-update` | Cập nhật công cụ lên bản mới nhất (nên chạy đầu mỗi tuần) |
 
 ## 5. Khi gặp lỗi
 
@@ -94,6 +97,8 @@ Chỉnh sửa nếu cần, sau đó xuất video.
 | CapCut đang mở | Thoát hẳn CapCut (Windows: thoát cả ở khay hệ thống; Mac: Cmd + Q) rồi chạy lại |
 | Setup báo CapCut không nhận project | Vẫn dùng được: Claude gửi video kèm bảng chữ để bạn gõ vào CapCut |
 | Font hiển thị sai | Tải font trong CapCut, nhờ Claude kiểm tra setup rồi tạo lại project |
+| "Python was not found" sau khi đã cài | Thoát hẳn Claude Desktop rồi mở lại; nếu vẫn lỗi, Claude sẽ chỉ cách tắt lối tắt Python của Microsoft Store |
+| Gõ `/fastlane` không thấy lệnh | Bạn đang ở sai thư mục: mở phiên mới và chọn thư mục `NexgenAgent-Auto` |
 | Không hiểu lỗi | Copy thông báo lỗi và gửi Claude nhờ hướng dẫn |
 
 Bạn có thể nhắn Claude bằng tiếng Việt:
