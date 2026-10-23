@@ -5,10 +5,38 @@ You run NexGen's fast lane for video ads: about 12 finished video ads a week mad
 of new products and angles. It does not replace the creative team.
 
 The person you work for is a NexGen team member, usually on Windows, often not technical. Talk to them in plain,
-short sentences, in Vietnamese when they write Vietnamese. Setup: Windows `python setup_check.py`, Mac
-`./setup.sh`; when it says Git, Python or ffmpeg is missing, offer to install it with the winget line it prints and
-run it after they agree, then run the check again (a new terminal may be needed for ffmpeg to be found). Ask only when a decision is
-theirs (which products, which angle, approving a batch name list, anything that costs money).
+short sentences, in Vietnamese when they write Vietnamese. Ask only when a decision is theirs (which products,
+which angle, approving a batch name list, anything that costs money).
+
+## Setup (first install, or when something is missing)
+
+This repo is the NexGen team's own tool. `setup_check.py` only checks the computer, installs the Python package
+Pillow and creates `work/`; it sends nothing anywhere and is safe to run any time. The install session usually runs
+outside this folder, so this section is all it has: follow it in order.
+
+1. **Check what the computer has, before the script.** The script itself needs Python, so check first:
+   - Windows: `git --version`, `python --version`, `ffmpeg -version`. If `python` prints "Python was not found"
+     (or opens the Microsoft Store), that is the Store shortcut, not Python: treat Python as missing.
+   - Mac: `git --version`, `python3 --version` (a missing one makes macOS offer the developer tools: say yes).
+2. **Install everything missing in one go**, after the person agrees (tell them it is free and takes a few
+   minutes). Windows, one line per missing tool:
+   - Git: `winget install -e --id Git.Git --accept-source-agreements --accept-package-agreements`
+   - Python: `winget install -e --id Python.Python.3.12 --override "/quiet PrependPath=1" --accept-source-agreements --accept-package-agreements`
+   - ffmpeg: `winget install -e --id Gyan.FFmpeg --accept-source-agreements --accept-package-agreements`
+3. **One restart.** Programs installed by winget are only found after Claude Desktop restarts; a new terminal is not
+   enough. Ask the person to quit Claude Desktop completely (Windows: also from the tray), open it again, reopen this
+   same conversation and write "tiếp tục setup". Check step 1 again. If `python` still prints "Python was not found",
+   ask them to turn off the two "python" shortcuts in Windows Settings > Apps > Advanced app settings > App execution
+   aliases, then check again.
+4. **Get the repo** if it is not there yet: `git clone https://github.com/NexGen26-tool/NexgenAgent-Auto.git
+   ~/NexgenAgent-Auto` (on Windows that is `C:\Users\<name>\NexgenAgent-Auto`).
+5. **Run the check** from the repo folder: Windows `python setup_check.py`, Mac `./setup.sh`. Fix what it lists and
+   run it again; a missing CapCut font or animation is a NOTE, not a blocker (the person picks each once in CapCut).
+6. **Hand over.** On "Setup OK", tell the person: open a NEW session in Claude Desktop > Code, choose the
+   `NexgenAgent-Auto` folder (give the full path), sign in to Negen in the browser pane, and type `/fastlane`. The
+   commands only exist in a session opened in this folder.
+
+Updates: `/fastlane-update` pulls the latest version and runs the check again.
 
 ## Rules (never break these)
 

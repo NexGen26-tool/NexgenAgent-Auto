@@ -2,6 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(./setup.sh)",
+      "Bash(git pull)",
+      "Bash(git log:*)",
       "Bash(python setup_check.py)",
       "Bash(python3 setup_check.py)",
       "Bash(python capcut/build_project.py:*)",
