@@ -8,6 +8,11 @@ The person you work for is a NexGen team member, usually on Windows, often not t
 short sentences, in Vietnamese when they write Vietnamese. Ask only when a decision is theirs (which products,
 which angle, approving a batch name list, anything that costs money).
 
+**Ask with the popup.** Every question to the person goes through the AskUserQuestion tool (the multiple-choice
+popup), never as a numbered list of questions in chat: 2-4 ready answers per question, the likeliest first, and the
+person types their own in "Other". Questions that do not depend on each other go in the same popup (up to 4). Write
+the options in the person's language.
+
 ## Setup (first install, or when something is missing)
 
 This repo is the NexGen team's own tool. `setup_check.py` only checks the computer, installs the Python package
@@ -84,10 +89,17 @@ if it exists and continue where it stopped.
 "ETW Spry Q4 test" or a campaign name). Never make one up and never default to "Fast lane". It is used for the work
 folder, the CapCut project ("<Mon DD> - <output name>") and the CapCut media folder; save it in `week.json` as
 `"name"`. If a week already has a name, reuse it. Negen batch names keep their own format (below).
+Ask it in one popup together with the first step-1 question:
+- "Đặt tên cho đợt video tuần này?": the names used in earlier weeks (`work/*/week.json`, newest first, up to 3);
+  with none, two neutral patterns such as "<Mon DD> Spry ETW test". The person picks or types; the name is theirs.
+- "Test sản phẩm nào?": "Gợi ý giúp mình các sản phẩm chưa test" (first), "Giống tuần trước" (only when a
+  previous week exists); they type SKUs in "Other".
 
 **1. Plan the groups.** 12 videos = 4 groups: 2 Spry groups + 2 ETW groups. A group is one SKU + one angle +
-three videos (V1, V2, V3) that differ only in hook and delivery, so Meta ad sets can be built per group. Ask which
-SKUs to test (or propose untested ones from Negen Products and let the person choose). Write `week.json`:
+three videos (V1, V2, V3) that differ only in hook and delivery, so Meta ad sets can be built per group. When asked to
+suggest, find untested products in Negen Products and show them as one popup: a multi-select question per store
+("Chọn 2 sản phẩm Spry", "Chọn 2 sản phẩm ETW"), up to 4 candidates each with a one-line reason. Then one popup with
+an angle question per chosen product (2-3 angles each). Write `week.json`:
 `{"week": "...", "name": "<output name>", "groups": [{"store": "etw|spry", "product": "...", "sku": "...", "pid": "...", "angle": "...",
 "storyboard_batch": "", "poster": "", "videos": [{"variant": "V1", "batch_name": "", "batch_id": "", "brief": {},
 "file": ""}, ...]}]}`. Find the product id (`pid`): on a New batch page type the SKU into the product search and
@@ -102,7 +114,8 @@ name "<Mon DD> - Storyboards", Start. When done, open each storyboard in Review:
 
 **3. Briefs** (write them while storyboards or videos run): follow the ad-brief-compiler skill. Three briefs per
 group, V1-V3, same job/proof/offer/CTA and Lines 2-5, a different hook and delivery each. Show the person the
-3-row variant summary per group before launching. Store each brief in `week.json`.
+3-row variant summary per group before launching, with the batch names, then one popup with a question per group:
+"Duyệt" (first), "Sửa hook", "Đổi angle"; a fix they type goes in "Other". Store each brief in `week.json`.
 
 **4. Video batches** (about 6-8 minutes each; Grok makes 2 parts at a time, so 12 batches take about 30-40 minutes):
 for each brief open `/generate/new?from_batch=<video_template_batch of that store>`, run `fill_batch.js` with
