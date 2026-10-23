@@ -1,4 +1,4 @@
-# Negen fast lane
+# NexgenAgent Auto - Negen fast lane
 
 Make about 12 test video ads a week with Negen, finished in CapCut in the house edit, with Claude Code doing the
 clicking, the briefs, the downloads and the CapCut setup. You choose the products, sign in, check names, and do the
@@ -21,7 +21,7 @@ on-screen text in the house style, the brand logo, the end animation and the voi
 Paste this into Terminal:
 
 ```bash
-git clone https://github.com/OWNER/negen-fast-lane.git ~/negen-fast-lane && cd ~/negen-fast-lane && ./setup.sh
+git clone https://github.com/OWNER/NexgenAgent-Auto.git ~/NexgenAgent-Auto && cd ~/NexgenAgent-Auto && ./setup.sh
 ```
 
 `setup.sh` checks the Mac, installs the one Python package it needs (Pillow), and checks CapCut. If it says a font
@@ -30,12 +30,12 @@ or animation is "not downloaded yet": open CapCut, open any project, add a text 
 "Smoke" once. Run `./setup.sh` again until it says Setup OK.
 
 Or let Claude Code do it: open Claude Code anywhere and say
-"Install https://github.com/OWNER/negen-fast-lane into ~/negen-fast-lane and run its setup".
+"Install https://github.com/OWNER/NexgenAgent-Auto into ~/NexgenAgent-Auto and run its setup".
 
 ## Use it every week
 
-1. Open Claude Code in the `negen-fast-lane` folder (desktop app: Code tab, pick the folder; terminal:
-   `cd ~/negen-fast-lane && claude --chrome`).
+1. Open Claude Code in the `NexgenAgent-Auto` folder (desktop app: Code tab, pick the folder; terminal:
+   `cd ~/NexgenAgent-Auto && claude --chrome`).
 2. Sign in to Negen in the browser Claude uses (the built-in browser pane, or Chrome).
 3. Type `/fastlane`. Claude asks which products to test, then runs storyboards, writes the briefs, shows you the
    hooks for each group, launches the batches, downloads the better video of each, and builds the CapCut project.
