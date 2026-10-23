@@ -37,7 +37,8 @@ Or let Claude Code do it: open Claude Code anywhere and say
 1. Open Claude Code in the `NexgenAgent-Auto` folder (desktop app: Code tab, pick the folder; terminal:
    `cd ~/NexgenAgent-Auto && claude --chrome`).
 2. Sign in to Negen in the browser Claude uses (the built-in browser pane, or Chrome).
-3. Type `/fastlane`. Claude asks which products to test, then runs storyboards, writes the briefs, shows you the
+3. Type `/fastlane`. Claude asks what to name this week's outputs (the CapCut project and folders) and which
+   products to test, then runs storyboards, writes the briefs, shows you the
    hooks for each group, launches the batches, downloads the better video of each, and builds the CapCut project.
 4. When Claude asks, quit CapCut so the project can be written, then open CapCut and finish each timeline
    (check text fits, logo, voice-over).
@@ -72,4 +73,4 @@ Other commands: `/fastlane-status` (where the batches stand), `/fastlane-capcut`
 | `capcut/` | The CapCut builder, the house-edit template and an empty project skeleton |
 | `brand/` | ETW and Spry logos and per-store settings |
 | `references/` | How Negen works, lessons, time per video, the camera rule |
-| `work/` | Your weeks (not uploaded to GitHub) |
+| `work/` | Your weeks, one folder per week and output name (not uploaded to GitHub) |

@@ -247,6 +247,8 @@ if __name__ == "__main__":
     missing = [n for k, n in NEEDED.items() if not glob.glob(EFFECTS + "/" + k + "/*")]
     if missing: print("WARNING, not in CapCut yet (see SETUP.md step 4):", ", ".join(missing))
     cfg = json.load(open(sys.argv[1]))
+    if not cfg.get("project") or "<" in cfg["project"] or "<" in cfg.get("media", ""):
+        raise SystemExit("Set the project name first: ask the person what to call this week's outputs.")
     media_dir = MEDIA + "/" + cfg.get("media", cfg["project"])
     tls = [Timeline(c, media_dir) for c in cfg["timelines"]]
     for t in tls:

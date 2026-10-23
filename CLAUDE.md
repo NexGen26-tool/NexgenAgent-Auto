@@ -35,14 +35,19 @@ theirs (which products, which angle, approving a batch name list, anything that 
 
 ## The week, step by step
 
-Keep everything for a week in `work/<YYYY-MM-DD of the Monday>/`: `week.json` (groups, briefs, batch ids,
-picks), `videos/`, `capcut.json`, `log.md` (times and anything that went wrong). Read it first if it exists and
-continue where it stopped.
+Keep everything for a week in `work/<YYYY-MM-DD of the Monday> <output name>/`: `week.json` (output name, groups,
+briefs, batch ids, picks), `videos/`, `capcut.json`, `log.md` (times and anything that went wrong). Read it first
+if it exists and continue where it stopped.
+
+**0. Ask for the output name.** Before anything else, ask the person what to call this week's outputs (for example
+"ETW Spry Q4 test" or a campaign name). Never make one up and never default to "Fast lane". It is used for the work
+folder, the CapCut project ("<Mon DD> - <output name>") and the CapCut media folder; save it in `week.json` as
+`"name"`. If a week already has a name, reuse it. Negen batch names keep their own format (below).
 
 **1. Plan the groups.** 12 videos = 4 groups: 2 Spry groups + 2 ETW groups. A group is one SKU + one angle +
 three videos (V1, V2, V3) that differ only in hook and delivery, so Meta ad sets can be built per group. Ask which
 SKUs to test (or propose untested ones from Negen Products and let the person choose). Write `week.json`:
-`{"week": "...", "groups": [{"store": "etw|spry", "product": "...", "sku": "...", "pid": "...", "angle": "...",
+`{"week": "...", "name": "<output name>", "groups": [{"store": "etw|spry", "product": "...", "sku": "...", "pid": "...", "angle": "...",
 "storyboard_batch": "", "poster": "", "videos": [{"variant": "V1", "batch_name": "", "batch_id": "", "brief": {},
 "file": ""}, ...]}]}`. Find the product id (`pid`): on a New batch page type the SKU into the product search and
 read the value of the matching `input[name=products]` checkbox.
@@ -70,8 +75,9 @@ for each brief open `/generate/new?from_batch=<video_template_batch of that stor
 `negen/download_export.sh "<link>" "work/<week>/videos/NN_<Store>_<Product>_<Angle>_Vn.mp4"`
 (NN = 01-12 in group order). Note the picked part and its scores in `week.json`.
 
-**7. CapCut.** Write `work/<week>/capcut.json` (format: `capcut/example.json`), one timeline per video, named
-"NN <Product> <Angle> Vn", turning each brief's on-screen lines into the house edit:
+**7. CapCut.** Write `work/<week>/capcut.json` (format: `capcut/example.json`) with `"project": "<Mon DD> - <output
+name>"` and `"media": "<Mon DD> <output name>"` (ask for the name if `week.json` has none), one timeline per video,
+named "NN <Product> <Angle> Vn", turning each brief's on-screen lines into the house edit:
 - `line1` [big, small, accent]: the hook split into a short subject (2-4 words), the linking words, and the last
   1-3 words that carry the tension (shown in orange italic). No trailing period; a "?" is fine.
   "Big empty wall?" became ["Big empty wall", "leaves you feeling ", "unresolved?"].
