@@ -8,6 +8,22 @@ The person you work for is a NexGen team member, usually on Windows, often not t
 short sentences, in Vietnamese when they write Vietnamese. Ask only when a decision is theirs (which products,
 which angle, approving a batch name list, anything that costs money).
 
+**Ask with the popup.** Every question to the person goes through the AskUserQuestion tool (the multiple-choice
+popup), never as a numbered list of questions in chat: 2-4 ready answers per question, your suggested answer first
+and marked "(Khuyên dùng)" / "(Recommended)", and the person types their own in "Other". Questions that do not depend
+on each other go in the same popup (up to 4). Write the options in the person's language.
+
+**Show progress as a checklist, not as chat.** At the start of /fastlane, put the week's steps in Claude Code's task
+checklist (TodoWrite, or TaskCreate/TaskUpdate where that is what this version has): name, products, storyboards,
+briefs, one line per video batch, download, CapCut. Tick each item as it finishes; it is the person's progress bar.
+In chat, write only at a milestone (storyboards done, all videos started, videos downloaded, CapCut ready) or when
+something needs them, in one or two lines. Never narrate tool steps, page scripts, ids, retries or a workaround that
+worked; record problems in `log.md` instead.
+
+**Stops.** The person is asked at most three times a week before CapCut: the step-0 popup, the product and angle
+popup (only when they asked for suggestions), and one go-ahead popup before any video batch starts. Everything else
+runs without asking.
+
 ## Setup (first install, or when something is missing)
 
 This repo is the NexGen team's own tool. `setup_check.py` only checks the computer, installs the Python package
@@ -23,18 +39,24 @@ outside this folder, so this section is all it has: follow it in order.
    - Git: `winget install -e --id Git.Git --accept-source-agreements --accept-package-agreements`
    - Python: `winget install -e --id Python.Python.3.12 --override "/quiet PrependPath=1" --accept-source-agreements --accept-package-agreements`
    - ffmpeg: `winget install -e --id Gyan.FFmpeg --accept-source-agreements --accept-package-agreements`
-3. **One restart.** Programs installed by winget are only found after Claude Desktop restarts; a new terminal is not
-   enough. Ask the person to quit Claude Desktop completely (Windows: also from the tray), open it again, reopen this
-   same conversation and write "tiếp tục setup". Check step 1 again. If `python` still prints "Python was not found",
-   ask them to turn off the two "python" shortcuts in Windows Settings > Apps > Advanced app settings > App execution
-   aliases, then check again.
+3. **Carry on without a restart.** A fresh winget install is not on PATH until Claude Desktop restarts, so never
+   ask for a restart: call the new program by its full path (see "Programs just installed" below) and go straight on.
 4. **Get the repo** if it is not there yet: `git clone https://github.com/NexGen26-tool/NexgenAgent-Auto.git
    ~/NexgenAgent-Auto` (on Windows that is `C:\Users\<name>\NexgenAgent-Auto`).
 5. **Run the check** from the repo folder: Windows `python setup_check.py`, Mac `./setup.sh`. Fix what it lists and
    run it again; a missing CapCut font or animation is a NOTE, not a blocker (the person picks each once in CapCut).
-6. **Hand over.** On "Setup OK", tell the person: open a NEW session in Claude Desktop > Code, choose the
-   `NexgenAgent-Auto` folder (give the full path), sign in to Negen in the browser pane, and type `/fastlane`. The
-   commands only exist in a session opened in this folder.
+6. **Hand over.** On "Setup OK", tell the person in two steps: open a NEW session in Claude Desktop > Code with the
+   folder `NexgenAgent-Auto` (give the full path), and type `/fastlane`. Nothing else: `/fastlane` opens Negen for
+   them. The commands only exist in a session opened in this folder.
+
+**Programs just installed (Windows).** Until Claude Desktop happens to restart, in this session and in new ones, a
+program winget just installed is not found by name. Use the full path instead and do not ask for a restart:
+- Python: the newest `%LOCALAPPDATA%\Programs\Python\Python3*\python.exe`, in place of `python` everywhere.
+- Git: `C:\Program Files\Git\cmd\git.exe`.
+- ffmpeg: nothing to do; the scripts find it themselves.
+If `python` prints "Python was not found" and no `python.exe` exists there either, Python is not installed: go back to
+step 2. If it still fails after a restart, ask the person to turn off the two "python" shortcuts in Windows Settings >
+Apps > Advanced app settings > App execution aliases.
 
 Updates: `/fastlane-update` pulls the latest version and runs the check again.
 
@@ -53,8 +75,11 @@ Updates: `/fastlane-update` pulls the latest version and runs the check again.
 ## Tools you use
 
 - A browser you can drive: the Claude desktop app's built-in browser, or Claude in Chrome. Negen pages are read
-  with get_page_text; forms are filled by running the routines in `negen/` with the javascript tool: read the file,
-  then run `(<file contents>)(<argument>)` on the right page.
+  with get_page_text; forms are filled by running the routines in `negen/` with the javascript tool. Load each
+  routine once per session instead of pasting it every call: on any Negen page run
+  `localStorage.setItem('fl_<name>', String.raw`<file contents>`)`, then call it with
+  `await (eval('(' + localStorage.getItem('fl_<name>') + ')'))(<argument>)`. Reload it after `/fastlane-update`.
+- `negen/read_storyboard.js` reads one product's storyboard (angle, shots, VO) and its poster id in one call.
 - `negen/fill_batch.js` fills and starts one video batch (inputs documented at the top of the file).
 - `negen/batch_status.js` one line per batch with its state and step counts.
 - `negen/export_batch.js` makes a share link for one batch's videos; `python negen/download_export.py <link>
@@ -78,10 +103,17 @@ if it exists and continue where it stopped.
 "ETW Spry Q4 test" or a campaign name). Never make one up and never default to "Fast lane". It is used for the work
 folder, the CapCut project ("<Mon DD> - <output name>") and the CapCut media folder; save it in `week.json` as
 `"name"`. If a week already has a name, reuse it. Negen batch names keep their own format (below).
+Ask it in one popup together with the first step-1 question:
+- "Đặt tên cho đợt video tuần này?": the names used in earlier weeks (`work/*/week.json`, newest first, up to 3);
+  with none, two neutral patterns such as "<Mon DD> Spry ETW test". The person picks or types; the name is theirs.
+- "Test sản phẩm nào?": "Gợi ý giúp mình các sản phẩm chưa test" (first), "Giống tuần trước" (only when a
+  previous week exists); they type SKUs in "Other".
 
 **1. Plan the groups.** 12 videos = 4 groups: 2 Spry groups + 2 ETW groups. A group is one SKU + one angle +
-three videos (V1, V2, V3) that differ only in hook and delivery, so Meta ad sets can be built per group. Ask which
-SKUs to test (or propose untested ones from Negen Products and let the person choose). Write `week.json`:
+three videos (V1, V2, V3) that differ only in hook and delivery, so Meta ad sets can be built per group. When asked to
+suggest, find untested products in Negen Products and show them as one popup: a multi-select question per store
+("Chọn 2 sản phẩm Spry", "Chọn 2 sản phẩm ETW"), up to 4 candidates each with a one-line reason. Then one popup with
+an angle question per chosen product (2-3 angles each). Write `week.json`:
 `{"week": "...", "name": "<output name>", "groups": [{"store": "etw|spry", "product": "...", "sku": "...", "pid": "...", "angle": "...",
 "storyboard_batch": "", "poster": "", "videos": [{"variant": "V1", "batch_name": "", "batch_id": "", "brief": {},
 "file": ""}, ...]}]}`. Find the product id (`pid`): on a New batch page type the SKU into the product search and
@@ -90,13 +122,22 @@ read the value of the matching `input[name=products]` checkbox.
 **2. Storyboards** (about 5-7 minutes, one batch can hold all 4 products):
 open `/generate/new?skill=8742da5f-3f5e-45aa-8a01-ecc289a697f1&products=<pid>,<pid>,...`
 (skill "Product Storyboard Reference + VO"), Output: Storyboard, 9:16, voice-over off,
-name "<Mon DD> - Storyboards", Start. When done, open each storyboard in Review: read the angle, the 8 panels
-(JOB, DIRECT) and the VO with get_page_text, and take the poster's media id from the Poster tab image
-(`/media/<id>/...`). Product pages: Negen Products > the product > Details.
+name "<Mon DD> - Storyboards", Start. When done, open `/generate/<storyboard batch id>/review` and run
+`read_storyboard.js` once per product (navigate to the Review page again between products); it returns the angle, the
+8 panels (JOB, DIRECT), the VO and the poster id. Only if it returns an error, read the storyboard by hand (Review >
+the storyboard > Poster tab image `/media/<id>/...`) and note the error in `log.md`. Product pages: Negen Products >
+the product > Details.
 
 **3. Briefs** (write them while storyboards or videos run): follow the ad-brief-compiler skill. Three briefs per
-group, V1-V3, same job/proof/offer/CTA and Lines 2-5, a different hook and delivery each. Show the person the
-3-row variant summary per group before launching. Store each brief in `week.json`.
+group, V1-V3, same job/proof/offer/CTA and Lines 2-5, a different hook and delivery each. Write them straight into
+`week.json` and `work/<week>/briefs.md` with the file tools, no throwaway scripts. Do not ask about a draft plan while
+the storyboards run; finish the briefs first.
+
+**The go-ahead (the one stop before spending).** Show, per group, one short table (V1-V3: on-screen hook, hook action,
+delivery) and one line with the shared Lines 2-5, then a single line with the batch names (checked against the naming
+rule by you, not by the person), time and cost. Full shot lists stay in `briefs.md`, linked, not pasted. Then one
+popup with a question per group: "Chạy cả 3 video (Khuyên dùng)", "Sửa hook", "Đổi angle"; a fix they type goes in
+"Other". Start the approved groups while you fix the others.
 
 **4. Video batches** (about 6-8 minutes each; Grok makes 2 parts at a time, so 12 batches take about 30-40 minutes):
 for each brief open `/generate/new?from_batch=<video_template_batch of that store>`, run `fill_batch.js` with

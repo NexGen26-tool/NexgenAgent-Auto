@@ -113,12 +113,22 @@ def link_media(src, folder, name=None):
     return dst
 
 
+def find_ffmpeg():
+    """ffmpeg on PATH, or where winget put it (a fresh winget install is not on PATH until Claude Desktop restarts)."""
+    found = shutil.which("ffmpeg")
+    if found or not WINDOWS: return found
+    winget = os.environ.get("LOCALAPPDATA", HOME + "/AppData/Local") + "/Microsoft/WinGet"
+    hits = glob.glob(winget + "/Links/ffmpeg.exe") + glob.glob(winget + "/Packages/Gyan.FFmpeg*/*/bin/ffmpeg.exe")
+    return hits[0] if hits else None
+
+
 def extract_vo(video, folder):
     """The Negen file has the voice-over mixed in; pull it out as its own audio file."""
     dst = folder + "/" + os.path.splitext(os.path.basename(video))[0] + " - VO.m4a"
     if not os.path.exists(dst):
-        if shutil.which("ffmpeg"):
-            subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", video, "-vn", "-c:a", "copy", dst], check=True)
+        ffmpeg = find_ffmpeg()
+        if ffmpeg:
+            subprocess.run([ffmpeg, "-v", "error", "-y", "-i", video, "-vn", "-c:a", "copy", dst], check=True)
         elif shutil.which("afconvert"):
             subprocess.run(["afconvert", "-f", "m4af", "-d", "aac", "-b", "192000", video, dst], check=True)
         else:
