@@ -21,7 +21,7 @@ on-screen text in the house style, the brand logo, the end animation and the voi
 Paste this into Terminal:
 
 ```bash
-git clone https://github.com/OWNER/NexgenAgent-Auto.git ~/NexgenAgent-Auto && cd ~/NexgenAgent-Auto && ./setup.sh
+git clone https://github.com/NexGen26-tool/NexgenAgent-Auto.git ~/NexgenAgent-Auto && cd ~/NexgenAgent-Auto && ./setup.sh
 ```
 
 `setup.sh` checks the Mac, installs the one Python package it needs (Pillow), and checks CapCut. If it says a font
@@ -30,7 +30,7 @@ or animation is "not downloaded yet": open CapCut, open any project, add a text 
 "Smoke" once. Run `./setup.sh` again until it says Setup OK.
 
 Or let Claude Code do it: open Claude Code anywhere and say
-"Install https://github.com/OWNER/NexgenAgent-Auto into ~/NexgenAgent-Auto and run its setup".
+"Install https://github.com/NexGen26-tool/NexgenAgent-Auto into ~/NexgenAgent-Auto and run its setup".
 
 ## Use it every week
 
