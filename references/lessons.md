@@ -26,3 +26,7 @@
   and adds that music, so videos come out at about 16-17 s.
 - Still by hand: the person sped footage 1.2-1.3x on some and swapped weak shots
   for shots from the sibling V1/V2/V3 video of the same product.
+- Sculptural products (tree bookshelves) drift most in close-ups and macro shots: the trunk turns into a pillar,
+  the bench into a separate table, the tree into a symmetric shelf. Wide room shots stay closest to the product
+  photo. Negen's product match still gave 8/10, so watch every close-up before keeping a video. For these products,
+  keep most scene rows medium or wide and write which part of the product is in frame.
