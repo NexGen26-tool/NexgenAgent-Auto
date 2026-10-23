@@ -108,6 +108,9 @@ Ask it in one popup together with the first step-1 question:
   with none, two neutral patterns such as "<Mon DD> Spry ETW test". The person picks or types; the name is theirs.
 - "Test sản phẩm nào?": "Gợi ý giúp mình các sản phẩm chưa test" (first), "Giống tuần trước" (only when a
   previous week exists); they type SKUs in "Other".
+- "Tên của bạn trong sheet (Name)?" and "Ngày ghi trên tên video?": their creator label (for example "Triết Agent";
+  offer the one from earlier weeks) and the date for the codified names. Save them in `week.json` as
+  `"creator"` and `"date"`. Every finished video is named and logged by `references/naming.md`.
 
 **1. Plan the groups.** 12 videos = 4 groups: 2 Spry groups + 2 ETW groups. A group is one SKU + one angle +
 three videos (V1, V2, V3) that differ only in hook and delivery, so Meta ad sets can be built per group. When asked to
@@ -115,8 +118,9 @@ suggest, find untested products in Negen Products and show them as one popup: a 
 ("Chọn 2 sản phẩm Spry", "Chọn 2 sản phẩm ETW"), up to 4 candidates each with a one-line reason. Then one popup with
 an angle question per chosen product (2-3 angles each). Write `week.json`:
 `{"week": "...", "name": "<output name>", "groups": [{"store": "etw|spry", "product": "...", "sku": "...", "pid": "...", "angle": "...",
-"storyboard_batch": "", "poster": "", "videos": [{"variant": "V1", "batch_name": "", "batch_id": "", "brief": {},
-"file": ""}, ...]}]}`. Find the product id (`pid`): on a New batch page type the SKU into the product search and
+"persona": "", "storyboard_batch": "", "poster": "", "videos": [{"variant": "V1", "batch_name": "", "batch_id": "",
+"brief": {}, "awareness": "TOF|MOF|BOF", "hook_type": "", "code": "", "name": "", "file": ""}, ...]}]}`. Ask the
+persona code with the angle question (the sheet's Persona dropdown, e.g. TBS-01). Find the product id (`pid`): on a New batch page type the SKU into the product search and
 read the value of the matching `input[name=products]` checkbox.
 
 **2. Storyboards** (about 5-7 minutes, one batch can hold all 4 products):
@@ -148,12 +152,12 @@ for each brief open `/generate/new?from_batch=<video_template_batch of that stor
 (PART A and PART B start frames). Paused for Grok credits or a ChatGPT sign-out: tell the person once, stop.
 
 **6. Collect.** For each finished batch: on `/exports` run `export_batch.js` with the batch id, then
-`python negen/download_export.py "<link>" "work/<week>/videos/NN_<Store>_<Product>_<Angle>_Vn.mp4"`
-(NN = 01-12 in group order). Note the picked part and its scores in `week.json`.
+`python negen/download_export.py "<link>" "work/<week>/videos/<file name>.mp4"`, the file name being the video's
+codified name from `references/naming.md` (date as DD-MM-YYYY). Note the picked part and its scores in `week.json`.
 
 **7. CapCut.** Write `work/<week>/capcut.json` (format: `capcut/example.json`) with `"project": "<Mon DD> - <output
 name>"` and `"media": "<Mon DD> <output name>"` (ask for the name if `week.json` has none), one timeline per video,
-named "NN <Product> <Angle> Vn", turning each brief's on-screen lines into the house edit:
+named by the codified name without the date, turning each brief's on-screen lines into the house edit:
 - `line1` [big, small, accent]: the hook split into a short subject (2-4 words), the linking words, and the last
   1-3 words that carry the tension (shown in orange italic). No trailing period; a "?" is fine.
   "Big empty wall?" became ["Big empty wall", "leaves you feeling ", "unresolved?"].
@@ -177,7 +181,9 @@ downloaded, ask the person to use it once in CapCut (Audio > search its name) an
 The first time this runs on a Windows computer, say that the Windows build is new and ask them to check the whole
 first timeline carefully.
 
-**8. Log.** Add the times (start/finish of each step) and any problem to `work/<week>/log.md`.
+**8. Log.** Write `work/<week>/sheet-rows.tsv` (one paste-ready row per video in the sheet's column order) and the
+fields table in `work/<week>/log.md`, both as `references/naming.md` describes; give the person the TSV path. Add the
+times (start/finish of each step) and any problem to `log.md` too.
 
 ## Background
 
