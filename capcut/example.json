@@ -5,13 +5,75 @@
     {
       "name": "01 Wall Art Focal Wall V1",
       "brand": "etw",
+      "group": "SILDTTRWA085 Focal Wall",
       "video": "work/2026-10-27/videos/01_ETW_WallArt_FocalWall_V1.mp4",
-      "line1": ["Big empty wall", "leaves you feeling ", "unresolved?"],
-      "line2": ["Give it a ", "Focal point"],
-      "line3": ["Solid wood", "Real depth."],
+      "line1": [
+        "Big empty wall",
+        "leaves you feeling ",
+        "unresolved?"
+      ],
+      "line2": [
+        "Give it a ",
+        "Focal point"
+      ],
+      "line3": [
+        "Solid wood",
+        "Real depth."
+      ],
       "line4": "It casts its own shadow",
-      "line5": ["Every piece is", "one of a kind"],
-      "cta": "Explore the Collection"
+      "line5": [
+        "Every piece is",
+        "one of a kind"
+      ],
+      "cta": "Explore the Collection",
+      "edit": {
+        "times": {
+          "line1": [
+            0,
+            2.9
+          ],
+          "line2": 2.9,
+          "line3": [
+            6.4,
+            9.0
+          ],
+          "line4": [
+            9.0,
+            12.5
+          ],
+          "line5": [
+            12.5,
+            15.8
+          ],
+          "cta": 15.8
+        },
+        "transitions": [
+          2.9
+        ],
+        "cuts": [
+          [
+            0.0,
+            "01_ETW_WallArt_FocalWall_V1.mp4",
+            0.0
+          ],
+          [
+            2.9,
+            "01_ETW_WallArt_FocalWall_V1.mp4",
+            8.6,
+            1.15
+          ],
+          [
+            5.0,
+            "01_ETW_WallArt_FocalWall_V1 - spare.mp4",
+            3.2
+          ],
+          [
+            9.0,
+            "01_ETW_WallArt_FocalWall_V1.mp4",
+            12.1
+          ]
+        ]
+      }
     }
   ]
 }

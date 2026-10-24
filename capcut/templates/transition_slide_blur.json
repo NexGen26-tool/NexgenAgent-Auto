@@ -1,0 +1,20 @@
+{
+ "id": "CA709FA2-0EAF-420b-BF9F-8EBA986FAD50",
+ "type": "transition",
+ "name": "Slide Blur",
+ "effect_id": "7689810243240463634",
+ "resource_id": "7689810243240463634",
+ "third_resource_id": "0",
+ "source_platform": 1,
+ "path": "",
+ "duration": 266666,
+ "is_overlap": true,
+ "platform": "all",
+ "category_id": "25835",
+ "category_name": "remen",
+ "request_id": "",
+ "is_ai_transition": false,
+ "video_path": "",
+ "task_id": "",
+ "path_rel": "7689810243240463634/3aff06309f387c8381bd1341a5645d96"
+}

@@ -12,6 +12,7 @@ words, the footage and the logo change, so every timeline opens looking like the
 
   python capcut/build_project.py work/<week>/capcut.json            # dry run, prints what it would build
   python capcut/build_project.py work/<week>/capcut.json --save     # writes the project (CapCut must be closed)
+  python capcut/build_project.py work/<week>/capcut.json --replace  # rebuild these timelines inside the existing project
   python capcut/build_project.py --check                            # can this computer's CapCut take built projects?
 
 On a Mac use python3. Windows needs ffmpeg (setup_check.py says how to install it).
@@ -21,6 +22,7 @@ Config format: see capcut/example.json.
 import json, os, sys, copy, shutil, subprocess, time, re, uuid, struct, glob
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+for _s in (sys.stdout, sys.stderr): _s.reconfigure(encoding="utf-8", errors="replace")  # names can be Vietnamese
 ROOT = os.path.dirname(HERE)
 WINDOWS = os.name == "nt"
 HOME = os.path.expanduser("~").replace("\\", "/")  # CapCut writes paths with forward slashes on both systems
@@ -179,7 +181,7 @@ def speech_spans(path, dur):
     ffmpeg = find_ffmpeg()
     if not ffmpeg: return [(0.0, dur)]
     err = subprocess.run([ffmpeg, "-hide_banner", "-i", path, "-af", "silencedetect=n=-35dB:d=%s" % PAUSE, "-f", "null", "-"],
-                         capture_output=True, text=True).stderr
+                         capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
     starts = [float(x) for x in re.findall(r"silence_start: (-?[\d.]+)", err)]
     ends = [float(x) for x in re.findall(r"silence_end: ([\d.]+)", err)]
     pad, spans, pos = GAP / 2, [], 0.0
@@ -232,8 +234,148 @@ def add_music(d, music):
     return True
 
 
+MIN_PIECE = 0.5   # clean footage shorter than this is not used
+REPLACE_MIN = 1.0 # a bad stretch this long or longer is replaced; a shorter one (a blend) is simply cut out
+
+
+def clean_parts(name, dur, shots):
+    """The usable stretches of one video, from its shot check: everything minus the bad stretches, which are
+    widened to a hard cut within 0.3 s."""
+    e = shots[name]; cut_at = e.get("cuts", [])
+    def snap(t, side):
+        near = [c for c in cut_at if abs(c - t) <= 0.3 and (c <= t if side < 0 else c >= t)]
+        return min(near, key=lambda c: abs(c - t)) if near else t
+    bad = sorted((max(0.0, snap(a, -1)), min(dur, snap(b, 1))) for a, b, *_ in e["bad"])
+    parts, pos = [], 0.0
+    for a, b in bad:
+        if a - pos >= MIN_PIECE: parts.append((pos, a))
+        pos = max(pos, b)
+    if dur - pos >= MIN_PIECE: parts.append((pos, dur))
+    return parts, bad
+
+
+def plan_footage(main, total, shots, pool):
+    """[(file, source start, length)] in seconds filling 0..total: the main video without its bad stretches. A bad
+    stretch of REPLACE_MIN or more is filled with clean, unused footage from the pool (the same video's spare first,
+    at the same moment when that is clean, then the group's other videos); a shorter one is cut and the main video
+    runs on. Returns the pieces and a note per replacement."""
+    name = os.path.basename(main); dur = mp4_info(main)[0]
+    parts, bad = clean_parts(name, dur, shots)
+    avail = []  # [(priority, file, start, end)] clean pool footage, the first 0.3 s of each stretch skipped
+    for i, f in enumerate(pool):
+        for a, b in clean_parts(os.path.basename(f), mp4_info(f)[0], shots)[0]:
+            if b - a - 0.3 >= MIN_PIECE: avail.append([i, f, a + 0.3, b])
+    pieces, notes, t = [], [], 0.0
+
+    def fill(need, at):
+        got = []
+        while need >= MIN_PIECE and avail:
+            same = [x for x in avail if x[0] == 0 and x[2] <= at and x[3] >= at + need]  # the spare, same moment
+            long = sorted((x for x in avail if x[3] - x[2] >= need), key=lambda x: x[0])
+            x = same[0] if same else long[0] if long else max(avail, key=lambda x: x[3] - x[2])
+            a = at if same else x[2]; take = min(need, x[3] - a)
+            got.append((x[1], a, take)); need -= take
+            avail.remove(x)  # each stretch of pool footage is used once
+            if a - x[2] >= MIN_PIECE: avail.append([x[0], x[1], x[2], a])
+            if x[3] - (a + take) >= MIN_PIECE: avail.append([x[0], x[1], a + take, x[3]])
+        return got
+
+    for kind, a, b in sorted([("ok", a, b) for a, b in parts] + [("bad", a, b) for a, b in bad], key=lambda x: x[1]):
+        if t >= total - 0.01: break
+        if kind == "ok":
+            take = min(b - a, total - t); pieces.append((main, a, take)); t += take
+        elif b - a >= REPLACE_MIN:
+            got = fill(min(b - a, total - t), a)
+            for f, s, l in got: pieces.append((f, s, l)); t += l
+            notes.append("%.1f-%.1f s replaced from %s" % (a, b, ", ".join(sorted({os.path.basename(f) for f, _, _ in got})) or "nothing (no clean footage left)"))
+    short = total - t
+    if 0.01 < short < REPLACE_MIN and pieces and pieces[-1][2] / (pieces[-1][2] + short) >= 0.8:
+        f, s, l = pieces[-1]; pieces[-1] = (f, s, l, l + short)  # the main video ran a little short: slow its last shot
+    elif short >= 0.05:  # it ran out: finish with pool footage
+        for f, s, l in fill(short, 0): pieces.append((f, s, l)); t += l
+    return [p if len(p) == 4 else p + (p[2],) for p in pieces], notes
+
+
+def lay_footage(d, r, pieces, media_dir):
+    """Replace the single footage segment with one segment per piece; Smoke out stays on the last one."""
+    v = mat(d, "videos", r["video"]); s = seg_of(d, v["id"]); track = next(t for t in d["tracks"] if s in t["segments"])
+    anim = {a["id"] for a in d["materials"]["material_animations"]}
+    mats_by_path, segs, at = {v["path"]: v}, [], 0
+    for i, (f, start, length, shown) in enumerate(pieces):
+        f = link_media(f, media_dir)
+        if f not in mats_by_path:
+            m = copy.deepcopy(v); m["id"] = uid(); dur_s, w, h = mp4_info(f)
+            m.update({"path": f, "material_name": os.path.basename(f), "duration": us(dur_s), "width": w, "height": h})
+            d["materials"]["videos"].append(m); mats_by_path[f] = m
+        n = copy.deepcopy(s); n["id"] = uid(); n["material_id"] = mats_by_path[f]["id"]; refs = []
+        last = i == len(pieces) - 1
+        for ref in s["extra_material_refs"]:
+            if ref in anim and not last: continue
+            k, x = next((k, x) for k, xs in d["materials"].items() if isinstance(xs, list) for x in xs if isinstance(x, dict) and x.get("id") == ref)
+            c = copy.deepcopy(x); c["id"] = uid(); d["materials"][k].append(c); refs.append(c["id"])
+            if k == "speeds": c["speed"] = length / shown
+            if ref in anim:
+                for an in c["animations"]:
+                    if an["type"] == "out": an["start"] = us(shown) - an["duration"]
+        n["extra_material_refs"] = refs; n["speed"] = length / shown
+        n["source_timerange"] = {"start": us(start), "duration": us(length)}
+        n["target_timerange"] = {"start": at, "duration": us(shown)}; at += us(shown)
+        segs.append(n)
+    last = segs[-1]; shown_end = d["duration"] - last["target_timerange"]["start"]  # no rounding gap at the end
+    last["source_timerange"]["duration"] = int(shown_end * last["speed"]); last["target_timerange"]["duration"] = shown_end
+    track["segments"] = segs
+    return segs
+
+
+def role_seg(d, r, role):  # the title clip's segment points at its draft through extra_material_refs
+    return next(s for t in d["tracks"] for s in t["segments"] if r[role] == s["material_id"] or r[role] in s["extra_material_refs"])
+
+
+def place_times(d, r, times, total):
+    """An edit plan's text times (seconds): line1/line3/line4/line5 [start, end], line2 (the animated title) and cta
+    a start. Line 3's right half comes in 0.9 s after the left one, as in the house edit."""
+    def place(role, a, b): role_seg(d, r, role)["target_timerange"] = {"start": us(a), "duration": us(b) - us(a)}
+    place("line1", *times["line1"])
+    role_seg(d, r, "compound")["target_timerange"]["start"] = us(times["line2"])
+    a3, e3 = times["line3"]; place("line3a", a3, e3); place("line3b", min(a3 + 0.9, e3 - 0.8), e3)
+    place("line4", *times["line4"]); place("line5", *times["line5"]); place("cta", times["cta"], total / US)
+
+
+def cuts_to_pieces(cuts, total, folder):
+    """An edit plan's cut list [[timeline second, video, source second, zoom?], ...] -> pieces and zooms. A video is
+    a file name in the timeline's videos folder or its spare folder. A shot that runs past the end of its file is
+    slowed to fit."""
+    def find(v):
+        for p in (v, os.path.join(folder, v), os.path.join(folder, "spare", v)):
+            for q in (p, p + ".mp4"):
+                if os.path.isfile(q): return q
+        raise SystemExit("Edit plan: video not found: " + v)
+    cuts = sorted(cuts, key=lambda c: c[0]); pieces, zooms = [], []
+    for i, c in enumerate(cuts):
+        end = cuts[i + 1][0] if i + 1 < len(cuts) else total
+        f = find(c[1]); shown = end - c[0]; src = min(shown, mp4_info(f)[0] - c[2])
+        pieces.append((f, c[2], src, shown)); zooms.append(c[3] if len(c) > 3 else 1.0)
+    return pieces, zooms
+
+
+def add_transitions(d, segs, at_times, zooms):
+    """A Slide Blur into the shot that starts at each given time (on the shot before it, as CapCut keeps it), and the
+    edit plan's punch-in zoom on each shot. Returns the times that got no transition (effect not downloaded)."""
+    for s, z in zip(segs, zooms):
+        if z != 1.0: s["clip"]["scale"] = {"x": z, "y": z}; s["uniform_scale"] = {"on": True, "value": 1.0}
+    tp = json.load(open(HERE + "/templates/transition_slide_blur.json", encoding="utf-8"))
+    path = EFFECTS + "/" + tp.pop("path_rel")
+    missing = []
+    for t in at_times:
+        prev = next((s for s in segs if abs(s["target_timerange"]["start"] + s["target_timerange"]["duration"] - us(t)) < us(0.06)), None)
+        if prev is None or not os.path.exists(path): missing.append(t); continue
+        m = copy.deepcopy(tp); m["id"] = uid(); m["path"] = path
+        d["materials"].setdefault("transitions", []).append(m); prev["extra_material_refs"].append(m["id"])
+    return missing
+
+
 class Timeline:
-    def __init__(self, cfg, media_dir):
+    def __init__(self, cfg, media_dir, shots=None, pool=()):
         self.name = cfg["name"]
         brand = BRANDS[cfg["brand"]]
         video = link_media(os.path.expanduser(cfg["video"]), media_dir)
@@ -287,6 +429,9 @@ class Timeline:
 
         # Line 4, Line 5 (second line bigger, yellow), CTA
         set_text(mat(d, "texts", r["line4"]), [(cfg["line4"], 0)])
+        s4 = seg_of(d, r["line4"]); sc = s4["clip"]["scale"]["x"]  # a long Line 4 shrinks to the house width
+        if width(cfg["line4"], 7, sc) > 1.8:
+            sc *= 1.8 / width(cfg["line4"], 7, sc); s4["clip"]["scale"] = {"x": sc, "y": sc}; s4["uniform_scale"]["value"] = sc
         p, q = cfg["line5"]; set_text(mat(d, "texts", r["line5"]), [(p + "\n", 0), (q, 1)])
         set_text(mat(d, "texts", r["cta"]), [(cfg.get("cta") or brand["cta"], 0)])
 
@@ -296,6 +441,19 @@ class Timeline:
         joints, at = [], 0  # where the shortened pauses sit on the timeline
         for a, b in spans[:-1]: at += us((b - a) / VO_SPEED); joints.append(at)
         self.retime(d, r, total, joints)
+        # shot check: bad stretches (shots.json) cut out or replaced with clean footage from the spare / the group
+        self.notes = None
+        src = os.path.expanduser(cfg["video"]); ed = cfg.get("edit") or {}
+        if ed.get("times"): place_times(d, r, ed["times"], total)
+        if ed.get("cuts"):  # Claude's edit plan: footage chosen per sentence of the voice-over
+            pieces, zooms = cuts_to_pieces(ed["cuts"], total / US, os.path.dirname(src))
+            segs = lay_footage(d, r, pieces, media_dir)
+            missing = add_transitions(d, segs, ed.get("transitions", []), zooms)
+            self.notes = ["edit plan: %d shots, %d transitions" % (len(pieces), len(ed.get("transitions", [])) - len(missing))]
+            if missing: self.notes.append("transition Slide Blur not downloaded in CapCut, left out at %s s" % missing)
+        elif shots and shots.get(os.path.basename(src), {}).get("checked"):
+            pieces, self.notes = plan_footage(src, total / US, shots, pool)
+            lay_footage(d, r, pieces, media_dir)
         add_vo(d, self.vo, spans)
         self.music = add_music(d, brand["music"]) if brand.get("music") else None
         self.d = d
@@ -337,6 +495,33 @@ class Timeline:
         miss = [r for t in d["tracks"] for s in t["segments"] for r in [s["material_id"]] + s["extra_material_refs"] if r not in allm]
         media = [m["path"] for m in d["materials"]["videos"] + d["materials"]["audios"] if m["path"]]  # the title clip has no file
         return len(miss), all(os.path.exists(p) for p in media)
+
+
+def replace_in(project, tls, backup_root):
+    """Put the built timelines into an existing project in place of the timelines with the same names (the others,
+    and the project itself, stay as they are). Each replaced timeline folder is backed up first."""
+    if capcut_running(): raise SystemExit("CapCut is open. Quit it first, or it overwrites the change.")
+    out = DRAFTS + "/" + project
+    lay = json.load(open(out + "/timeline_layout.json", encoding="utf-8"))["dockItems"][0]
+    by_name = dict(zip(lay["timelineNames"], lay["timelineIds"]))
+    name = "draft_content.json" if os.path.exists(out + "/draft_content.json") else "draft_info.json"
+    backup = os.path.join(backup_root, "capcut-backup", time.strftime("%Y%m%d-%H%M%S"))  # short path: Windows limit
+    for t in tls:
+        tid = by_name.get(t.name)
+        if not tid: raise SystemExit("No timeline named %r in %s" % (t.name, project))
+        folder = out + "/Timelines/" + tid
+        shutil.copytree(folder, os.path.join(backup, tid))
+        t.d["id"] = tid; raw = json.dumps(t.d, ensure_ascii=False)
+        for p in (name, name + ".bak", "template-2.tmp"): open(folder + "/" + p, "w", encoding="utf-8").write(raw)
+        sub_id, inner = t.compound; sub = out + "/subdraft/" + sub_id
+        os.makedirs(sub, exist_ok=True); shutil.copy(HERE + "/templates/compound/draft_cover.jpg", sub)
+        open(sub + "/draft_content.json", "w", encoding="utf-8").write(json.dumps(inner, ensure_ascii=False))
+        sc = json.load(open(HERE + "/templates/compound/sub_draft_config.json", encoding="utf-8")); sc.update({"id": sub_id, "project_id": sub_id})
+        open(sub + "/sub_draft_config.json", "w", encoding="utf-8").write(json.dumps(sc))
+        if lay["timelineIds"][0] == tid:  # the project's main copy mirrors its first timeline
+            for p in (name, name + ".bak", "template-2.tmp"): open(out + "/" + p, "w", encoding="utf-8").write(raw)
+        print("replaced:", t.name)
+    print("backup of the old timelines:", os.path.normpath(backup))
 
 
 def save(project, tls):
@@ -401,12 +586,29 @@ if __name__ == "__main__":
     if not cfg.get("project") or "<" in cfg["project"] or "<" in cfg.get("media", ""):
         raise SystemExit("Set the project name first: ask the person what to call this week's outputs.")
     media_dir = MEDIA + "/" + cfg.get("media", cfg["project"])
-    tls = [Timeline(c, media_dir) for c in cfg["timelines"]]
+    jpath = os.path.join(os.path.dirname(os.path.abspath(sys.argv[1])), "shots.json")
+    shots = json.load(open(jpath, encoding="utf-8")) if os.path.exists(jpath) else {}
+
+    def spare(video):
+        p = os.path.join(os.path.dirname(video), "spare", os.path.splitext(os.path.basename(video))[0] + " - spare.mp4")
+        return [p] if os.path.exists(p) else []
+
+    def pool(c):  # own spare first, then the other videos (and spares) of the same group; checked footage only
+        v = os.path.expanduser(c["video"]); out = spare(v)
+        for o in cfg["timelines"]:
+            if o is not c and c.get("group") and o.get("group") == c["group"]:
+                ov = os.path.expanduser(o["video"]); out += [ov] + spare(ov)
+        return [p for p in out if shots.get(os.path.basename(p), {}).get("checked")]
+
+    tls = [Timeline(c, media_dir, shots, pool(c)) for c in cfg["timelines"]]
     for t in tls:
         miss, ok = t.check()
         print("%-34s %.1fs | VO %s | music %s | missing refs %d | media ok %s" % (
             t.name, t.dur / US, os.path.basename(t.vo), {None: "-", True: "yes", False: "NOT DOWNLOADED"}[t.music], miss, ok))
+        if t.notes is None: print("    shot check: not done for this video, footage used as it is")
+        for n in t.notes or []: print("    shot check:", n)
     gone = sorted({BRANDS[c["brand"]]["music"]["name"] for c, t in zip(cfg["timelines"], tls) if t.music is False})
     if gone: print("NOTE: music not in CapCut yet, so left out: %s. Use it once in CapCut (Audio > search the name), "
                    "then build again." % ", ".join(gone))
     if "--save" in sys.argv: save(cfg["project"], tls)
+    if "--replace" in sys.argv: replace_in(cfg["project"], tls, os.path.dirname(os.path.abspath(sys.argv[1])))

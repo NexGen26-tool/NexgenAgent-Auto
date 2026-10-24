@@ -85,6 +85,7 @@ Updates: `/fastlane-update` pulls the latest version and runs the check again.
 - `negen/export_batch.js` makes a share link for one batch's videos; `python negen/download_export.py <link>
   <out.mp4>` downloads it and keeps the better of the two videos (AI score + product match). The browser blocks
   downloads, so always use this route.
+- `capcut/shot_sheet.py work/<week>` makes the shot-check sheets and `shots.json` (step 6b).
 - `.claude/skills/ad-brief-compiler/SKILL.md` turns a storyboard + product facts into three Ad briefs (V1-V3).
 - `capcut/build_project.py <config> [--save]` builds the CapCut project in the house edit (CapCut must be closed);
   `--check` says whether this computer's CapCut can take built projects. `capcut/text_sheet.py <config>` is the
@@ -133,19 +134,22 @@ the storyboard > Poster tab image `/media/<id>/...`) and note the error in `log.
 the product > Details.
 
 **3. Briefs** (write them while storyboards or videos run): follow the ad-brief-compiler skill. Three briefs per
-group, V1-V3, same job/proof/offer/CTA and Lines 2-5, a different hook and delivery each. Write them straight into
+group, V1-V3, same job/proof/offer/CTA and Lines 2-5, a different hook and delivery each. Each brief carries its own
+voice-over script (`"vo"`, 36-42 words, sentence n says on-screen Line n, then the CTA) and scene rows written from
+those sentences, A02 opening the punchline on a hard cut. Write them straight into
 `week.json` and `work/<week>/briefs.md` with the file tools, no throwaway scripts. Do not ask about a draft plan while
 the storyboards run; finish the briefs first.
 
 **The go-ahead (the one stop before spending).** Show, per group, one short table (V1-V3: on-screen hook, hook action,
-delivery) and one line with the shared Lines 2-5, then a single line with the batch names (checked against the naming
+delivery) and one line with the shared Lines 2-5 and the shared part of the voice-over, then a single line with the batch names (checked against the naming
 rule by you, not by the person), time and cost. Full shot lists stay in `briefs.md`, linked, not pasted. Then one
 popup with a question per group: "Chạy cả 3 video (Khuyên dùng)", "Sửa hook", "Đổi angle"; a fix they type goes in
 "Other". Start the approved groups while you fix the others.
 
 **4. Video batches** (about 6-8 minutes each; Grok makes 2 parts at a time, so 12 batches take about 30-40 minutes):
 for each brief open `/generate/new?from_batch=<video_template_batch of that store>`, run `fill_batch.js` with
-`start: false`, check the log says `READY=true` and the name is right, then run it again with `start: true`
+`start: false`, the brief's `vo` and `direction` = the text block of `references/video-direction.md`; check the log says
+`vo=text fit=pad`, `direction ok`, `READY=true` and the name is right, then run it again with `start: true`
 (or start with the Start button). Record the batch id from the Batches list (`batch_status.js` prints ids).
 
 **5. Watch.** Run `batch_status.js` on `/generate` with the week's name prefix. Two videos come out per batch
@@ -154,10 +158,26 @@ for each brief open `/generate/new?from_batch=<video_template_batch of that stor
 **6. Collect.** For each finished batch: on `/exports` run `export_batch.js` with the batch id, then
 `python negen/download_export.py "<link>" "work/<week>/videos/<file name>.mp4"`, the file name being the video's
 codified name from `references/naming.md` (date as DD-MM-YYYY). Note the picked part and its scores in `week.json`.
+The batch's other video is kept as spare footage in `videos/spare/`.
+
+**6b. Shot check** (about 3 minutes for the sheets, then a look at each). Run `python capcut/shot_sheet.py
+work/<week>`: one sheet per video and spare in `work/<week>/shots/` (a frame every 0.5 s, cuts in yellow) and
+`work/<week>/shots.json`. Open each sheet next to the product photo and write every bad stretch into that video's
+`"bad"` list as `[start, end, "why"]`, then set `"checked": true`. Bad means:
+- an arm or hand with no body that could hold it: rising from below the frame to wall height, out of the wall, the
+  product or a window, a hand lying on the floor;
+- product drift: a different shape, orientation, colour, number of parts or front (a tree shelf turns into a pillar
+  or a symmetric tree, a wide panel turns tall, a carved front turns flat, a vanity splits into two boxes);
+- hallucination: objects appearing or vanishing (glass shelves, a person in a mirror), people outside a window,
+  a jump from day to evening;
+- a blend: two shots overlapping (about 0.5 s at most scene changes).
+Mark the whole stretch, frame to frame; judge the spares too, they are the replacement footage. A video with
+`"checked": false` is used as it is. Do not ask the person about each stretch; list what was cut in `log.md`.
 
 **7. CapCut.** Write `work/<week>/capcut.json` (format: `capcut/example.json`) with `"project": "<Mon DD> - <output
 name>"` and `"media": "<Mon DD> <output name>"` (ask for the name if `week.json` has none), one timeline per video,
-named by the codified name without the date, turning each brief's on-screen lines into the house edit:
+named by the codified name without the date, with `"group": "<SKU> <angle>"` (the V1-V3 of a group share footage
+for replacements), turning each brief's on-screen lines into the house edit:
 - `line1` [big, small, accent]: the hook split into a short subject (2-4 words), the linking words, and the last
   1-3 words that carry the tension (shown in orange italic). No trailing period; a "?" is fine.
   "Big empty wall?" became ["Big empty wall", "leaves you feeling ", "unresolved?"].
@@ -176,7 +196,21 @@ Cmd+Q; Windows: close it and quit it from the tray), run `python capcut/build_pr
 normal speed), and finish by hand. Every timeline has the voice-over on its own track and the clip's sound off, is
 cut to the voice-over (pauses shortened, voice at 1.08x, text fitted to the speech, CTA for 1.5 s after the last
 word, about 16-17 s in all) and has the brand's music bed from `brand/brands.json`. If the build says a track is not
-downloaded, ask the person to use it once in CapCut (Audio > search its name) and build again. Rule changes:
+downloaded, ask the person to use it once in CapCut (Audio > search its name) and build again. The build reads
+`shots.json`: a bad stretch of 1 s or more is replaced with clean footage (the video's spare first, then the group's
+other videos), a shorter one is cut out; it prints each replacement.
+**Edit plan (text, voice and footage together).** The voice-over script is the brief's `vo` (for an older batch made
+with "AI writes it", read it in Negen: Review > the video > the text under "Voice-over v1"; match the video by file
+size if a batch has two). Give each timeline an `"edit"` block (example in `capcut/example.json`):
+- the on-screen lines echo the voice-over's own words, in the house-edit format; facts only from the product page;
+- `"times"`: each line on screen while the voice says it (sentence ends = the voice pauses on the new timeline);
+  Line 1 is the first sentence, Line 2's animated title (the punchline) starts with the second;
+- `"cuts"` `[[timeline s, video, source s, zoom?], ...]`: for each sentence a clean shot that shows what is said
+  (shelves when it says shelves), from the video, its spare or the group's other videos, never a bad stretch;
+  the punchline starts on a hard cut to a different shot than the opening, zoom 1.15;
+- `"transitions"`: the punchline's start time (a Slide Blur into it).
+Build into the existing project with `--replace` when the person has already edited other timelines in it (old
+timelines are backed up in `work/<week>/capcut-backup/`). Rule changes:
 `references/rule-changes.md`.
 The first time this runs on a Windows computer, say that the Windows build is new and ask them to check the whole
 first timeline carefully.

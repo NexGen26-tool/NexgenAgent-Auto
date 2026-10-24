@@ -26,3 +26,17 @@
   and adds that music, so videos come out at about 16-17 s.
 - Still by hand: the person sped footage 1.2-1.3x on some and swapped weak shots
   for shots from the sibling V1/V2/V3 video of the same product.
+- Sculptural products (tree bookshelves) drift most in close-ups and macro shots: the trunk turns into a pillar,
+  the bench into a separate table, the tree into a symmetric shelf. Wide room shots stay closest to the product
+  photo. Negen's product match still gave 8/10, so watch every close-up before keeping a video. For these products,
+  keep most scene rows medium or wide and write which part of the product is in frame.
+- Arms from nowhere come from hand-only briefs: "ACTOR A's right hand" with no body. Worst on wall-mounted products
+  (two hands rising from below to hang wall art). Briefs now place the body for every hand; the shot check cuts any
+  that still appear.
+- Grok blends two shots for about 0.5 s at most scene changes inside a part, and can jump from day to evening.
+- Boxy products (sideboards) keep their shape; organic ones (tree shelves, live-edge wall art) drift in close-ups.
+- Negen's "AI writes it" voice-over does not read the brief's on-screen lines, so text and voice drift apart. Write
+  the on-screen lines from the voice-over script and time them to it (edit plan, CLAUDE.md step 7).
+- A punchline over the continuing opening shot lands softly; start it on a hard cut with a Slide Blur and a punch-in.
+- Negen's voice-over "Write my own" + "Keep speed" (fit=pad) plays our script at natural speed: 34 words = 13.6 s.
+  With our own script the on-screen text, the voice and the scenes come from one source.
