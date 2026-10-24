@@ -287,9 +287,12 @@ def plan_footage(main, total, shots, pool):
             got = fill(min(b - a, total - t), a)
             for f, s, l in got: pieces.append((f, s, l)); t += l
             notes.append("%.1f-%.1f s replaced from %s" % (a, b, ", ".join(sorted({os.path.basename(f) for f, _, _ in got})) or "nothing (no clean footage left)"))
-    if total - t >= 0.05:  # the main video ran out: finish with pool footage
-        for f, s, l in fill(total - t, 0): pieces.append((f, s, l)); t += l
-    return pieces, notes
+    short = total - t
+    if 0.01 < short < REPLACE_MIN and pieces and pieces[-1][2] / (pieces[-1][2] + short) >= 0.8:
+        f, s, l = pieces[-1]; pieces[-1] = (f, s, l, l + short)  # the main video ran a little short: slow its last shot
+    elif short >= 0.05:  # it ran out: finish with pool footage
+        for f, s, l in fill(short, 0): pieces.append((f, s, l)); t += l
+    return [p if len(p) == 4 else p + (p[2],) for p in pieces], notes
 
 
 def lay_footage(d, r, pieces, media_dir):
@@ -297,7 +300,7 @@ def lay_footage(d, r, pieces, media_dir):
     v = mat(d, "videos", r["video"]); s = seg_of(d, v["id"]); track = next(t for t in d["tracks"] if s in t["segments"])
     anim = {a["id"] for a in d["materials"]["material_animations"]}
     mats_by_path, segs, at = {v["path"]: v}, [], 0
-    for i, (f, start, length) in enumerate(pieces):
+    for i, (f, start, length, shown) in enumerate(pieces):
         f = link_media(f, media_dir)
         if f not in mats_by_path:
             m = copy.deepcopy(v); m["id"] = uid(); dur_s, w, h = mp4_info(f)
@@ -309,15 +312,16 @@ def lay_footage(d, r, pieces, media_dir):
             if ref in anim and not last: continue
             k, x = next((k, x) for k, xs in d["materials"].items() if isinstance(xs, list) for x in xs if isinstance(x, dict) and x.get("id") == ref)
             c = copy.deepcopy(x); c["id"] = uid(); d["materials"][k].append(c); refs.append(c["id"])
+            if k == "speeds": c["speed"] = length / shown
             if ref in anim:
                 for an in c["animations"]:
-                    if an["type"] == "out": an["start"] = us(length) - an["duration"]
-        n["extra_material_refs"] = refs
+                    if an["type"] == "out": an["start"] = us(shown) - an["duration"]
+        n["extra_material_refs"] = refs; n["speed"] = length / shown
         n["source_timerange"] = {"start": us(start), "duration": us(length)}
-        n["target_timerange"] = {"start": at, "duration": us(length)}; at += us(length)
+        n["target_timerange"] = {"start": at, "duration": us(shown)}; at += us(shown)
         segs.append(n)
-    segs[-1]["target_timerange"]["duration"] = d["duration"] - segs[-1]["target_timerange"]["start"]  # no rounding gap
-    segs[-1]["source_timerange"]["duration"] = segs[-1]["target_timerange"]["duration"]
+    last = segs[-1]; shown_end = d["duration"] - last["target_timerange"]["start"]  # no rounding gap at the end
+    last["source_timerange"]["duration"] = int(shown_end * last["speed"]); last["target_timerange"]["duration"] = shown_end
     track["segments"] = segs
 
 
