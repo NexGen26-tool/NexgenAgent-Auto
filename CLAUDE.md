@@ -134,19 +134,22 @@ the storyboard > Poster tab image `/media/<id>/...`) and note the error in `log.
 the product > Details.
 
 **3. Briefs** (write them while storyboards or videos run): follow the ad-brief-compiler skill. Three briefs per
-group, V1-V3, same job/proof/offer/CTA and Lines 2-5, a different hook and delivery each. Write them straight into
+group, V1-V3, same job/proof/offer/CTA and Lines 2-5, a different hook and delivery each. Each brief carries its own
+voice-over script (`"vo"`, 36-42 words, sentence n says on-screen Line n, then the CTA) and scene rows written from
+those sentences, A02 opening the punchline on a hard cut. Write them straight into
 `week.json` and `work/<week>/briefs.md` with the file tools, no throwaway scripts. Do not ask about a draft plan while
 the storyboards run; finish the briefs first.
 
 **The go-ahead (the one stop before spending).** Show, per group, one short table (V1-V3: on-screen hook, hook action,
-delivery) and one line with the shared Lines 2-5, then a single line with the batch names (checked against the naming
+delivery) and one line with the shared Lines 2-5 and the shared part of the voice-over, then a single line with the batch names (checked against the naming
 rule by you, not by the person), time and cost. Full shot lists stay in `briefs.md`, linked, not pasted. Then one
 popup with a question per group: "Chạy cả 3 video (Khuyên dùng)", "Sửa hook", "Đổi angle"; a fix they type goes in
 "Other". Start the approved groups while you fix the others.
 
 **4. Video batches** (about 6-8 minutes each; Grok makes 2 parts at a time, so 12 batches take about 30-40 minutes):
 for each brief open `/generate/new?from_batch=<video_template_batch of that store>`, run `fill_batch.js` with
-`start: false`, check the log says `READY=true` and the name is right, then run it again with `start: true`
+`start: false`, the brief's `vo` and `direction` = the text block of `references/video-direction.md`; check the log says
+`vo=text fit=pad`, `direction ok`, `READY=true` and the name is right, then run it again with `start: true`
 (or start with the Start button). Record the batch id from the Batches list (`batch_status.js` prints ids).
 
 **5. Watch.** Run `batch_status.js` on `/generate` with the week's name prefix. Two videos come out per batch
@@ -196,10 +199,9 @@ word, about 16-17 s in all) and has the brand's music bed from `brand/brands.jso
 downloaded, ask the person to use it once in CapCut (Audio > search its name) and build again. The build reads
 `shots.json`: a bad stretch of 1 s or more is replaced with clean footage (the video's spare first, then the group's
 other videos), a shorter one is cut out; it prints each replacement.
-**Edit plan (text, voice and footage together).** Negen's "AI writes it" voice-over writes its own script, so the
-brief's on-screen lines do not match what is said. Before building, read each video's voice-over script in Negen
-(Review > the video > the text under "Voice-over v1"; match the video by file size if a batch has two) and give each
-timeline an `"edit"` block (example in `capcut/example.json`):
+**Edit plan (text, voice and footage together).** The voice-over script is the brief's `vo` (for an older batch made
+with "AI writes it", read it in Negen: Review > the video > the text under "Voice-over v1"; match the video by file
+size if a batch has two). Give each timeline an `"edit"` block (example in `capcut/example.json`):
 - the on-screen lines echo the voice-over's own words, in the house-edit format; facts only from the product page;
 - `"times"`: each line on screen while the voice says it (sentence ends = the voice pauses on the new timeline);
   Line 1 is the first sentence, Line 2's animated title (the punchline) starts with the second;

@@ -2,6 +2,31 @@
 
 Changes to how the fast lane works, newest first: what changed, why, and what it was tested on.
 
+## 2026-10-24 (batch step) - We write the voice-over; a standing direction goes with every batch
+
+**Why:** most of the hand edit traced back to how batches were set up: Negen's "AI writes it" voice-over said other
+words than the on-screen lines and ran to 20 s; Grok blended shots, drew arms with no body, let the product drift and
+changed the light; the punchline came over the continuing opening shot.
+
+**New rules (step 3 and 4, `fill_batch.js`, ad-brief-compiler):**
+- Voice-over "Write my own" with "Keep speed" (Negen stores it as `fit=pad`): each brief carries a 36-42 word script,
+  sentence n saying on-screen Line n, then the CTA. V1-V3 differ only in the first sentence. Negen's estimate: 34
+  words = 13.6 s, so the voice ends at about 15-17 s of the 20 s video; the extra footage is spare for replacements.
+  The voice also costs less (about $0.007 a video instead of $0.012).
+- On-screen line times come from the script at 2.5 words a second; scene rows are written from the sentences, so
+  each shot shows what is being said.
+- A02 opens the punchline on a hard cut to a contrasting framing (macro, reverse angle or top-down).
+- "Direct the video" gets the standing direction in `references/video-direction.md` every time: hard cuts only,
+  the product exactly as in its photos, every hand attached to a person the viewer can place, one room, time of day
+  and light, no text.
+- `fill_batch.js` only says READY when the script, Keep speed and the direction are in place.
+
+**Checked:** filled on a real batch form without starting: `vo=text fit=pad words=34`, `direction ok`, READY=true.
+Not yet run as a batch: run one group with these rules first and compare it with an old group in the shot check.
+
+**Kept as it was:** 720p with "product kept closest to the photos" (already the template's setting), 20 s, two
+videos per batch, poster as Style + Composition + Lighting.
+
 ## 2026-10-24 (later) - Edit plan: on-screen text, voice-over and footage line up; a punchline with impact
 
 **Learned from:** the person's hand edit of Focal Wall V2 in "Triết Agent - 30-10-2026 V2 V3 - rule test", and their

@@ -38,3 +38,5 @@
 - Negen's "AI writes it" voice-over does not read the brief's on-screen lines, so text and voice drift apart. Write
   the on-screen lines from the voice-over script and time them to it (edit plan, CLAUDE.md step 7).
 - A punchline over the continuing opening shot lands softly; start it on a hard cut with a Slide Blur and a punch-in.
+- Negen's voice-over "Write my own" + "Keep speed" (fit=pad) plays our script at natural speed: 34 words = 13.6 s.
+  With our own script the on-screen text, the voice and the scenes come from one source.

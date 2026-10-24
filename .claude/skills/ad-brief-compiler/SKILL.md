@@ -87,7 +87,8 @@ Change in each variant:
   be clearly different ideas, not rewordings (for example: a use moment, a before-state problem, a tactile detail).
 - **Delivery:** a different way of showing the same argument: camera style (handheld close vs. crane and orbit
   vs. top-down), pacing (fast cuts vs. one long move per row), and use scene. Note the intended VO tone in one
-  line (for example: calm, direct, playful); the batch's "AI writes it" voice-over follows the brief.
+  line (for example: calm, direct, playful).
+- **Voice-over:** only the first sentence (the hook) changes; sentences 2 to the end are the same in V1-V3.
 
 Before the three briefs, print a 3-row summary: Variant | Hook idea | Delivery idea, so the person can check
 they really differ. Batch names: "<Date> - <Product> <Angle> V1", "... V2", "... V3".
@@ -112,17 +113,17 @@ Never invent discounts, shipping, warranty, returns or deadlines.
 ### CALL TO ACTION
 Short. Spry: "Shop the <product>" (for example "Shop the shelf"). ET Woodcrafts: "Explore the Collection".
 
-### ON-SCREEN TEXT
-Exactly 5 lines, each with From and To in seconds. The last line must end by 17 s, because Negen adds the CTA end card from 17.1 s.
-Default timing:
+### VO SCRIPT (Write my own)
+We write the voice-over; Negen's "AI writes it" writes its own words, which then do not match the on-screen text.
+- 36-42 words in 6 short sentences, about 14.5-17 s at 2.5 words a second (the batch uses "Keep speed").
+- Sentence 1 says on-screen Line 1 (the hook), sentence 2 Line 2 (the punchline), 3 Line 3, 4 Line 4, 5 Line 5,
+  sentence 6 is the call to action. Each sentence uses the line's own words and may add 2-6 words around them.
+- Spoken English, no lists of features, no claim the product page does not support.
 
-| Line | From | To |
-|---|---|---|
-| 1 | 0 | 2 |
-| 2 | 2.5 | 6 |
-| 3 | 6 | 10 |
-| 4 | 10 | 13.5 |
-| 5 | 13.5 | 17 |
+### ON-SCREEN TEXT
+Exactly 5 lines, each the key words of its VO sentence, each with From and To in seconds. Time them from the VO at
+about 2.5 words a second from 0 s (Negen's own estimate): a line is on screen while its sentence is spoken (Line 1 about 0-2.5 s). The last
+line must end by 17 s, because Negen adds the CTA end card from 17.1 s.
 
 Each line 2-6 words, buyer-facing, no generic luxury words, no claims the product page does not support. Line 5 may carry the verified offer.
 
@@ -135,6 +136,10 @@ Each line 2-6 words, buyer-facing, no generic luxury words, no claims the produc
 - Seconds: default 2, 3, 3, 2, 3, 2, 3, 2 (total 20). The total must be exactly 20.
 - Camera direction: one or two sentences, under about 200 characters. Start with the camera move. Then what is in frame, the hand action if any, and "No hand." if none.
 - A04 ends mid-action; B01 continues the same action from the same state.
+- Each row shows what the VO is saying at that moment (the shelves when it says "open shelves"); write the rows
+  from the VO sentences, not the other way round.
+- A02 carries the punchline (Line 2): it opens on a hard cut to a contrasting framing of the product (a macro
+  detail, a reverse angle or a top-down), never a continuation of A01's shot.
 
 Format each row like this so it can be pasted cell by cell:
 
@@ -153,6 +158,8 @@ B04 | End frame | 2 | <camera direction>
 - Wide product kept inside the central 70%: YES/NO/N/A
 - Every row with a hand says where ACTOR A's body is; no hands from below to wall height: YES/NO
 - One time of day and light in all rows: YES/NO
+- VO is 36-42 words, sentence n says Line n, the last sentence is the CTA: YES/NO
+- A02 opens on a hard cut to a different framing (the punchline): YES/NO
 
 ---
 
@@ -160,7 +167,8 @@ B04 | End frame | 2 | <camera direction>
 
 - Skill: Conversion Creative V3. Shots: PART A and PART B. Format 9:16. Length 20 s. Continuous, Cut.
 - References: pick the storyboard poster from Pick from media > Generated. Tick Style, Composition and Lighting. Do NOT tick Camera or Everything (they make the camera static).
-- Voice-over: "AI writes it". The storyboard's own VO usually runs longer than 20 s and gets cut off.
+- Voice-over: "Write my own" with the VO SCRIPT, Advanced > Fit to the video length: "Keep speed".
+- Direct the video: the standing direction in references/video-direction.md, as-is.
 - Brand: SpryInterior for Spry products, ET Woodcrafts for ETW products.
 - Batch name: "<Date> - <Product> <Angle> V1|V2|V3". No personal or tool names.
 - Two videos come out per batch. Keep the one with the higher AI score and product match; the PART A video is usually but not always better.

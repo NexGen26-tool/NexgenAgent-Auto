@@ -12,9 +12,12 @@
 //      job, hook, proof, offer, cta   Ad brief fields ("" for offer unless the product page states one)
 //      lines   [[text, from, to], ...] 5 on-screen lines, last one ends by 17 s
 //      shots   8 camera directions, A01..B04 (jobs and seconds are fixed below)
+//      vo      the voice-over script (Write my own, Keep speed): the on-screen lines, said in order, 36-42 words
+//      direction  the standing video direction (references/video-direction.md), sent with every batch
 //      start   true to press Start when every check passes; false to only fill and report
 //   3. Read the returned log. "READY=true" means: one product ticked, the poster is the reference with
-//      Style + Composition + Lighting (never Camera), the brief and lines are filled, the brand matches.
+//      Style + Composition + Lighting (never Camera), the brief and lines are filled, the brand matches, and when
+//      vo / direction are given: the voice-over is "Write my own" with that script at "Keep speed", the direction set.
 async (B) => {
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   function setv(el, v) {
@@ -83,6 +86,19 @@ async (B) => {
     setv(L('Shot ' + n), ids[i]); setv(L('Shot ' + n + ' direction'), d);
     setv(L('Shot ' + n + ' job'), jobs[i]); setv(L('Shot ' + n + ' seconds'), String(secs[i]));
   });
+  // voice-over: our own script (it says the on-screen lines), natural speed; and the standing direction
+  let voOk = true, dirOk = true;
+  if (B.vo) {
+    const pick = txt => { const x = [...document.querySelectorAll('label,button')].find(e => e.innerText.trim() === txt && e.offsetParent); if (x) x.click(); return !!x; };
+    pick('Write my own'); await sleep(700);
+    setv(L('Voice-over text'), B.vo); await sleep(300);
+    const adv = [...document.querySelectorAll('summary,button')].find(e => /^Advanced/.test(e.innerText.trim()) && /Eleven|Adjust speed|Keep speed/.test(e.innerText) && e.offsetParent);
+    if (adv && !pick('Keep speed')) { adv.click(); await sleep(500); }
+    pick('Keep speed'); await sleep(300);
+    voOk = q('[name=vo_mode]').value === 'text' && (L('Voice-over text') || {}).value === B.vo && q('[name=vo_fit]').value !== 'speed';
+    log.push('vo=' + q('[name=vo_mode]').value + ' fit=' + q('[name=vo_fit]').value + ' words=' + B.vo.split(/\s+/).length);
+  }
+  if (B.direction) { setv(q('textarea[name=direction]'), B.direction); dirOk = q('textarea[name=direction]').value === B.direction; log.push('direction ' + (dirOk ? 'ok' : 'MISSING')); }
   setv(L('Batch name'), B.batch); await sleep(800);
 
   // checks, then start
@@ -92,7 +108,7 @@ async (B) => {
     t.slice(t.indexOf('Ad brief\nUsed'), t.indexOf('Ad brief\nUsed') + 40).replace(/\n/g, ' '));
   const ok = [...document.querySelectorAll('input[name=products]:checked')].length === 1 && refs[0] && refs[0].analysis &&
     refs[0].target === 'asset:' + B.poster && !refs[0].use.includes('camera') && lines.length === B.lines.length &&
-    q('[name=brand]').value.startsWith(B.brand) && !/claude/i.test(B.batch);
+    q('[name=brand]').value.startsWith(B.brand) && !/claude/i.test(B.batch) && voOk && dirOk;
   log.push('READY=' + ok);
   if (ok && B.start) {
     setTimeout(() => [...document.querySelectorAll('button[type=submit]')].find(b => /^Start/.test(b.innerText.trim()) && b.offsetParent).click(), 100);
