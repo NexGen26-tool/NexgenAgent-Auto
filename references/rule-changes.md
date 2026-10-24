@@ -2,6 +2,27 @@
 
 Changes to how the fast lane works, newest first: what changed, why, and what it was tested on.
 
+## 2026-10-24 (later) - Edit plan: on-screen text, voice-over and footage line up; a punchline with impact
+
+**Learned from:** the person's hand edit of Focal Wall V2 in "Triết Agent - 30-10-2026 V2 V3 - rule test", and their
+notes: the punchline title came in softly over the opening shot, and the text, the voice and the footage said
+different things. Cause: Negen's voice-over writes its own script, so the brief's lines (for example "Not another
+box") played over a voice saying "That curve is where it starts".
+
+**New rules:**
+- Read each video's voice-over script in Negen and write an edit plan per timeline (`"edit"` in `capcut.json`):
+  on-screen lines that echo the voice's words, each shown while it is said, and for each sentence a clean shot of
+  what it talks about.
+- The punchline (Line 2's animated title) starts with the second sentence on a hard cut to a different shot than
+  the opening, with a Slide Blur into it and a 1.15 punch-in zoom (the person's own V2 edit used Slide Blur and a
+  1.24 punch-in).
+- A long Line 4 shrinks to the house width.
+- `build_project.py --replace` rebuilds named timelines inside an existing project and keeps the person's other
+  timelines; old ones are backed up in `work/<week>/capcut-backup/`.
+
+**Tested on:** Focal Wall V3, Curved Focal Point V2 and V3, rebuilt inside the rule-test project (the person's
+Focal Wall V2 untouched). Not yet reviewed in CapCut.
+
 ## 2026-10-24 - Shot check: bad shots are cut and replaced; hands need a body
 
 **Learned from:** the published 30/10 V2/V3 videos (Focal Wall SILDTTRWA085 and Curved Focal Point SINLKISD005),

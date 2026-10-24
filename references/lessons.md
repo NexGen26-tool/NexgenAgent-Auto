@@ -35,3 +35,6 @@
   that still appear.
 - Grok blends two shots for about 0.5 s at most scene changes inside a part, and can jump from day to evening.
 - Boxy products (sideboards) keep their shape; organic ones (tree shelves, live-edge wall art) drift in close-ups.
+- Negen's "AI writes it" voice-over does not read the brief's on-screen lines, so text and voice drift apart. Write
+  the on-screen lines from the voice-over script and time them to it (edit plan, CLAUDE.md step 7).
+- A punchline over the continuing opening shot lands softly; start it on a hard cut with a Slide Blur and a punch-in.

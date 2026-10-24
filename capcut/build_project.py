@@ -12,6 +12,7 @@ words, the footage and the logo change, so every timeline opens looking like the
 
   python capcut/build_project.py work/<week>/capcut.json            # dry run, prints what it would build
   python capcut/build_project.py work/<week>/capcut.json --save     # writes the project (CapCut must be closed)
+  python capcut/build_project.py work/<week>/capcut.json --replace  # rebuild these timelines inside the existing project
   python capcut/build_project.py --check                            # can this computer's CapCut take built projects?
 
 On a Mac use python3. Windows needs ffmpeg (setup_check.py says how to install it).
@@ -323,6 +324,54 @@ def lay_footage(d, r, pieces, media_dir):
     last = segs[-1]; shown_end = d["duration"] - last["target_timerange"]["start"]  # no rounding gap at the end
     last["source_timerange"]["duration"] = int(shown_end * last["speed"]); last["target_timerange"]["duration"] = shown_end
     track["segments"] = segs
+    return segs
+
+
+def role_seg(d, r, role):  # the title clip's segment points at its draft through extra_material_refs
+    return next(s for t in d["tracks"] for s in t["segments"] if r[role] == s["material_id"] or r[role] in s["extra_material_refs"])
+
+
+def place_times(d, r, times, total):
+    """An edit plan's text times (seconds): line1/line3/line4/line5 [start, end], line2 (the animated title) and cta
+    a start. Line 3's right half comes in 0.9 s after the left one, as in the house edit."""
+    def place(role, a, b): role_seg(d, r, role)["target_timerange"] = {"start": us(a), "duration": us(b) - us(a)}
+    place("line1", *times["line1"])
+    role_seg(d, r, "compound")["target_timerange"]["start"] = us(times["line2"])
+    a3, e3 = times["line3"]; place("line3a", a3, e3); place("line3b", min(a3 + 0.9, e3 - 0.8), e3)
+    place("line4", *times["line4"]); place("line5", *times["line5"]); place("cta", times["cta"], total / US)
+
+
+def cuts_to_pieces(cuts, total, folder):
+    """An edit plan's cut list [[timeline second, video, source second, zoom?], ...] -> pieces and zooms. A video is
+    a file name in the timeline's videos folder or its spare folder. A shot that runs past the end of its file is
+    slowed to fit."""
+    def find(v):
+        for p in (v, os.path.join(folder, v), os.path.join(folder, "spare", v)):
+            for q in (p, p + ".mp4"):
+                if os.path.isfile(q): return q
+        raise SystemExit("Edit plan: video not found: " + v)
+    cuts = sorted(cuts, key=lambda c: c[0]); pieces, zooms = [], []
+    for i, c in enumerate(cuts):
+        end = cuts[i + 1][0] if i + 1 < len(cuts) else total
+        f = find(c[1]); shown = end - c[0]; src = min(shown, mp4_info(f)[0] - c[2])
+        pieces.append((f, c[2], src, shown)); zooms.append(c[3] if len(c) > 3 else 1.0)
+    return pieces, zooms
+
+
+def add_transitions(d, segs, at_times, zooms):
+    """A Slide Blur into the shot that starts at each given time (on the shot before it, as CapCut keeps it), and the
+    edit plan's punch-in zoom on each shot. Returns the times that got no transition (effect not downloaded)."""
+    for s, z in zip(segs, zooms):
+        if z != 1.0: s["clip"]["scale"] = {"x": z, "y": z}; s["uniform_scale"] = {"on": True, "value": 1.0}
+    tp = json.load(open(HERE + "/templates/transition_slide_blur.json", encoding="utf-8"))
+    path = EFFECTS + "/" + tp.pop("path_rel")
+    missing = []
+    for t in at_times:
+        prev = next((s for s in segs if abs(s["target_timerange"]["start"] + s["target_timerange"]["duration"] - us(t)) < us(0.06)), None)
+        if prev is None or not os.path.exists(path): missing.append(t); continue
+        m = copy.deepcopy(tp); m["id"] = uid(); m["path"] = path
+        d["materials"].setdefault("transitions", []).append(m); prev["extra_material_refs"].append(m["id"])
+    return missing
 
 
 class Timeline:
@@ -380,6 +429,9 @@ class Timeline:
 
         # Line 4, Line 5 (second line bigger, yellow), CTA
         set_text(mat(d, "texts", r["line4"]), [(cfg["line4"], 0)])
+        s4 = seg_of(d, r["line4"]); sc = s4["clip"]["scale"]["x"]  # a long Line 4 shrinks to the house width
+        if width(cfg["line4"], 7, sc) > 1.8:
+            sc *= 1.8 / width(cfg["line4"], 7, sc); s4["clip"]["scale"] = {"x": sc, "y": sc}; s4["uniform_scale"]["value"] = sc
         p, q = cfg["line5"]; set_text(mat(d, "texts", r["line5"]), [(p + "\n", 0), (q, 1)])
         set_text(mat(d, "texts", r["cta"]), [(cfg.get("cta") or brand["cta"], 0)])
 
@@ -391,8 +443,15 @@ class Timeline:
         self.retime(d, r, total, joints)
         # shot check: bad stretches (shots.json) cut out or replaced with clean footage from the spare / the group
         self.notes = None
-        src = os.path.expanduser(cfg["video"])
-        if shots and shots.get(os.path.basename(src), {}).get("checked"):
+        src = os.path.expanduser(cfg["video"]); ed = cfg.get("edit") or {}
+        if ed.get("times"): place_times(d, r, ed["times"], total)
+        if ed.get("cuts"):  # Claude's edit plan: footage chosen per sentence of the voice-over
+            pieces, zooms = cuts_to_pieces(ed["cuts"], total / US, os.path.dirname(src))
+            segs = lay_footage(d, r, pieces, media_dir)
+            missing = add_transitions(d, segs, ed.get("transitions", []), zooms)
+            self.notes = ["edit plan: %d shots, %d transitions" % (len(pieces), len(ed.get("transitions", [])) - len(missing))]
+            if missing: self.notes.append("transition Slide Blur not downloaded in CapCut, left out at %s s" % missing)
+        elif shots and shots.get(os.path.basename(src), {}).get("checked"):
             pieces, self.notes = plan_footage(src, total / US, shots, pool)
             lay_footage(d, r, pieces, media_dir)
         add_vo(d, self.vo, spans)
@@ -436,6 +495,33 @@ class Timeline:
         miss = [r for t in d["tracks"] for s in t["segments"] for r in [s["material_id"]] + s["extra_material_refs"] if r not in allm]
         media = [m["path"] for m in d["materials"]["videos"] + d["materials"]["audios"] if m["path"]]  # the title clip has no file
         return len(miss), all(os.path.exists(p) for p in media)
+
+
+def replace_in(project, tls, backup_root):
+    """Put the built timelines into an existing project in place of the timelines with the same names (the others,
+    and the project itself, stay as they are). Each replaced timeline folder is backed up first."""
+    if capcut_running(): raise SystemExit("CapCut is open. Quit it first, or it overwrites the change.")
+    out = DRAFTS + "/" + project
+    lay = json.load(open(out + "/timeline_layout.json", encoding="utf-8"))["dockItems"][0]
+    by_name = dict(zip(lay["timelineNames"], lay["timelineIds"]))
+    name = "draft_content.json" if os.path.exists(out + "/draft_content.json") else "draft_info.json"
+    backup = os.path.join(backup_root, "capcut-backup", time.strftime("%Y%m%d-%H%M%S"))  # short path: Windows limit
+    for t in tls:
+        tid = by_name.get(t.name)
+        if not tid: raise SystemExit("No timeline named %r in %s" % (t.name, project))
+        folder = out + "/Timelines/" + tid
+        shutil.copytree(folder, os.path.join(backup, tid))
+        t.d["id"] = tid; raw = json.dumps(t.d, ensure_ascii=False)
+        for p in (name, name + ".bak", "template-2.tmp"): open(folder + "/" + p, "w", encoding="utf-8").write(raw)
+        sub_id, inner = t.compound; sub = out + "/subdraft/" + sub_id
+        os.makedirs(sub, exist_ok=True); shutil.copy(HERE + "/templates/compound/draft_cover.jpg", sub)
+        open(sub + "/draft_content.json", "w", encoding="utf-8").write(json.dumps(inner, ensure_ascii=False))
+        sc = json.load(open(HERE + "/templates/compound/sub_draft_config.json", encoding="utf-8")); sc.update({"id": sub_id, "project_id": sub_id})
+        open(sub + "/sub_draft_config.json", "w", encoding="utf-8").write(json.dumps(sc))
+        if lay["timelineIds"][0] == tid:  # the project's main copy mirrors its first timeline
+            for p in (name, name + ".bak", "template-2.tmp"): open(out + "/" + p, "w", encoding="utf-8").write(raw)
+        print("replaced:", t.name)
+    print("backup of the old timelines:", os.path.normpath(backup))
 
 
 def save(project, tls):
@@ -525,3 +611,4 @@ if __name__ == "__main__":
     if gone: print("NOTE: music not in CapCut yet, so left out: %s. Use it once in CapCut (Audio > search the name), "
                    "then build again." % ", ".join(gone))
     if "--save" in sys.argv: save(cfg["project"], tls)
+    if "--replace" in sys.argv: replace_in(cfg["project"], tls, os.path.dirname(os.path.abspath(sys.argv[1])))

@@ -195,7 +195,20 @@ cut to the voice-over (pauses shortened, voice at 1.08x, text fitted to the spee
 word, about 16-17 s in all) and has the brand's music bed from `brand/brands.json`. If the build says a track is not
 downloaded, ask the person to use it once in CapCut (Audio > search its name) and build again. The build reads
 `shots.json`: a bad stretch of 1 s or more is replaced with clean footage (the video's spare first, then the group's
-other videos), a shorter one is cut out; it prints each replacement. Rule changes:
+other videos), a shorter one is cut out; it prints each replacement.
+**Edit plan (text, voice and footage together).** Negen's "AI writes it" voice-over writes its own script, so the
+brief's on-screen lines do not match what is said. Before building, read each video's voice-over script in Negen
+(Review > the video > the text under "Voice-over v1"; match the video by file size if a batch has two) and give each
+timeline an `"edit"` block (example in `capcut/example.json`):
+- the on-screen lines echo the voice-over's own words, in the house-edit format; facts only from the product page;
+- `"times"`: each line on screen while the voice says it (sentence ends = the voice pauses on the new timeline);
+  Line 1 is the first sentence, Line 2's animated title (the punchline) starts with the second;
+- `"cuts"` `[[timeline s, video, source s, zoom?], ...]`: for each sentence a clean shot that shows what is said
+  (shelves when it says shelves), from the video, its spare or the group's other videos, never a bad stretch;
+  the punchline starts on a hard cut to a different shot than the opening, zoom 1.15;
+- `"transitions"`: the punchline's start time (a Slide Blur into it).
+Build into the existing project with `--replace` when the person has already edited other timelines in it (old
+timelines are backed up in `work/<week>/capcut-backup/`). Rule changes:
 `references/rule-changes.md`.
 The first time this runs on a Windows computer, say that the Windows build is new and ask them to check the whole
 first timeline carefully.
