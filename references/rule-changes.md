@@ -2,6 +2,35 @@
 
 Changes to how the fast lane works, newest first: what changed, why, and what it was tested on.
 
+## 2026-10-24 - Shot check: bad shots are cut and replaced; hands need a body
+
+**Learned from:** the published 30/10 V2/V3 videos (Focal Wall SILDTTRWA085 and Curved Focal Point SINLKISD005),
+looked at frame by frame and not changed, plus the hand edits of the Oct 23 test week.
+- Focal Wall V2: two hands rise from below the panel to hang it (0-2.5 s) and a hand comes from the bottom edge to
+  push it (12.5-14.5 s): arms with no body. The panel also turns tall and into a thick box (9-15 s).
+- Focal Wall V3: daylight jumps to evening at about 15-17.5 s.
+- The sideboard (a boxy product) keeps its shape; organic products (tree shelf, wall art) drift in close-ups.
+- Every video has two shots blended for about 0.5 s at most scene changes.
+- The person removes these shots by hand and fills them with footage from the other videos of the same product.
+
+**New rules:**
+- Download keeps both videos of a batch; the second is spare footage in `videos/spare/`.
+- New step 6b, shot check: `capcut/shot_sheet.py` makes a sheet per video (a frame every 0.5 s); Claude marks every
+  bad stretch (arm with no body, product drift, hallucination, blend) in `shots.json`.
+- The CapCut build replaces a bad stretch of 1 s or more with clean, unused footage (the video's spare first, at the
+  same moment when that is clean, then the group's other videos) and cuts out a shorter one. Timelines of one group
+  carry the same `"group"` in `capcut.json`.
+- Brief rules (ad-brief-compiler): every hand row says where ACTOR A's body is (person in frame or eye-level POV);
+  no hands rising from below to wall height, out of a wall, the product or a window; wall-mounted products are hung
+  by ACTOR A seen from behind or the side; one time of day and light in all rows; organic products keep at least
+  5 of 8 rows medium or wide.
+
+**Tested on:** dry run of the build on the Oct 23 test week (shot check done on its 11 videos and spares): every
+bad stretch was replaced from the spare or a sibling, no missing references. Not yet opened in CapCut.
+
+**Also fixed:** Vietnamese file names (the codified names) crashed the scripts' output on Windows; they now print
+in UTF-8 and read ffmpeg's output as UTF-8.
+
 ## 2026-10-23 - CapCut timelines cut to the voice-over, with brand music
 
 **Tested on:** the "Tool test Oct" week (`work/2026-10-19 Tool test Oct/`), 6 videos: Spry Tree Bookshelf Reading

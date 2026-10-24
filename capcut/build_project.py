@@ -21,6 +21,7 @@ Config format: see capcut/example.json.
 import json, os, sys, copy, shutil, subprocess, time, re, uuid, struct, glob
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+for _s in (sys.stdout, sys.stderr): _s.reconfigure(encoding="utf-8", errors="replace")  # names can be Vietnamese
 ROOT = os.path.dirname(HERE)
 WINDOWS = os.name == "nt"
 HOME = os.path.expanduser("~").replace("\\", "/")  # CapCut writes paths with forward slashes on both systems
@@ -179,7 +180,7 @@ def speech_spans(path, dur):
     ffmpeg = find_ffmpeg()
     if not ffmpeg: return [(0.0, dur)]
     err = subprocess.run([ffmpeg, "-hide_banner", "-i", path, "-af", "silencedetect=n=-35dB:d=%s" % PAUSE, "-f", "null", "-"],
-                         capture_output=True, text=True).stderr
+                         capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
     starts = [float(x) for x in re.findall(r"silence_start: (-?[\d.]+)", err)]
     ends = [float(x) for x in re.findall(r"silence_end: ([\d.]+)", err)]
     pad, spans, pos = GAP / 2, [], 0.0
@@ -232,8 +233,96 @@ def add_music(d, music):
     return True
 
 
+MIN_PIECE = 0.5   # clean footage shorter than this is not used
+REPLACE_MIN = 1.0 # a bad stretch this long or longer is replaced; a shorter one (a blend) is simply cut out
+
+
+def clean_parts(name, dur, shots):
+    """The usable stretches of one video, from its shot check: everything minus the bad stretches, which are
+    widened to a hard cut within 0.3 s."""
+    e = shots[name]; cut_at = e.get("cuts", [])
+    def snap(t, side):
+        near = [c for c in cut_at if abs(c - t) <= 0.3 and (c <= t if side < 0 else c >= t)]
+        return min(near, key=lambda c: abs(c - t)) if near else t
+    bad = sorted((max(0.0, snap(a, -1)), min(dur, snap(b, 1))) for a, b, *_ in e["bad"])
+    parts, pos = [], 0.0
+    for a, b in bad:
+        if a - pos >= MIN_PIECE: parts.append((pos, a))
+        pos = max(pos, b)
+    if dur - pos >= MIN_PIECE: parts.append((pos, dur))
+    return parts, bad
+
+
+def plan_footage(main, total, shots, pool):
+    """[(file, source start, length)] in seconds filling 0..total: the main video without its bad stretches. A bad
+    stretch of REPLACE_MIN or more is filled with clean, unused footage from the pool (the same video's spare first,
+    at the same moment when that is clean, then the group's other videos); a shorter one is cut and the main video
+    runs on. Returns the pieces and a note per replacement."""
+    name = os.path.basename(main); dur = mp4_info(main)[0]
+    parts, bad = clean_parts(name, dur, shots)
+    avail = []  # [(priority, file, start, end)] clean pool footage, the first 0.3 s of each stretch skipped
+    for i, f in enumerate(pool):
+        for a, b in clean_parts(os.path.basename(f), mp4_info(f)[0], shots)[0]:
+            if b - a - 0.3 >= MIN_PIECE: avail.append([i, f, a + 0.3, b])
+    pieces, notes, t = [], [], 0.0
+
+    def fill(need, at):
+        got = []
+        while need >= MIN_PIECE and avail:
+            same = [x for x in avail if x[0] == 0 and x[2] <= at and x[3] >= at + need]  # the spare, same moment
+            long = sorted((x for x in avail if x[3] - x[2] >= need), key=lambda x: x[0])
+            x = same[0] if same else long[0] if long else max(avail, key=lambda x: x[3] - x[2])
+            a = at if same else x[2]; take = min(need, x[3] - a)
+            got.append((x[1], a, take)); need -= take
+            avail.remove(x)  # each stretch of pool footage is used once
+            if a - x[2] >= MIN_PIECE: avail.append([x[0], x[1], x[2], a])
+            if x[3] - (a + take) >= MIN_PIECE: avail.append([x[0], x[1], a + take, x[3]])
+        return got
+
+    for kind, a, b in sorted([("ok", a, b) for a, b in parts] + [("bad", a, b) for a, b in bad], key=lambda x: x[1]):
+        if t >= total - 0.01: break
+        if kind == "ok":
+            take = min(b - a, total - t); pieces.append((main, a, take)); t += take
+        elif b - a >= REPLACE_MIN:
+            got = fill(min(b - a, total - t), a)
+            for f, s, l in got: pieces.append((f, s, l)); t += l
+            notes.append("%.1f-%.1f s replaced from %s" % (a, b, ", ".join(sorted({os.path.basename(f) for f, _, _ in got})) or "nothing (no clean footage left)"))
+    if total - t >= 0.05:  # the main video ran out: finish with pool footage
+        for f, s, l in fill(total - t, 0): pieces.append((f, s, l)); t += l
+    return pieces, notes
+
+
+def lay_footage(d, r, pieces, media_dir):
+    """Replace the single footage segment with one segment per piece; Smoke out stays on the last one."""
+    v = mat(d, "videos", r["video"]); s = seg_of(d, v["id"]); track = next(t for t in d["tracks"] if s in t["segments"])
+    anim = {a["id"] for a in d["materials"]["material_animations"]}
+    mats_by_path, segs, at = {v["path"]: v}, [], 0
+    for i, (f, start, length) in enumerate(pieces):
+        f = link_media(f, media_dir)
+        if f not in mats_by_path:
+            m = copy.deepcopy(v); m["id"] = uid(); dur_s, w, h = mp4_info(f)
+            m.update({"path": f, "material_name": os.path.basename(f), "duration": us(dur_s), "width": w, "height": h})
+            d["materials"]["videos"].append(m); mats_by_path[f] = m
+        n = copy.deepcopy(s); n["id"] = uid(); n["material_id"] = mats_by_path[f]["id"]; refs = []
+        last = i == len(pieces) - 1
+        for ref in s["extra_material_refs"]:
+            if ref in anim and not last: continue
+            k, x = next((k, x) for k, xs in d["materials"].items() if isinstance(xs, list) for x in xs if isinstance(x, dict) and x.get("id") == ref)
+            c = copy.deepcopy(x); c["id"] = uid(); d["materials"][k].append(c); refs.append(c["id"])
+            if ref in anim:
+                for an in c["animations"]:
+                    if an["type"] == "out": an["start"] = us(length) - an["duration"]
+        n["extra_material_refs"] = refs
+        n["source_timerange"] = {"start": us(start), "duration": us(length)}
+        n["target_timerange"] = {"start": at, "duration": us(length)}; at += us(length)
+        segs.append(n)
+    segs[-1]["target_timerange"]["duration"] = d["duration"] - segs[-1]["target_timerange"]["start"]  # no rounding gap
+    segs[-1]["source_timerange"]["duration"] = segs[-1]["target_timerange"]["duration"]
+    track["segments"] = segs
+
+
 class Timeline:
-    def __init__(self, cfg, media_dir):
+    def __init__(self, cfg, media_dir, shots=None, pool=()):
         self.name = cfg["name"]
         brand = BRANDS[cfg["brand"]]
         video = link_media(os.path.expanduser(cfg["video"]), media_dir)
@@ -296,6 +385,12 @@ class Timeline:
         joints, at = [], 0  # where the shortened pauses sit on the timeline
         for a, b in spans[:-1]: at += us((b - a) / VO_SPEED); joints.append(at)
         self.retime(d, r, total, joints)
+        # shot check: bad stretches (shots.json) cut out or replaced with clean footage from the spare / the group
+        self.notes = None
+        src = os.path.expanduser(cfg["video"])
+        if shots and shots.get(os.path.basename(src), {}).get("checked"):
+            pieces, self.notes = plan_footage(src, total / US, shots, pool)
+            lay_footage(d, r, pieces, media_dir)
         add_vo(d, self.vo, spans)
         self.music = add_music(d, brand["music"]) if brand.get("music") else None
         self.d = d
@@ -401,11 +496,27 @@ if __name__ == "__main__":
     if not cfg.get("project") or "<" in cfg["project"] or "<" in cfg.get("media", ""):
         raise SystemExit("Set the project name first: ask the person what to call this week's outputs.")
     media_dir = MEDIA + "/" + cfg.get("media", cfg["project"])
-    tls = [Timeline(c, media_dir) for c in cfg["timelines"]]
+    jpath = os.path.join(os.path.dirname(os.path.abspath(sys.argv[1])), "shots.json")
+    shots = json.load(open(jpath, encoding="utf-8")) if os.path.exists(jpath) else {}
+
+    def spare(video):
+        p = os.path.join(os.path.dirname(video), "spare", os.path.splitext(os.path.basename(video))[0] + " - spare.mp4")
+        return [p] if os.path.exists(p) else []
+
+    def pool(c):  # own spare first, then the other videos (and spares) of the same group; checked footage only
+        v = os.path.expanduser(c["video"]); out = spare(v)
+        for o in cfg["timelines"]:
+            if o is not c and c.get("group") and o.get("group") == c["group"]:
+                ov = os.path.expanduser(o["video"]); out += [ov] + spare(ov)
+        return [p for p in out if shots.get(os.path.basename(p), {}).get("checked")]
+
+    tls = [Timeline(c, media_dir, shots, pool(c)) for c in cfg["timelines"]]
     for t in tls:
         miss, ok = t.check()
         print("%-34s %.1fs | VO %s | music %s | missing refs %d | media ok %s" % (
             t.name, t.dur / US, os.path.basename(t.vo), {None: "-", True: "yes", False: "NOT DOWNLOADED"}[t.music], miss, ok))
+        if t.notes is None: print("    shot check: not done for this video, footage used as it is")
+        for n in t.notes or []: print("    shot check:", n)
     gone = sorted({BRANDS[c["brand"]]["music"]["name"] for c, t in zip(cfg["timelines"], tls) if t.music is False})
     if gone: print("NOTE: music not in CapCut yet, so left out: %s. Use it once in CapCut (Audio > search the name), "
                    "then build again." % ", ".join(gone))

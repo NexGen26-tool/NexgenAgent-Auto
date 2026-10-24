@@ -30,3 +30,8 @@
   the bench into a separate table, the tree into a symmetric shelf. Wide room shots stay closest to the product
   photo. Negen's product match still gave 8/10, so watch every close-up before keeping a video. For these products,
   keep most scene rows medium or wide and write which part of the product is in frame.
+- Arms from nowhere come from hand-only briefs: "ACTOR A's right hand" with no body. Worst on wall-mounted products
+  (two hands rising from below to hang wall art). Briefs now place the body for every hand; the shot check cuts any
+  that still appear.
+- Grok blends two shots for about 0.5 s at most scene changes inside a part, and can jump from day to evening.
+- Boxy products (sideboards) keep their shape; organic ones (tree shelves, live-edge wall art) drift in close-ups.

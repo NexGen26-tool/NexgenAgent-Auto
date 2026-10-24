@@ -4,7 +4,8 @@
   python negen/download_export.py "<share link>" "work/<week>/videos/01_ETW_WallArt_FocalWall_V1.mp4"
 
 The ZIP builds in the background, so this waits up to 10 minutes for it. The better video = highest AI score +
-product match in the ZIP's manifest.csv; a tie goes to PART A.
+product match in the ZIP's manifest.csv; a tie goes to PART A. The other video is kept as spare footage in
+videos/spare/<name> - spare.mp4 (capcut/shots.py and the CapCut build use it to replace bad shots).
 """
 import csv, http.client, io, os, shutil, sys, tempfile, time, urllib.request, zipfile
 
@@ -35,9 +36,16 @@ def main():
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
     with z.open(best["file_path"]) as src, open(out, "wb") as dst:
         dst.write(src.read())
+    # the other video of the batch is kept as spare footage: the CapCut build swaps bad shots for good ones from it
+    spare_dir = os.path.join(os.path.dirname(os.path.abspath(out)), "spare")
+    stem = os.path.splitext(os.path.basename(out))[0]
     for r in rows:
         part = " ".join(r["shot"].split(" ")[:2])
         print(("PICKED " if r is best else "       ") + "%s  AI %s  match %s" % (part, r["ai_score"], r["product_match"]))
+        if r is not best:
+            os.makedirs(spare_dir, exist_ok=True)
+            with z.open(r["file_path"]) as src, open(os.path.join(spare_dir, stem + " - spare.mp4"), "wb") as dst:
+                dst.write(src.read())
     z.close(); os.remove(path)
     print("saved:", out)
 

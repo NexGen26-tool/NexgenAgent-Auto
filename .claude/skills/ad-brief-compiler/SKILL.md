@@ -31,6 +31,9 @@ If the product page is missing, ask for it. Never fill product facts from memory
 A01 must show a hand doing something with the product from frame one: placing, sliding, lifting, opening, tracing, pulling out.
 If the storyboard's A01 is a slow push-in, an empty room, a light sweep, or a macro with no action, rewrite A01 as a hand action that fits the same angle.
 
+The hand must belong to a body the viewer can place (see 6. Hands need a body). For wall-mounted products the hook
+is ACTOR A seen from behind or the side, arms visible up to the shoulders, never two hands rising from below the frame.
+
 Avoid hooks that depend on the order of two framings, such as "empty wall, then the product appears" or "macro first, then reveal the whole piece". The video model often plays these in reverse or blends them with a dissolve.
 
 ### 2. Camera variety
@@ -50,9 +53,25 @@ For long or wide products (TV stands, consoles, kitchen islands, sideboards, lon
 - Do not show the inside of closed storage unless the product photos show it. Prefer "the item goes behind the panel and the panel closes flush".
 
 ### 5. Continuity
-- One recurring person only, as ACTOR A, shown mostly as the right hand and forearm. Fix one sleeve description and repeat it every time the hand appears (for example "ACTOR A's right hand, cream knit cuff").
+- One recurring person only, as ACTOR A, shown as the right hand and forearm with the body placed as in 6. Fix one sleeve description and repeat it every time the hand appears (for example "ACTOR A's right hand, cream knit cuff").
 - Rows with no person end with "No hand."
 - Anything placed stays placed; anything removed stays removed; the final frame shows the accumulated state.
+- One time of day and one light for all 8 rows (for example "late-morning sun from the left"); never day to evening.
+
+### 6. Hands need a body
+Videos where an arm appears from nowhere get cut in the edit. Every row with a hand says where the body is:
+- **Person in frame:** ACTOR A's shoulder, back or side is visible (over-the-shoulder, from behind, side-on), or
+- **Eye-level POV:** the camera is ACTOR A's eyes and the arm reaches forward from the bottom edge to something at
+  waist or table height in front of them.
+
+Never: hands rising from below the frame to something at or above eye level (wall art, high shelves, mirrors); a
+hand or arm coming out of the wall, the product or a window; two hands with no person in a wide shot; a hand in a
+top-down shot of a floor. Close-ups of wall-mounted products have no hand ("No hand.").
+
+### 7. Organic and sculptural products
+Tree shelves, live-edge panels, wall sculptures and other organic shapes drift most in close-ups (a trunk turns into
+a pillar, a wide panel turns tall or into a thick box). For these keep at least 5 of the 8 rows medium or wide, name
+the part in frame for every close-up ("the trunk where it meets the bench"), and keep the product's orientation.
 
 ---
 
@@ -132,6 +151,8 @@ B04 | End frame | 2 | <camera direction>
 - Offer is verified or blank: YES/NO
 - Every row starts with a camera move, only B04 locked-off: YES/NO
 - Wide product kept inside the central 70%: YES/NO/N/A
+- Every row with a hand says where ACTOR A's body is; no hands from below to wall height: YES/NO
+- One time of day and light in all rows: YES/NO
 
 ---
 

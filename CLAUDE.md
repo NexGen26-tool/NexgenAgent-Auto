@@ -85,6 +85,7 @@ Updates: `/fastlane-update` pulls the latest version and runs the check again.
 - `negen/export_batch.js` makes a share link for one batch's videos; `python negen/download_export.py <link>
   <out.mp4>` downloads it and keeps the better of the two videos (AI score + product match). The browser blocks
   downloads, so always use this route.
+- `capcut/shot_sheet.py work/<week>` makes the shot-check sheets and `shots.json` (step 6b).
 - `.claude/skills/ad-brief-compiler/SKILL.md` turns a storyboard + product facts into three Ad briefs (V1-V3).
 - `capcut/build_project.py <config> [--save]` builds the CapCut project in the house edit (CapCut must be closed);
   `--check` says whether this computer's CapCut can take built projects. `capcut/text_sheet.py <config>` is the
@@ -154,10 +155,26 @@ for each brief open `/generate/new?from_batch=<video_template_batch of that stor
 **6. Collect.** For each finished batch: on `/exports` run `export_batch.js` with the batch id, then
 `python negen/download_export.py "<link>" "work/<week>/videos/<file name>.mp4"`, the file name being the video's
 codified name from `references/naming.md` (date as DD-MM-YYYY). Note the picked part and its scores in `week.json`.
+The batch's other video is kept as spare footage in `videos/spare/`.
+
+**6b. Shot check** (about 3 minutes for the sheets, then a look at each). Run `python capcut/shot_sheet.py
+work/<week>`: one sheet per video and spare in `work/<week>/shots/` (a frame every 0.5 s, cuts in yellow) and
+`work/<week>/shots.json`. Open each sheet next to the product photo and write every bad stretch into that video's
+`"bad"` list as `[start, end, "why"]`, then set `"checked": true`. Bad means:
+- an arm or hand with no body that could hold it: rising from below the frame to wall height, out of the wall, the
+  product or a window, a hand lying on the floor;
+- product drift: a different shape, orientation, colour, number of parts or front (a tree shelf turns into a pillar
+  or a symmetric tree, a wide panel turns tall, a carved front turns flat, a vanity splits into two boxes);
+- hallucination: objects appearing or vanishing (glass shelves, a person in a mirror), people outside a window,
+  a jump from day to evening;
+- a blend: two shots overlapping (about 0.5 s at most scene changes).
+Mark the whole stretch, frame to frame; judge the spares too, they are the replacement footage. A video with
+`"checked": false` is used as it is. Do not ask the person about each stretch; list what was cut in `log.md`.
 
 **7. CapCut.** Write `work/<week>/capcut.json` (format: `capcut/example.json`) with `"project": "<Mon DD> - <output
 name>"` and `"media": "<Mon DD> <output name>"` (ask for the name if `week.json` has none), one timeline per video,
-named by the codified name without the date, turning each brief's on-screen lines into the house edit:
+named by the codified name without the date, with `"group": "<SKU> <angle>"` (the V1-V3 of a group share footage
+for replacements), turning each brief's on-screen lines into the house edit:
 - `line1` [big, small, accent]: the hook split into a short subject (2-4 words), the linking words, and the last
   1-3 words that carry the tension (shown in orange italic). No trailing period; a "?" is fine.
   "Big empty wall?" became ["Big empty wall", "leaves you feeling ", "unresolved?"].
@@ -176,7 +193,9 @@ Cmd+Q; Windows: close it and quit it from the tray), run `python capcut/build_pr
 normal speed), and finish by hand. Every timeline has the voice-over on its own track and the clip's sound off, is
 cut to the voice-over (pauses shortened, voice at 1.08x, text fitted to the speech, CTA for 1.5 s after the last
 word, about 16-17 s in all) and has the brand's music bed from `brand/brands.json`. If the build says a track is not
-downloaded, ask the person to use it once in CapCut (Audio > search its name) and build again. Rule changes:
+downloaded, ask the person to use it once in CapCut (Audio > search its name) and build again. The build reads
+`shots.json`: a bad stretch of 1 s or more is replaced with clean footage (the video's spare first, then the group's
+other videos), a shorter one is cut out; it prints each replacement. Rule changes:
 `references/rule-changes.md`.
 The first time this runs on a Windows computer, say that the Windows build is new and ask them to check the whole
 first timeline carefully.
