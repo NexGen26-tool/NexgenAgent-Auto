@@ -28,6 +28,23 @@ Negen: https://marketing-tool.nexgenbros.com. Shared NexGen workspace: everyone'
 - Brand: ET Woodcrafts or SpryInterior. Ad brief: every field filled, 5 on-screen lines, 8 scene rows.
 - The run goes Brief > Image > AI check > Script > Video parts > Merge > VO script > Voice-over.
 
+## Storyboard to video (the route of the Oct 31 batch: the look the owner wants)
+The storyboard's own 8 panels animated directly give real, relatable rooms with people living in them and the
+product true to its photos. How it ran:
+- Storyboard batch per product at **9:16** (1:1 gives a square 720x720 video). Approve it in Review.
+- Before making the video, each part has Edit (what happens, camera, action, on screen, into next, video prompt) >
+  Save. Put the brief's scene row for that part there; a product note (UNLIT) goes first in the video prompt.
+  "Direct the video" does not exist on this route; the field limits of the ad brief do not apply.
+- "Make video from storyboard · 8 shots · 20 s": 8 parts (3+3+2+2+3+3+2+2 s), 20.3 s, 720x1280, Grok Imagine Video
+  1.5, included in the subscription. This is V1.
+- V2 and V3: Edit Part 1 with that variant's hook row > Save > Make again > "Make again (included in subscription)".
+  Each makes a new version of the whole video (v2, v3...); click the version chip to select one.
+- Voice-over per version: "New voice-over for video vN" > Write my own > voice > Advanced (open the summary) >
+  "Keep speed" > Make voice-over (about $0.02). Without Keep speed the voice is stretched to 20 s.
+- Download: the share link holds only the current version. Fetch `/media/<id>` of the version's "video + VO" in the
+  page and save it (the browser pane blocks downloads).
+- Scripted routines for this route are not in `negen/` yet; drive the page.
+
 ## Cost
 Image and video engines are included in the subscription. Voice-over (ElevenLabs) is about $0.01-0.03 a video.
 

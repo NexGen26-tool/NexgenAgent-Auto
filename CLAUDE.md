@@ -135,8 +135,11 @@ the product > Details.
 
 **3. Briefs** (write them while storyboards or videos run): follow the ad-brief-compiler skill. Three briefs per
 group, V1-V3, same job/proof/offer/CTA and Lines 2-5, a different hook and delivery each. Each brief carries its own
-voice-over script (`"vo"`, 36-42 words, sentence n says on-screen Line n, then the CTA) and scene rows written from
-those sentences, A02 opening the punchline on a hard cut. Write them straight into
+voice-over script (`"vo"`): an argument in 7 sentences, 40-46 words (hook, tension, turn, reason, doubt cleared,
+offer or scarcity, CTA; never a feature list), and scene rows written from those sentences, A02 showing the tension's
+before-state without our product, keeping each storyboard panel's staging (the room, the person living in it, framing, light),
+A03 opening the punchline on a hard cut. The offer and scarcity lines come from
+`brand/brands.json` (`offer`, `scarcity`), set by the owner; nothing else counts as an offer. Write them straight into
 `week.json` and `work/<week>/briefs.md` with the file tools, no throwaway scripts. Do not ask about a draft plan while
 the storyboards run; finish the briefs first.
 
@@ -148,9 +151,15 @@ popup with a question per group: "Chạy cả 3 video (Khuyên dùng)", "Sửa h
 
 **4. Video batches** (about 6-8 minutes each; Grok makes 2 parts at a time, so 12 batches take about 30-40 minutes):
 for each brief open `/generate/new?from_batch=<video_template_batch of that store>`, run `fill_batch.js` with
-`start: false`, the brief's `vo` and `direction` = the text block of `references/video-direction.md`; check the log says
-`vo=text fit=pad`, `direction ok`, `READY=true` and the name is right, then run it again with `start: true`
+`start: false`, the brief's `vo`, `voice` = the brand's `voice` in `brand/brands.json` (a group's `"voice"` in
+`week.json` wins) and `direction` = the text block of `references/video-direction.md`; check the log says
+`voice=<that voice>`, `vo=text fit=pad`, `direction ok`, `READY=true` and the name is right, then run it again with `start: true`
 (or start with the Start button). Record the batch id from the Batches list (`batch_status.js` prints ids).
+
+**4b. Storyboard-to-video route, by hand** (fallback only). The automated route above now carries the storyboard's
+look (the brief keeps each panel's staging, the poster goes to the image model, the direction asks for lived-in
+lifestyle footage). Use the by-hand route (`references/negen-tool.md`, "Storyboard to video") only when the person
+asks for it.
 
 **5. Watch.** Run `batch_status.js` on `/generate` with the week's name prefix. Two videos come out per batch
 (PART A and PART B start frames). Paused for Grok credits or a ChatGPT sign-out: tell the person once, stop.
@@ -171,6 +180,7 @@ work/<week>`: one sheet per video and spare in `work/<week>/shots/` (a frame eve
 - hallucination: objects appearing or vanishing (glass shelves, a person in a mirror), people outside a window,
   a jump from day to evening;
 - a blend: two shots overlapping (about 0.5 s at most scene changes).
+- text burned into the picture (captions the model wrote from the script).
 Mark the whole stretch, frame to frame; judge the spares too, they are the replacement footage. A video with
 `"checked": false` is used as it is. Do not ask the person about each stretch; list what was cut in `log.md`.
 
@@ -195,20 +205,32 @@ Cmd+Q; Windows: close it and quit it from the tray), run `python capcut/build_pr
 (dry run), then with `--save`. Tell them to open CapCut, check one timeline end to end (text fits, VO plays at
 normal speed), and finish by hand. Every timeline has the voice-over on its own track and the clip's sound off, is
 cut to the voice-over (pauses shortened, voice at 1.08x, text fitted to the speech, CTA for 1.5 s after the last
-word, about 16-17 s in all) and has the brand's music bed from `brand/brands.json`. If the build says a track is not
-downloaded, ask the person to use it once in CapCut (Audio > search its name) and build again. The build reads
+word, about 12-17 s in all), a music bed that rotates through the brand's `music_pool` in `brand/brands.json` (so
+the videos of a week do not share one track; `"music": "<name>"` on a timeline picks one) and sound effects from
+`capcut/templates/sfx.json` (a whoosh into the punchline, a pop on Lines 3-5, a ding on the CTA; `"sfx": false`
+turns them off). If the build says a track or sound is not downloaded, ask the person to use it once in CapCut
+(Audio > search its name) and build again. The build reads
 `shots.json`: a bad stretch of 1 s or more is replaced with clean footage (the video's spare first, then the group's
 other videos), a shorter one is cut out; it prints each replacement.
 **Edit plan (text, voice and footage together).** The voice-over script is the brief's `vo` (for an older batch made
 with "AI writes it", read it in Negen: Review > the video > the text under "Voice-over v1"; match the video by file
-size if a batch has two). Give each timeline an `"edit"` block (example in `capcut/example.json`):
+size if a batch has two). Put the script on the timeline as `"vo"` and give it an `"edit"` block (example in
+`capcut/example.json`):
 - the on-screen lines echo the voice-over's own words, in the house-edit format; facts only from the product page;
-- `"times"`: each line on screen while the voice says it (sentence ends = the voice pauses on the new timeline);
-  Line 1 is the first sentence, Line 2's animated title (the punchline) starts with the second;
-- `"cuts"` `[[timeline s, video, source s, zoom?], ...]`: for each sentence a clean shot that shows what is said
-  (shelves when it says shelves), from the video, its spare or the group's other videos, never a bad stretch;
-  the punchline starts on a hard cut to a different shot than the opening, zoom 1.15;
-- `"transitions"`: the punchline's start time (a Slide Blur into it).
+- `"times"`: leave it out. With `"vo"` set, the build finds where each sentence starts from the script and the
+  voice's pauses (a comma pause can be as long as a full stop, so it uses both) and shows each line while its
+  sentence is spoken. With the 7-sentence argument, Line 1 stays up through the tension and Line 2's animated
+  title (the punchline) starts with sentence 3; an older 6-sentence script puts it on sentence 2. It prints the
+  starts and which sentence is the punchline; give
+  `"times"` by hand only if they look wrong;
+- `"cuts"` `[[when, video, source s, zoom?], ...]`, `when` = `"s3"` (sentence 3 starts) or `"s3+1.4"` (1.4 s into
+  it): for each sentence a clean shot that shows what is said (shelves when it says shelves), from the video, its
+  spare or the group's other videos, never a bad stretch; the punchline (`"s3"`) starts on a hard cut to a different
+  shot than the opening, zoom 1.15. The tension (`"s2"`) and any sentence that states a problem get a shot of the problem (the before-state
+  or a stand-in), never a shot of our product (ad-brief-compiler, 8). Look at the shot sheets to pick them. A shot is never run on into a bad stretch or the video's
+  next generated part (it would flash other footage): the build slows it to fit instead and says so when it drops
+  under 0.75x; then split that sentence into two shots;
+- `"transitions"`: leave it out for a Slide Blur into the punchline (`"s3"`, or `"s2"` for a 6-sentence script).
 Build into the existing project with `--replace` when the person has already edited other timelines in it (old
 timelines are backed up in `work/<week>/capcut-backup/`). Rule changes:
 `references/rule-changes.md`.

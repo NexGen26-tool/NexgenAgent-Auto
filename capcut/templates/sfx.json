@@ -1,0 +1,27 @@
+{
+  "_note": "CapCut library sound effects (Cache/music/<file>), used once in CapCut so they are on this computer. Roles: punch = the whoosh into the punchline (Line 2), card = a soft pop when Lines 3-5 appear, cta = the call to action.",
+  "punch": {
+    "name": "Pop Whoosh",
+    "effect_id": "7517109130840426533",
+    "file": "4ad0a41ca4dd4ee5d2c542ac361d0f0d.mp3",
+    "duration": 1.8,
+    "volume": 0.8,
+    "lead": 0.3
+  },
+  "card": {
+    "name": "Pop (lower) telop sound etc",
+    "effect_id": "6817442514526537730",
+    "file": "d3b74afaf571dd3056bd7e9996a683cc.mp3",
+    "duration": 0.17,
+    "volume": 0.35,
+    "lead": 0.0
+  },
+  "cta": {
+    "name": "Ding",
+    "effect_id": "6990639268369385474",
+    "file": "ab1401246f23f83ab8520ee839a50eb9.mp3",
+    "duration": 2.03,
+    "volume": 1.0,
+    "lead": 0.0
+  }
+}

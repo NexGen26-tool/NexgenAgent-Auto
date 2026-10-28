@@ -19,7 +19,7 @@ On a Mac use python3. Windows needs ffmpeg (setup_check.py says how to install i
 
 Config format: see capcut/example.json.
 """
-import json, os, sys, copy, shutil, subprocess, time, re, uuid, struct, glob
+import json, os, sys, copy, shutil, subprocess, time, re, uuid, struct, glob, itertools
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 for _s in (sys.stdout, sys.stderr): _s.reconfigure(encoding="utf-8", errors="replace")  # names can be Vietnamese
@@ -41,6 +41,8 @@ TEMPLATE_EFFECTS = "{HOME}/Library/Containers/com.lemon.lvoverseas/Data/Movies/C
 US = 1_000_000
 PAUSE = 0.4     # a voice-over pause at least this long is shortened ...
 GAP = 0.25      # ... to this
+SENT_PAUSE = 0.25  # the shortest pause read as a break between sentences (Negen's voices pause 0.3-0.4 s there)
+EXTRA_PAUSE = 0.3  # how much a pause inside a sentence beyond its commas counts against a reading of the sentence ends
 CTA_HOLD = 1.5  # the CTA stays this long after the voice-over ends; the timeline ends there
 VO_SPEED = 1.08 # the Negen voice-over is a little slow for a ~16 s ad
 BRANDS = json.load(open(ROOT + "/brand/brands.json", encoding="utf-8"))
@@ -175,12 +177,15 @@ def mat(d, key, mid): return next(x for x in d["materials"][key] if x["id"] == m
 def seg_of(d, mid): return next(s for t in d["tracks"] for s in t["segments"] if s["material_id"] == mid)
 
 
-def speech_spans(path, dur):
+def speech_spans(path, dur, pause=SENT_PAUSE):
     """The parts of the voice-over to keep, in seconds: everything except the start and end silence, with every
     pause of PAUSE or more cut down to GAP. Without ffmpeg the voice-over stays whole."""
     ffmpeg = find_ffmpeg()
     if not ffmpeg: return [(0.0, dur)]
-    err = subprocess.run([ffmpeg, "-hide_banner", "-i", path, "-af", "silencedetect=n=-35dB:d=%s" % PAUSE, "-f", "null", "-"],
+    # voice band only: Negen's file mixes the clip's room sound (birds, room tone) under the voice, which hides the
+    # 0.3-0.4 s pauses between sentences from a plain level check
+    err = subprocess.run([ffmpeg, "-hide_banner", "-i", path, "-af",
+                          "highpass=f=120,lowpass=f=6000,silencedetect=n=-30dB:d=%s" % pause, "-f", "null", "-"],
                          capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
     starts = [float(x) for x in re.findall(r"silence_start: (-?[\d.]+)", err)]
     ends = [float(x) for x in re.findall(r"silence_end: ([\d.]+)", err)]
@@ -190,6 +195,55 @@ def speech_spans(path, dur):
         spans.append((pos, min(dur, a + pad))); pos = b - pad
     if pos < dur - 0.05 and (not ends or len(ends) == len(starts) and ends[-1] < dur - 0.05): spans.append((pos, dur))
     return [(a, b) for a, b in spans if b - a > 0.05] or [(0.0, dur)]
+
+
+def sentence_ends(spans, sentences):
+    """Where sentences 1..n-1 end in the voice-over file (seconds, the middle of the pause after each). A comma pause
+    can be as long as a sentence pause, so the n-1 sentence ends are the pauses that let every sentence hold no more
+    pauses than it has commas and keep the speaking pace (seconds per letter) most even across sentences, longer
+    pauses winning a tie (right on all 12 voice-overs of the Oct 31 batch). None when nothing fits."""
+    n = len(sentences)
+    gaps = [spans[i + 1][0] - spans[i][1] for i in range(len(spans) - 1)]
+    talk = [b - a for a, b in spans]
+    letters = [max(1, len(re.sub(r"[^A-Za-z0-9]", "", s))) for s in sentences]; commas = [s.count(",") for s in sentences]
+    best = None
+    for c in itertools.combinations(range(len(gaps)), n - 1):
+        bounds = [-1] + list(c) + [len(spans) - 1]
+        groups = [range(bounds[k] + 1, bounds[k + 1] + 1) for k in range(n)]
+        extra = sum(max(0, len(g) - 1 - commas[k]) for k, g in enumerate(groups))  # pauses inside a sentence beyond its commas
+        rate = [sum(talk[i] for i in g) / letters[k] for k, g in enumerate(groups)]
+        mean = sum(rate) / n
+        score = (sum((x - mean) ** 2 for x in rate) / n) ** 0.5 / mean - 0.1 * sum(gaps[i] for i in c) + EXTRA_PAUSE * extra
+        if best is None or score < best[0]: best = (score, c)
+    if not best: return None
+    return [(spans[i][1] + spans[i + 1][0]) / 2 for i in best[1]]
+
+
+def on_timeline(spans, x):
+    """A moment of the voice-over file (seconds) on the timeline, where the kept spans play end to end at VO_SPEED."""
+    at = 0.0
+    for a, b in spans:
+        if x <= a: return round(at, 2)
+        if x < b: return round(at + (x - a) / VO_SPEED, 2)
+        at += (b - a) / VO_SPEED
+    return round(at, 2)
+
+
+def vo_times(vo_text, spans, total, path=None):
+    """The edit plan's "times" from the brief's voice-over script, each line on screen while its sentences are spoken.
+    7 sentences (the argument: hook, tension, turn, reason, doubt cleared, offer, CTA): Line 1 stays up through the
+    tension and Line 2, the punchline, starts with sentence 3. 6 sentences (older briefs): sentence n says Line n.
+    "starts" holds every sentence's start for cuts named "s1".."s7". Some voices (Negen's default) pause under
+    SENT_PAUSE between sentences; then a finer pass over the file finds them."""
+    sentences = [s for s in re.split(r"(?<=[.?!])\s+", vo_text.strip()) if s]
+    if len(sentences) < 6: return None
+    ends = sentence_ends(spans, sentences)
+    if not ends and path: ends = sentence_ends(speech_spans(path, mp4_info(path)[0], 0.12), sentences)
+    if not ends: return None
+    s = [0.0] + [on_timeline(spans, x) for x in ends]  # s[k] = start of sentence k+1
+    p = 2 if len(s) >= 7 else 1  # index of the punchline sentence
+    return {"line1": [0, s[p]], "line2": s[p], "line3": [s[p + 1], s[p + 2]], "line4": [s[p + 2], s[p + 3]],
+            "line5": [s[p + 3], s[p + 4]], "cta": s[p + 4], "starts": s, "punch": "s%d" % (p + 1)}
 
 
 def add_audio(d, tp, mat, spans, volume, name, speed=1.0):
@@ -232,6 +286,60 @@ def add_music(d, music):
            "duration": us(music["duration"])}
     add_audio(d, tp, mat, [(0, min(d["duration"], us(music["duration"])))], music["volume"], "Music")
     return True
+
+
+def pick_music(brand, cfg, slot):
+    """The music bed for one timeline: the timeline's own "music" (a track name from the brand's music_pool) if set,
+    else the pool rotated by the timeline's slot among its brand's timelines, so the V1-V3 of a group never share a
+    track. A brand with no pool keeps its single "music"."""
+    pool = brand.get("music_pool") or ([brand["music"]] if brand.get("music") else [])
+    if not pool: return None
+    if cfg.get("music"):
+        named = [m for m in pool if m["name"] == cfg["music"]]
+        if named: return named[0]
+    return pool[slot % len(pool)]
+
+
+SFX = json.load(open(HERE + "/templates/sfx.json", encoding="utf-8"))
+
+
+def add_sfx(d, events):
+    """Sound effects on their own track: events = [(time in seconds, role)], role a key of templates/sfx.json.
+    A sound not yet on this computer (never used in CapCut) is left out and reported."""
+    tp = json.load(open(HERE + "/templates/music_track.json", encoding="utf-8"))
+    segs, missing = [], []
+    for t, role in sorted(events):
+        fx = SFX[role]; path = MUSIC + "/" + fx["file"]
+        if not os.path.exists(path): missing.append(fx["name"]); continue
+        m = copy.deepcopy(tp["mat"]); m.update({"id": uid(), "type": "sound", "path": path, "name": fx["name"],
+                                                "music_id": "", "effect_id": fx["effect_id"], "category_name": "Favorites",
+                                                "category_id": "-100", "duration": us(fx["duration"])})
+        d["materials"].setdefault("audios", []).append(m)
+        s = copy.deepcopy(tp["seg"]); s["id"] = uid(); s["material_id"] = m["id"]; refs = []
+        for k, items in tp["extra"].items():
+            for it in items:
+                n = copy.deepcopy(it); n["id"] = uid(); d["materials"].setdefault(k, []).append(n); refs.append(n["id"])
+        start = max(0, us(t - fx.get("lead", 0))); length = min(us(fx["duration"]), max(0, d["duration"] - start))
+        if length <= 0: continue
+        s["extra_material_refs"] = refs; s["source_timerange"] = {"start": 0, "duration": length}
+        s["target_timerange"] = {"start": start, "duration": length}; s["volume"] = fx["volume"]
+        s["last_nonzero_volume"] = 1.0; s["speed"] = 1.0; s["render_index"] = 0; s["track_render_index"] = len(d["tracks"])
+        segs.append(s)
+    if segs:
+        d["tracks"].append({"id": uid(), "type": "audio", "segments": segs, "flag": 0, "attribute": 0,
+                            "name": "Sound effects", "is_default_name": False})
+    return len(segs), sorted(set(missing))
+
+
+def sfx_events(d, r):
+    """When the cards come in on the finished timeline: a whoosh into the punchline (Line 2), a pop for Lines 3-5,
+    the CTA sound when the call to action appears."""
+    def start(role):
+        s = next((s for t in d["tracks"] for s in t["segments"]
+                  if r[role] == s["material_id"] or r[role] in s["extra_material_refs"]), None)
+        return s["target_timerange"]["start"] / US if s else None
+    ev = [(start("compound"), "punch")] + [(start(k), "card") for k in ("line3a", "line4", "line5")] + [(start("cta"), "cta")]
+    return [(t, role) for t, role in ev if t is not None]
 
 
 MIN_PIECE = 0.5   # clean footage shorter than this is not used
@@ -341,10 +449,11 @@ def place_times(d, r, times, total):
     place("line4", *times["line4"]); place("line5", *times["line5"]); place("cta", times["cta"], total / US)
 
 
-def cuts_to_pieces(cuts, total, folder):
+def cuts_to_pieces(cuts, total, folder, shots=None):
     """An edit plan's cut list [[timeline second, video, source second, zoom?], ...] -> pieces and zooms. A video is
-    a file name in the timeline's videos folder or its spare folder. A shot that runs past the end of its file is
-    slowed to fit."""
+    a file name in the timeline's videos folder or its spare folder. A shot that would run past the end of its file
+    or into the video's next generated part (its cuts in shots.json) or its next bad stretch (a blend usually marks the
+    next scene) is slowed to fit instead."""
     def find(v):
         for p in (v, os.path.join(folder, v), os.path.join(folder, "spare", v)):
             for q in (p, p + ".mp4"):
@@ -353,7 +462,11 @@ def cuts_to_pieces(cuts, total, folder):
     cuts = sorted(cuts, key=lambda c: c[0]); pieces, zooms = [], []
     for i, c in enumerate(cuts):
         end = cuts[i + 1][0] if i + 1 < len(cuts) else total
-        f = find(c[1]); shown = end - c[0]; src = min(shown, mp4_info(f)[0] - c[2])
+        f = find(c[1]); shown = end - c[0]
+        sh = (shots or {}).get(os.path.basename(f), {})
+        stops = sh.get("cuts", []) + [b[0] for b in sh.get("bad", [])]
+        part_end = min([x for x in stops if x > c[2] + 0.15] + [mp4_info(f)[0]])
+        src = min(shown, part_end - c[2])
         pieces.append((f, c[2], src, shown)); zooms.append(c[3] if len(c) > 3 else 1.0)
     return pieces, zooms
 
@@ -375,7 +488,7 @@ def add_transitions(d, segs, at_times, zooms):
 
 
 class Timeline:
-    def __init__(self, cfg, media_dir, shots=None, pool=()):
+    def __init__(self, cfg, media_dir, shots=None, pool=(), slot=0):
         self.name = cfg["name"]
         brand = BRANDS[cfg["brand"]]
         video = link_media(os.path.expanduser(cfg["video"]), media_dir)
@@ -442,20 +555,38 @@ class Timeline:
         for a, b in spans[:-1]: at += us((b - a) / VO_SPEED); joints.append(at)
         self.retime(d, r, total, joints)
         # shot check: bad stretches (shots.json) cut out or replaced with clean footage from the spare / the group
-        self.notes = None
-        src = os.path.expanduser(cfg["video"]); ed = cfg.get("edit") or {}
+        self.notes = None; self.times = None
+        src =os.path.expanduser(cfg["video"]); ed = dict(cfg.get("edit") or {})
+        if not ed.get("times") and cfg.get("vo"):  # times from the script's sentences and the voice's own pauses
+            ed["times"] = vo_times(cfg["vo"], spans, total / US, self.vo)
+            self.times = ed["times"]
+            if ed["times"] and ed.get("cuts"):  # cut points named by sentence ("s2", "s4+0.9") take the sentence's start
+                st = ed["times"]["starts"]
+                at = lambda x: x if not isinstance(x, str) else st[int(x[1]) - 1] + (float(x[3:]) if "+" in x else 0.0)
+                ed["cuts"] = [[at(c[0])] + list(c[1:]) for c in ed["cuts"]]
+                ed["transitions"] = [at(t) for t in ed.get("transitions", [ed["times"]["punch"]])]
+        if any(isinstance(c[0], str) for c in ed.get("cuts", [])):
+            raise SystemExit("%s: could not find where each sentence of the voice-over starts. Give \"times\" by hand "
+                             "in the edit plan (CLAUDE.md step 7)." % self.name)
         if ed.get("times"): place_times(d, r, ed["times"], total)
         if ed.get("cuts"):  # Claude's edit plan: footage chosen per sentence of the voice-over
-            pieces, zooms = cuts_to_pieces(ed["cuts"], total / US, os.path.dirname(src))
+            pieces, zooms = cuts_to_pieces(ed["cuts"], total / US, os.path.dirname(src), shots)
             segs = lay_footage(d, r, pieces, media_dir)
             missing = add_transitions(d, segs, ed.get("transitions", []), zooms)
             self.notes = ["edit plan: %d shots, %d transitions" % (len(pieces), len(ed.get("transitions", [])) - len(missing))]
+            for f, a, length, shown in pieces:  # a bad stretch in a planned shot, or a shot slowed below 0.75x, is reported
+                bad = [b for b in (shots or {}).get(os.path.basename(f), {}).get("bad", []) if a < b[1] and b[0] < a + length]
+                if bad: self.notes.append("%s %.2f-%.2f s uses a bad stretch: %s" % (os.path.basename(f)[-28:], a, a + length, bad[0][2]))
+                elif length / shown < 0.75: self.notes.append("%s from %.2f s slowed to %.2fx to fill %.1f s; split the sentence into two shots"
+                                                              % (os.path.basename(f)[-28:], a, length / shown, shown))
             if missing: self.notes.append("transition Slide Blur not downloaded in CapCut, left out at %s s" % missing)
         elif shots and shots.get(os.path.basename(src), {}).get("checked"):
             pieces, self.notes = plan_footage(src, total / US, shots, pool)
             lay_footage(d, r, pieces, media_dir)
         add_vo(d, self.vo, spans)
-        self.music = add_music(d, brand["music"]) if brand.get("music") else None
+        track = pick_music(brand, cfg, slot); self.music_name = track["name"] if track else "-"
+        self.music = add_music(d, track) if track else None
+        self.sfx = add_sfx(d, sfx_events(d, r)) if cfg.get("sfx", True) else (0, [])
         self.d = d
 
     @staticmethod
@@ -600,14 +731,20 @@ if __name__ == "__main__":
                 ov = os.path.expanduser(o["video"]); out += [ov] + spare(ov)
         return [p for p in out if shots.get(os.path.basename(p), {}).get("checked")]
 
-    tls = [Timeline(c, media_dir, shots, pool(c)) for c in cfg["timelines"]]
+    slots, tls = {}, []  # the music pool rotates per brand, in the order the timelines are listed
+    for c in cfg["timelines"]:
+        slots[c["brand"]] = slots.get(c["brand"], -1) + 1
+        tls.append(Timeline(c, media_dir, shots, pool(c), slots[c["brand"]]))
     for t in tls:
         miss, ok = t.check()
-        print("%-34s %.1fs | VO %s | music %s | missing refs %d | media ok %s" % (
-            t.name, t.dur / US, os.path.basename(t.vo), {None: "-", True: "yes", False: "NOT DOWNLOADED"}[t.music], miss, ok))
+        print("%-34s %.1fs | VO %s | music %s (%s) | sfx %d | missing refs %d | media ok %s" % (
+            t.name, t.dur / US, os.path.basename(t.vo), t.music_name[:28],
+            {None: "-", True: "yes", False: "NOT DOWNLOADED"}[t.music], t.sfx[0], miss, ok))
+        if t.sfx[1]: print("    sound effects not in CapCut yet, left out:", ", ".join(t.sfx[1]))
+        if t.times: print("    sentences start at", [round(x, 2) for x in t.times["starts"][1:]], "punchline", t.times["punch"])
         if t.notes is None: print("    shot check: not done for this video, footage used as it is")
         for n in t.notes or []: print("    shot check:", n)
-    gone = sorted({BRANDS[c["brand"]]["music"]["name"] for c, t in zip(cfg["timelines"], tls) if t.music is False})
+    gone = sorted({t.music_name for t in tls if t.music is False})
     if gone: print("NOTE: music not in CapCut yet, so left out: %s. Use it once in CapCut (Audio > search the name), "
                    "then build again." % ", ".join(gone))
     if "--save" in sys.argv: save(cfg["project"], tls)

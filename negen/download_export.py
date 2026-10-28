@@ -8,6 +8,7 @@ product match in the ZIP's manifest.csv; a tie goes to PART A. The other video i
 videos/spare/<name> - spare.mp4 (capcut/shots.py and the CapCut build use it to replace bad shots).
 """
 import csv, http.client, io, os, shutil, sys, tempfile, time, urllib.request, zipfile
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # file names carry the creator's name (e.g. "Triết")
 
 
 def fetch(url):

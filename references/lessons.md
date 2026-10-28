@@ -40,3 +40,30 @@
 - A punchline over the continuing opening shot lands softly; start it on a hard cut with a Slide Blur and a punch-in.
 - Negen's voice-over "Write my own" + "Keep speed" (fit=pad) plays our script at natural speed: 34 words = 13.6 s.
   With our own script the on-screen text, the voice and the scenes come from one source.
+
+# Oct 31 batch (storyboard-to-video route, owner review Oct 28)
+
+- The owner liked the look: colours, staging, hierarchy, camera, light; product and room real and relatable.
+- Rejected for: hands with wrong physics; a "plain, soulless console" line over our own console (the contrast
+  argument was fine; the footage under it showed ours, so ours read as the plain one); text, voice and footage not matching; one music
+  track for all 12, no sound effects, no accent in the text.
+- Fixes that held without regenerating footage: our own voice-over per version (Keep speed), on-screen lines from
+  its sentences, shots picked per sentence around the bad hand stretches, music rotated per brand, SFX.
+- Product photos staged with lights make the model light an unlit product (wine rack); an UNLIT note first in the
+  part prompt fixed it.
+- A storyboard made at 1:1 gives a square video; always 9:16.
+- Negen's voices pause 0.3-0.4 s between sentences and about as long at some commas; room sound in the clip hides
+  short pauses unless the voice band is filtered first. The build now uses the script's commas and pace to tell
+  them apart (right on all 12).
+- The 8 generated parts each hold one shot; a planned shot that runs past its part flashes the next one.
+
+# Look test vs arc test (curved console, Oct 28)
+- The script carries the conversion, not the footage: same look and edit, but the owner rated the feature-list
+  script ("Oval top, S-curve base. Keys down, palm on the grain. Six widths.") below the creative team's arc. A
+  converting script moves stake -> before-state -> turn -> reason -> doubt cleared -> offer -> CTA; a feature is
+  only ever the reason or the answer to a doubt.
+- A before-state row works when it says what is NOT there: "a bare hallway wall... no console, no furniture against
+  this wall" gave a clean bare-wall walk in all three videos, with no look-alike console.
+- The voice matters to pacing: the template's default voice reads flat with 0.1-0.2 s gaps; pick the brand's voice.
+- Late close-ups of the product with props on it (the bowl, 15-18 s) drift most; keep the offer sentence on a
+  medium or wide shot.
