@@ -2,6 +2,33 @@
 
 Changes to how the fast lane works, newest first: what changed, why, and what it was tested on.
 
+## 2026-10-28 (night) - Run the week as written; catch drift before saving; fewer hand fixes
+
+**Why:** this week took most of a day instead of 3-4 hours. The route was switched three times (storyboard-to-video
+by hand, the creative team's copy, then two test groups), every switch redid briefs, batches and edits, and problems
+surfaced only when the owner watched: an extra foot on the chair, a cupboard door swinging the wrong way, a wine rack
+drawn lit, two voice-overs timed wrong.
+
+**What changed:**
+- `CLAUDE.md` "Run the week as written": one route (steps 0-8) for the whole week, no mid-week route switches or
+  side tests, problems fixed inside the week's material, a rule change applies from the next batch, a step that fails
+  twice is logged and skipped to its fallback, quality is caught at the plan check before saving.
+- Shot check (6b) bad list: body drift (an extra or missing limb, crossed legs with both feet on the floor, a limb
+  merging into furniture, floating feet, impossible door or hand physics) and product features the page does not have
+  (lit shelves).
+- New plan check (`capcut/plan_sheet.py`, step 7, before every save): sentence lengths with a CHECK when one is far
+  off the voice's pace, the clean stretches of every video, and a sheet per group with every frame each timeline will
+  show. Found five drifts on the final 12 that the per-video sheets had missed.
+- `build_project.py`: when the sentence match leaves one sentence far off the voice's pace (letters a second), it
+  tries the finer pause pass and keeps the more even reading. Right on all 30 voice-overs of the week, including the
+  two that needed `"ends"` by hand; the 12 Oct 31 and look-test timings unchanged. `--save` on an existing project
+  now says to use `--replace`.
+- `fill_batch.js` `unlit`: the full UNLIT note on every row by itself (week.json group `"unlit": "wine rack"`).
+- `ad-brief-compiler` + `video-direction.md`: simple poses (stand, walk, sit upright with both feet down), one simple
+  action per row, nothing opened on camera, high shelves reached by a whole person.
+
+**Tested on:** the final 12 of the week (`work/2026-10-26 NegenAgent - Oct31/final/`).
+
 ## 2026-10-28 (evening) - The script is an argument: 7 sentences, a brand voice, the owner's offer
 
 **Why:** the look test's console had the right look and edit, but the owner found its argument a feature list ("An

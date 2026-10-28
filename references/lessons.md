@@ -67,3 +67,19 @@
 - The voice matters to pacing: the template's default voice reads flat with 0.1-0.2 s gaps; pick the brand's voice.
 - Late close-ups of the product with props on it (the bowl, 15-18 s) drift most; keep the offer sentence on a
   medium or wide shot.
+
+# Final 12 (Oct 28 afternoon)
+- The UNLIT note must be the full sentence at the start of every row; shortened, the wine rack came out lit in every
+  End-of-year take. Lit stretches are bad footage (the page says no lighting).
+- Before-state rows that name what is NOT there worked for all four products (bare wall, metal side chair, crammed
+  cupboard, crowded counter with no rack).
+- A doubt asked and answered in one slot needs a comma, not "?", or the build counts an extra sentence.
+
+# What cost the day (Oct 28)
+- Switching route mid-week is the expensive mistake: each switch (by-hand storyboard route, another system's copy,
+  a look test, an arc test) redid briefs, batches and the edit. Finish the week on the route it started on; test a
+  change on the next week.
+- Drift shows in hands and feet, not in the product: the per-video shot sheets were judged by the product and missed
+  a third foot, floating feet and an arm from an edge. The plan sheet (only the frames the timelines use) caught them.
+- Tangled poses (curled up, legs crossed, feet tucked) and opening doors are where the model breaks bodies and
+  physics. Brief simple poses and things already open.

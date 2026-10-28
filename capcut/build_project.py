@@ -210,13 +210,28 @@ def sentence_ends(spans, sentences):
     for c in itertools.combinations(range(len(gaps)), n - 1):
         bounds = [-1] + list(c) + [len(spans) - 1]
         groups = [range(bounds[k] + 1, bounds[k + 1] + 1) for k in range(n)]
-        extra = sum(max(0, len(g) - 1 - commas[k]) for k, g in enumerate(groups))  # pauses inside a sentence beyond its commas
+        # pauses inside a sentence beyond its commas (a dip of the fine pass, where two spans overlap, is not a pause)
+        extra = sum(max(0, sum(1 for i in list(g)[:-1] if gaps[i] > 0) - commas[k]) for k, g in enumerate(groups))
         rate = [sum(talk[i] for i in g) / letters[k] for k, g in enumerate(groups)]
         mean = sum(rate) / n
         score = (sum((x - mean) ** 2 for x in rate) / n) ** 0.5 / mean - 0.1 * sum(gaps[i] for i in c) + EXTRA_PAUSE * extra
         if best is None or score < best[0]: best = (score, c)
     if not best: return None
     return [(spans[i][1] + spans[i + 1][0]) / 2 for i in best[1]]
+
+
+PACE_OFF = 1.5  # a reading whose slowest or fastest sentence is this far off the voice's median pace is suspect
+
+
+def pace_off(spans, ends, sentences):
+    """How far the most uneven sentence of a reading is from the voice's median pace (letters a second, 1.0 = even;
+    the right readings of Oct 28 stayed under 1.5, the wrong ones were about 3)."""
+    bounds = [spans[0][0]] + list(ends) + [spans[-1][1]]
+    talk = lambda a, b: sum(max(0.0, min(y, b) - max(x, a)) for x, y in spans)
+    rate = [max(1, len(re.sub(r"[^A-Za-z0-9]", "", s))) / max(talk(bounds[k], bounds[k + 1]), 0.05)
+            for k, s in enumerate(sentences)]
+    body = sorted(rate[:-1]); m = body[len(body) // 2]
+    return max(max(r / m, m / r) for r in rate[:-1])
 
 
 def on_timeline(spans, x):
@@ -229,7 +244,7 @@ def on_timeline(spans, x):
     return round(at, 2)
 
 
-def vo_times(vo_text, spans, total, path=None):
+def vo_times(vo_text, spans, total, path=None, ends=None):
     """The edit plan's "times" from the brief's voice-over script, each line on screen while its sentences are spoken.
     7 sentences (the argument: hook, tension, turn, reason, doubt cleared, offer, CTA): Line 1 stays up through the
     tension and Line 2, the punchline, starts with sentence 3. 6 sentences (older briefs): sentence n says Line n.
@@ -237,8 +252,17 @@ def vo_times(vo_text, spans, total, path=None):
     SENT_PAUSE between sentences; then a finer pass over the file finds them."""
     sentences = [s for s in re.split(r"(?<=[.?!])\s+", vo_text.strip()) if s]
     if len(sentences) < 6: return None
-    ends = sentence_ends(spans, sentences)
-    if not ends and path: ends = sentence_ends(speech_spans(path, mp4_info(path)[0], 0.12), sentences)
+    # "ends" in the edit plan: where each sentence but the last ends in the voice file, in seconds, when the match
+    # picked a comma pause (the voice can run two sentences together and pause at a comma instead)
+    if not ends:
+        ends = sentence_ends(spans, sentences)
+        # the voice can run two sentences together with no pause between them (the offer into the CTA): then the
+        # reading above splits at a comma instead, and one sentence comes out far too fast. The finer pause pass
+        # finds the short dip between them; keep whichever reading is more even.
+        if path and (not ends or pace_off(spans, ends, sentences) > PACE_OFF):
+            fine = speech_spans(path, mp4_info(path)[0], 0.12)
+            other = sentence_ends(fine, sentences)
+            if other and (not ends or pace_off(spans, other, sentences) < pace_off(spans, ends, sentences)): ends = other
     if not ends: return None
     s = [0.0] + [on_timeline(spans, x) for x in ends]  # s[k] = start of sentence k+1
     p = 2 if len(s) >= 7 else 1  # index of the punchline sentence
@@ -558,7 +582,7 @@ class Timeline:
         self.notes = None; self.times = None
         src =os.path.expanduser(cfg["video"]); ed = dict(cfg.get("edit") or {})
         if not ed.get("times") and cfg.get("vo"):  # times from the script's sentences and the voice's own pauses
-            ed["times"] = vo_times(cfg["vo"], spans, total / US, self.vo)
+            ed["times"] = vo_times(cfg["vo"], spans, total / US, self.vo, ed.get("ends"))
             self.times = ed["times"]
             if ed["times"] and ed.get("cuts"):  # cut points named by sentence ("s2", "s4+0.9") take the sentence's start
                 st = ed["times"]["starts"]
@@ -663,7 +687,8 @@ def save(project, tls):
     if not name: raise SystemExit(msg)
     files = (name, name + ".bak", "template-2.tmp")
     out = DRAFTS + "/" + project
-    if os.path.exists(out): raise SystemExit("A CapCut project with this name exists already: " + project)
+    if os.path.exists(out): raise SystemExit("A CapCut project with this name exists already: " + project + ". To rebuild its timelines in "
+                                     "place, run again with --replace instead of --save (old timelines are backed up).")
     shutil.copytree(HERE + "/skeleton", out, ignore=shutil.ignore_patterns(".keep"))
     tmpl = out + "/Timelines/TEMPLATE"; now = int(time.time() * 1e6); ids, entries = [], []
     for t in tls:

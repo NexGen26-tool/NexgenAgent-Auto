@@ -15,3 +15,9 @@ batches = 48 Grok parts at ~79 s with 2 at a time ~32 min, export and CapCut ~5 
 5 minutes a video. The human check of each timeline comes on top.
 
 Batching does not beat the Grok queue (2 parts at a time) or outages, which cost far more than any step.
+
+## Week of Oct 26 (measured Oct 28)
+
+The 9 final batches (3 groups) took about 40 minutes from first fill to last download (Grok queue), the shot check
+about 20 minutes, the edit plan and build about 30. What made the week take a day was not these steps but four route
+changes before them (see `lessons.md`, "What cost the day"). Run as written, a week of 12 is about 3-4 hours.

@@ -63,7 +63,9 @@ For long or wide products (TV stands, consoles, kitchen islands, sideboards, lon
 - Do not show the inside of closed storage unless the product photos show it. Prefer "the item goes behind the panel and the panel closes flush".
 - Product photos are often staged with lights the product does not have (lit wine-rack shelves). If the page does not
   sell lights, start every row where the product is in frame with "IMPORTANT: the <product> is completely UNLIT, no
-  lights or LEDs." The model copies the photo's light otherwise.
+  lights or LEDs." in full, never shortened. The model copies the photo's light otherwise; a short "The rack is
+  UNLIT" still gave lit shelves in every End-of-year take (2026-10-28). Set the group's `"unlit": "<product noun>"` in `week.json`; `fill_batch.js` then
+  adds the full note to every row by itself.
 
 ### 5. Continuity
 - One recurring person, ACTOR A, described once in full (for example "ACTOR A, a woman in her thirties, cream knit
@@ -82,6 +84,14 @@ Videos where an arm appears from nowhere get cut in the edit. Every row with a h
 Never: hands rising from below the frame to something at or above eye level (wall art, high shelves, mirrors); a
 hand or arm coming out of the wall, the product or a window; two hands with no person in a wide shot; a hand in a
 top-down shot of a floor. Close-ups of wall-mounted products have no hand ("No hand.").
+
+**Simple poses, simple physics.** The video model draws extra feet and broken limbs in tangled poses and gets hinged
+things wrong (Oct 28: a third foot on the chair, a cupboard door swinging the wrong way). In every row:
+- People stand, walk, or sit upright with both feet flat on the floor. No crossed legs, feet tucked up, curling up,
+  lying down or legs over the chair arm.
+- One simple action per row: set down, lift, take off a shelf, rest a hand, hand over. No opening doors, lids or
+  drawers on camera: show the cupboard or cabinet already open.
+- High shelves are reached by a person whose whole body is in frame, never by an arm entering from an edge.
 
 ### 7. Organic and sculptural products
 Tree shelves, live-edge panels, wall sculptures and other organic shapes drift most in close-ups (a trunk turns into
@@ -168,7 +178,8 @@ each:
 - Spoken English, no claim the product page does not support, no offer or scarcity that `brand/brands.json` does not
   list.
 - A full stop, "?" or "!" ends a sentence and nothing else does; the CapCut build finds the sentences by them and by
-  the voice's pauses, and times each on-screen line to its sentence. Commas are fine.
+  the voice's pauses, and times each on-screen line to its sentence. Commas are fine. Exactly 7 of them: a doubt
+  asked and answered in one slot takes a comma ("Too precious, it's my everyday seat."), not a "?".
 - The tension sentence plays over a picture of the problem without our product (see 8): its scene row is A02.
 
 ### ON-SCREEN TEXT
@@ -215,6 +226,7 @@ B04 | End frame | 2 | <camera direction>
 - At least 5 rows are eye-level medium or wide with ACTOR A in the lived-in room; at most 2 close details: YES/NO
 - Wide product kept inside the central 70%: YES/NO/N/A
 - Every row with a hand says where ACTOR A's body is; no hands from below to wall height: YES/NO
+- Simple poses only: standing, walking, sitting upright with both feet on the floor; nothing opened on camera: YES/NO
 - One time of day and light in all rows: YES/NO
 - VO is 40-46 words in 7 sentences: hook, tension, turn, reason, doubt cleared, offer or scarcity, CTA: YES/NO
 - No sentence only names a feature (each feature is a reason or an answer): YES/NO

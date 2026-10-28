@@ -14,6 +14,8 @@
 //      shots   8 camera directions, A01..B04 (jobs and seconds are fixed below)
 //      vo      the voice-over script (Write my own, Keep speed): 7 sentences, 40-46 words (ad-brief-compiler)
 //      voice   the brand's voice name from brand/brands.json (e.g. "Dawn"); "" keeps the template's voice
+//      unlit   the product noun ("wine rack") when the page says no lights but the photos show some; every row
+//              then starts with the full UNLIT note (week.json group "unlit")
 //      direction  the standing video direction (references/video-direction.md), sent with every batch
 //      start   true to press Start when every check passes; false to only fill and report
 //   3. Read the returned log. "READY=true" means: one product ticked, the poster is the reference with
@@ -88,6 +90,13 @@ async (B) => {
     setv(L('Line ' + (i + 1) + ' from, seconds'), String(l[1]));
     setv(L('Line ' + (i + 1) + ' to, seconds'), String(l[2]));
   });
+  // a product with no lights whose photos show some (the wine rack): every row starts with the full note, or the
+  // model copies the photo's light (a shortened note still gave lit shelves in every take, Oct 28)
+  if (B.unlit) {
+    const note = 'IMPORTANT: the ' + (typeof B.unlit === 'string' ? B.unlit : 'product') + ' is completely UNLIT, no lights or LEDs. ';
+    B.shots = B.shots.map(d => d.startsWith('IMPORTANT: ') ? d : note + d);
+    log.push('unlit note on ' + B.shots.length + ' rows');
+  }
   const ids = ['A01', 'A02', 'A03', 'A04', 'B01', 'B02', 'B03', 'B04'];
   const jobs = ['hook', 'relevance', 'detail', 'bridge', 'proof', 'in_use', 'payoff', 'end_frame'];
   const secs = [2, 3, 3, 2, 3, 2, 3, 2];
