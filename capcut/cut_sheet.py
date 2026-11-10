@@ -42,7 +42,7 @@ def main():
         vo = bp.extract_vo(video, os.path.join(week, "plan"))
         spans = bp.speech_spans(vo, bp.mp4_info(vo)[0])
         total = sum(b - a for a, b in spans) / bp.VO_SPEED + bp.CTA_HOLD
-        times = ed.get("times") or (bp.vo_times(t["vo"], spans, total, vo, ed.get("ends")) if t.get("vo") else None)
+        times = ed.get("times") or (bp.vo_times(t["vo"], spans, total, vo, ed.get("ends"), bp.line_map(t)) if t.get("vo") else None)
         st = times["starts"] if times and "starts" in times else None
         at = lambda x: x if not isinstance(x, str) else st[int(x[1]) - 1] + (float(x[3:]) if "+" in x else 0.0)
         cuts = [[at(c[0])] + list(c[1:]) for c in ed["cuts"]]

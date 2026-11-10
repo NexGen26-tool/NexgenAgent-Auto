@@ -4,8 +4,9 @@
   python brand/pick_cast.py work/<week>            # fills "cast" on every video that has none
   python brand/pick_cast.py work/<week> --again    # picks everyone again
 
-Each video gets one person from brand/cast.json, from the pool its group's persona belongs to. A group's three
-videos get three different people, mixing relatable (looks like the buyer today) and aspirational (who the buyer
+Each video gets one person from brand/cast.json, from the pool its group's persona belongs to (a video's own
+persona wins). An explore group's three videos get three different people (an iterate group one person for all three,
+so only the hook changes), mixing relatable (looks like the buyer today) and aspirational (who the buyer
 wants to become); nobody is used twice in a week while the pool has others, and people from the last two weeks are
 skipped while the pool allows. The pick changes from week to week but is the same if run again on the same week.
 The brief writes the video's "cast" as ACTOR A in every row (ad-brief-compiler, 5).
@@ -45,12 +46,14 @@ def main():
     shuffle = lambda ids, salt: sorted(ids, key=lambda i: hashlib.sha1((week.get("week", "") + salt + i).encode()).hexdigest())
     rows = []
     for gi, g in enumerate(week["groups"]):
-        code = g.get("persona", "")
-        pool = cast["personas"].get(code) or cast["personas"].get(code.rstrip("abcdefghijklmnopqrstuvwxyz")) or "everyday"
         in_group = set() if again else {v["cast"]["id"] for v in g["videos"] if v.get("cast")}
         for vi, v in enumerate(g["videos"]):
+            code = v.get("persona") or g.get("persona", "")  # each video's own buyer (Nov 10); older weeks: the group's
+            pool = cast["personas"].get(code) or cast["personas"].get(code.rstrip("abcdefghijklmnopqrstuvwxyz")) or "everyday"
             if v.get("cast") and not again:
                 rows.append((g, v)); continue
+            if g.get("mode") == "iterate" and vi and g["videos"][0].get("cast"):  # one body, three hooks: one person,
+                v["cast"] = dict(g["videos"][0]["cast"]); rows.append((g, v)); continue  # so only the hook changes
             kind = ("relatable", "aspirational")[(vi + gi) % 2]  # alternate, and alternate the pattern between groups
             # freshness first, then the relatable/aspirational mix, then anyone not already in this group
             tiers = [lambda p: p["kind"] == kind and p["id"] not in used | recent,
@@ -60,7 +63,7 @@ def main():
                      lambda p: p["id"] not in used | in_group,
                      lambda p: p["id"] not in in_group]
             for test in tiers:
-                ids = [i for i in shuffle([p["id"] for p in cast["people"] if p["pool"] == pool], g.get("angle", "") + str(vi))
+                ids = [i for i in shuffle([p["id"] for p in cast["people"] if p["pool"] == pool], (v.get("angle") or g.get("angle", "")) + str(vi))
                        if test(people[i])]
                 if ids: break
             p = people[ids[0]]

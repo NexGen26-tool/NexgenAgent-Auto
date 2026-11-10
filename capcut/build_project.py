@@ -249,14 +249,27 @@ def on_timeline(spans, x):
     return round(at, 2)
 
 
-def vo_times(vo_text, spans, total, path=None, ends=None):
+FORMATS = json.load(open(HERE + "/templates/formats.json", encoding="utf-8"))
+
+
+def line_map(t):
+    """Which sentence each on-screen line starts on, for a timeline of capcut.json: the edit plan's "lines", else its
+    "format" (templates/formats.json), else None (the 7- or 6-sentence default in vo_times)."""
+    ed = t.get("edit") or {}
+    if ed.get("lines"): return ed["lines"]
+    f = FORMATS.get(t.get("format", ""))
+    return f["lines"] if f else None
+
+
+def vo_times(vo_text, spans, total, path=None, ends=None, lines=None):
     """The edit plan's "times" from the brief's voice-over script, each line on screen while its sentences are spoken.
-    7 sentences (the argument: hook, tension, turn, reason, doubt cleared, offer, CTA): Line 1 stays up through the
-    tension and Line 2, the punchline, starts with sentence 3. 6 sentences (older briefs): sentence n says Line n.
-    "starts" holds every sentence's start for cuts named "s1".."s7". Some voices (Negen's default) pause under
-    SENT_PAUSE between sentences; then a finer pass over the file finds them."""
+    "lines" (from the ad's format, templates/formats.json) names the sentence each line starts on, Line 1 on the
+    first; a line stays up until the next one starts and Line 2 is the punchline. Without it: 7 sentences (hook,
+    tension, turn, reason, doubt cleared, offer, CTA) put Line 2 on sentence 3, 6 sentences (older briefs) sentence
+    n on Line n. "starts" holds every sentence's start for cuts named "s1".."s9". Some voices (Negen's default) pause
+    under SENT_PAUSE between sentences; then a finer pass over the file finds them."""
     sentences = [s for s in re.split(r"(?<=[.?!])\s+", vo_text.strip()) if s]
-    if len(sentences) < 6: return None
+    if len(sentences) < 5 or (not lines and len(sentences) < 6): return None
     # "ends" in the edit plan: where each sentence but the last ends in the voice file, in seconds, when the match
     # picked a comma pause (the voice can run two sentences together and pause at a comma instead)
     if not ends:
@@ -270,6 +283,16 @@ def vo_times(vo_text, spans, total, path=None, ends=None):
             if other and (not ends or pace_off(spans, other, sentences) < pace_off(spans, ends, sentences)): ends = other
     if not ends: return None
     s = [0.0] + [on_timeline(spans, x) for x in ends]  # s[k] = start of sentence k+1
+    if lines:
+        keys = ("line2", "line3", "line4", "line5", "cta")
+        n = [int(lines[k]) for k in keys]
+        if n != sorted(set(n)) or n[0] < 2 or n[-1] > len(s):
+            raise SystemExit("format lines %s do not fit a %d-sentence voice-over: each line on a later sentence than "
+                             "the one before, the CTA on the last at most" % (lines, len(s)))
+        at = {k: s[i - 1] for k, i in zip(keys, n)}
+        return {"line1": [0, at["line2"]], "line2": at["line2"], "line3": [at["line3"], at["line4"]],
+                "line4": [at["line4"], at["line5"]], "line5": [at["line5"], at["cta"]], "cta": at["cta"],
+                "starts": s, "punch": "s%d" % n[0]}
     p = 2 if len(s) >= 7 else 1  # index of the punchline sentence
     return {"line1": [0, s[p]], "line2": s[p], "line3": [s[p + 1], s[p + 2]], "line4": [s[p + 2], s[p + 3]],
             "line5": [s[p + 3], s[p + 4]], "cta": s[p + 4], "starts": s, "punch": "s%d" % (p + 1)}
@@ -738,7 +761,7 @@ class Timeline:
         self.notes = None; self.times = None
         src =os.path.expanduser(cfg["video"]); ed = dict(cfg.get("edit") or {})
         if not ed.get("times") and cfg.get("vo"):  # times from the script's sentences and the voice's own pauses
-            ed["times"] = vo_times(cfg["vo"], spans, total / US, self.vo, ed.get("ends"))
+            ed["times"] = vo_times(cfg["vo"], spans, total / US, self.vo, ed.get("ends"), line_map(cfg))
             self.times = ed["times"]
             if self.times and ed.get("line1_end") == "s2":  # Line 1 leaves when the before-state starts (a product hook
                 self.times["line1"][1] = self.times["starts"][1]  # must not stand over the room without the product)
@@ -751,7 +774,8 @@ class Timeline:
                 st = ed["times"]["starts"]
                 at = lambda x: x if not isinstance(x, str) else st[int(x[1]) - 1] + (float(x[3:]) if "+" in x else 0.0)
                 ed["cuts"] = [[at(c[0])] + list(c[1:]) for c in ed["cuts"]]
-                ed["transitions"] = [at(t) for t in ed.get("transitions", [ed["times"]["punch"]])]
+                fmt = FORMATS.get(cfg.get("format", ""), {})  # a calm format (ritual) has no Slide Blur
+                ed["transitions"] = [at(t) for t in ed.get("transitions", fmt.get("transitions", [ed["times"]["punch"]]))]
         if any(isinstance(c[0], str) for c in ed.get("cuts", [])):
             raise SystemExit("%s: could not find where each sentence of the voice-over starts. Give \"times\" by hand "
                              "in the edit plan (CLAUDE.md step 7)." % self.name)

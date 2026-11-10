@@ -68,6 +68,40 @@ def main():
             if hit and (k, hit[0]) not in seen:
                 seen.add((k, hit[0]))
                 print("REPEAT: %s %s \"%s\" was used in %s: write it new" % (t["name"][-24:], k, hit[0], past[hit[0]]))
+    # inside the week, no two ads share an argument or a line (owner, Nov 10: Meta groups look-alike ads and shows
+    # fewer of them). A group is one ad set: explore = three formats that share nothing but the offer and CTA,
+    # iterate = one body with three hooks (only the first sentence and Line 1 differ). Between groups nothing is shared.
+    def sents(t): return [x for x in re.split(r"(?<=[.?!])\s+", (t.get("vo") or "").strip()) if x]
+    def run4(text):
+        w = words(text); return {" ".join(w[i:i + 4]) for i in range(len(w) - 3)}
+    def body(t): return run4(" ".join(sents(t)[:-2]))  # before the offer and the CTA
+    def hook(t): return run4(" ".join(sents(t)[:1]))
+    def lines(t, ks=("line1", "line2", "line3", "line4")): return set().union(*(runs(words(t.get(k))) for k in ks))
+    tl = cfg["timelines"]
+    for i in range(len(tl)):
+        for j in range(i + 1, len(tl)):
+            a, b = tl[i], tl[j]; na, nb = a["name"][-24:], b["name"][-24:]
+            same_group = a.get("group") and a.get("group") == b.get("group")
+            if same_group and a.get("mode") == "iterate":
+                vo, ln = sorted(hook(a) & hook(b)), sorted(lines(a, ("line1",)) & lines(b, ("line1",)))
+                what = "hook"
+            else:
+                vo, ln = sorted(body(a) & body(b)), sorted(lines(a) & lines(b))
+                what = "voice-over"
+                if same_group and a.get("format") and a.get("format") == b.get("format"):
+                    print("SAME: %s and %s are both format %s in an explore group: give one another format" % (na, nb, a["format"]))
+            if vo: print("SAME: %s and %s share the %s \"%s\": write one of them new" % (na, nb, what, vo[0]))
+            if ln: print("SAME: %s and %s share the line words \"%s\": write one of them new" % (na, nb, ln[0]))
+    uses = {}  # a format may run twice a week at most; an iterate group counts once
+    for t in tl:
+        key = (t.get("group"), t.get("format")) if t.get("mode") == "iterate" else (t["name"], t.get("format"))
+        if t.get("format"): uses.setdefault(t["format"], set()).add(key)
+    for f, k in sorted(uses.items()):
+        if len(k) > 2: print("SAME: format %s runs %d times this week (at most 2)" % (f, len(k)))
+    for t in tl:
+        if t.get("mode") not in ("explore", "iterate"): print("CHECK: %s has no \"mode\" (explore or iterate)" % t["name"][-24:])
+        if not t.get("format"): print("CHECK: %s has no \"format\" (ad-brief-compiler, Formats)" % t["name"][-24:])
+        elif t["format"] not in bp.FORMATS: print("CHECK: %s format \"%s\" is not in capcut/templates/formats.json" % (t["name"][-24:], t["format"]))
     print("Clean stretches (what shots.json leaves):")
     for name, entry in sorted(shots.items()):
         folder = os.path.join(week, "videos", "spare" if " - spare" in name else "")
@@ -82,7 +116,7 @@ def main():
         vo = bp.extract_vo(video, out_dir)
         spans = bp.speech_spans(vo, bp.mp4_info(vo)[0])
         total = sum(b - a for a, b in spans) / bp.VO_SPEED + bp.CTA_HOLD
-        times = ed.get("times") or (bp.vo_times(t["vo"], spans, total, vo, ed.get("ends")) if t.get("vo") else None)
+        times = ed.get("times") or (bp.vo_times(t["vo"], spans, total, vo, ed.get("ends"), bp.line_map(t)) if t.get("vo") else None)
         print("\n" + t["name"])
         if not times or "starts" not in times:
             print("  CHECK: no sentence starts (give \"ends\" or \"times\" in the edit plan)"); continue

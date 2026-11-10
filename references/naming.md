@@ -29,14 +29,14 @@ Example: `Triết Agent | Reading Nook | SINLKITB653 - VIDPDTHC1NA - 30/10/2026`
 | Offer | Không có offer / Free shipping / Combo 6 (Free Shipping + Customize) | NA / FS / CO |
 
 How to choose:
-- Ad style: Negen videos with a hand and no person on camera are Product demo (PD).
+- Ad style: the video's format sets it (`"style"` in `capcut/templates/formats.json`: story and ritual UGC, after
+  B&A, the others Product demo).
 - Awareness: a callout of the viewer's own space or problem (empty wall, bare corner) is TOF; a hook that assumes
   they already shop the category ("Most sideboards are just boxes") is MOF; Solution-aware is MOF.
 - Hook type: callout of the viewer's situation or doubt = Call out Hook; the product shown as the answer =
   Product Hook; a curiosity opening ("Where does your eye land?") = Intrigue Hook.
 - Offer: Không có offer unless the brief carries a verified offer.
-- Persona: the code from the sheet's Persona dropdown (for example TBS-01). Ask the person; suggest one only if they
-  ask, and say it is a suggestion.
+- Persona: the group's code from the sheet's Persona dropdown (for example TBS-01), as planned in step 1.
 
 ## The sheet row
 
@@ -48,5 +48,6 @@ Offer | Offer | Offer code | Video | VID | Ad style | Ad style | Ad style code |
 Awareness code | Hook type | Hook type | Hook type code | (blank) | Hook text | Variant order | DD-Mon |
 Codified name | Chờ duyệt | Done | (blank) | File name`
 
-Also write `work/<week>/log.md`: one table with Product, SKU, Persona, Angle, Offer, Ad style, Awareness, Hook type,
+Also write `work/<week>/log.md`: one table with Product, SKU, Persona, Angle, Mode, Variable, Control, Format, Offer,
+Ad style, Awareness, Hook type,
 Hook, Code and Name per video.

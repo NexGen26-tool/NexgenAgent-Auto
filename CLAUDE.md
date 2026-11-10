@@ -4,6 +4,10 @@ You run NexGen's fast lane for video ads: about 12 finished video ads a week mad
 (https://marketing-tool.nexgenbros.com) and finished in CapCut with the house edit. The fast lane speeds up testing
 of new products and angles. It does not replace the creative team.
 
+Everything a week needs is in this repo: rules, skills, scripts, brand and persona data. A rule or principle from
+anywhere else is written in here first (`references/rule-changes.md`, a skill, a script) and only then used, so anyone
+who installs the repo gets the same output.
+
 The person you work for is a NexGen team member, usually on Windows, often not technical. Talk to them in plain,
 short sentences, in Vietnamese when they write Vietnamese. Ask only when a decision is theirs (which products,
 which angle, approving a batch name list, anything that costs money).
@@ -126,15 +130,26 @@ Ask it in one popup together with the first step-1 question:
   offer the one from earlier weeks) and the date for the codified names. Save them in `week.json` as
   `"creator"` and `"date"`. Every finished video is named and logged by `references/naming.md`.
 
-**1. Plan the groups.** 12 videos = 4 groups: 2 Spry groups + 2 ETW groups. A group is one SKU + one angle +
-three videos (V1, V2, V3) that differ only in hook and delivery, so Meta ad sets can be built per group. When asked to
+**1. Plan the groups.** 12 videos = 4 groups: 2 Spry groups + 2 ETW groups. A group is one SKU + one angle + one
+persona + three videos (V1, V2, V3): one Meta ad set, as the media buyer builds them. Each group has a mode and one
+declared variable (ad-brief-compiler, "Variant set"):
+- **explore** (new SKU or angle, nothing proven): three formats for the same persona and angle;
+- **iterate** (the owner names an earlier video that won, the `"control"`): one body, the control with the group's
+  one variable changed, and three hooks on it.
+The persona comes from the SKU's family in `brand/personas.json`. No two groups of the week sell the same angle; no
+format more than twice in 12 videos; read earlier `work/*/week.json` for what each SKU ran last. When asked to
 suggest, find untested products in Negen Products and show them as one popup: a multi-select question per store
 ("Chọn 2 sản phẩm Spry", "Chọn 2 sản phẩm ETW"), up to 4 candidates each with a one-line reason. Then one popup with
-an angle question per chosen product (2-3 angles each). Write `week.json`:
+one question per chosen product with 2-3 ready plans (each plan in one line: persona, angle, mode, variable, and the
+three formats or the control), and in the same popup "Video nào đã thắng trước đây?" per product: the SKU's earlier
+codified names from `work/*/week.json` and "Chưa có (explore)" first; a named winner makes that group iterate.
+Write `week.json`:
 `{"week": "...", "name": "<output name>", "groups": [{"store": "etw|spry", "product": "...", "sku": "...", "pid": "...", "angle": "...",
-"persona": "", "voice": "", "unlit": "", "storyboard_batch": "", "poster": "", "videos": [{"variant": "V1", "batch_name": "", "batch_id": "",
-"brief": {}, "awareness": "TOF|MOF|BOF", "hook_type": "", "code": "", "name": "", "file": ""}, ...]}]}`. Ask the
-persona code with the angle question (the sheet's Persona dropdown, e.g. TBS-01). Find the product id (`pid`): on a New batch page type the SKU into the product search and
+"persona": "", "mode": "explore|iterate", "variable": "first run|<what changes>", "control": "<codified name>|",
+"voice": "", "unlit": "", "storyboard_batch": "", "poster": "", "videos": [{"variant": "V1", "batch_name": "", "batch_id": "",
+"format": "turn|story|list|myth|after|ritual|gift", "brief": {}, "awareness": "TOF|MOF|BOF", "hook_type": "", "code": "",
+"name": "", "file": ""}, ...]}]}`. Persona codes are the sheet's Persona dropdown
+(e.g. TBS-01). Find the product id (`pid`): on a New batch page type the SKU into the product search and
 read the value of the matching `input[name=products]` checkbox.
 Then run `python brand/pick_cast.py work/<week>`: it gives every video its person on screen (`"cast"` in `week.json`)
 from `brand/cast.json`, matched to the group's persona (the casting band and homes come from the team's purchaser
@@ -153,19 +168,20 @@ the storyboard > Poster tab image `/media/<id>/...`) and note the error in `log.
 the product > Details.
 
 **3. Briefs** (write them while storyboards or videos run): follow the ad-brief-compiler skill. Three briefs per
-group, V1-V3, same job/proof/offer/CTA and Lines 2-5, a different hook and delivery each. Each brief carries its own
-voice-over script (`"vo"`): an argument in 7 sentences, 40-46 words (hook, tension, turn, reason, doubt cleared,
-offer or scarcity, CTA; never a feature list), and scene rows written from those sentences, A02 showing the tension's
-before-state without our product, keeping each storyboard panel's staging (the room, the person living in it, framing, light),
-A03 opening the punchline on a hard cut. The offer and scarcity lines come from
+group, V1-V3, for the group's persona and angle, by its mode: explore = three formats sharing only the product truth,
+the offer line and the CTA; iterate = the control's body with the declared variable changed, the same from sentence 2
+on, and three different hooks. Each brief carries its own voice-over script (`"vo"`): an argument of 40-46 words in its format's
+sentences (7, or 6 for "list"; never a feature list), and scene rows written from those sentences in order, keeping
+each storyboard panel's staging (the room, the person living in it, framing, light); in a format with a before-state
+(turn, myth, after) A02 shows it without our product, and the punchline opens on a hard cut. The offer and scarcity lines come from
 `brand/brands.json` (`offer`, `scarcity`), set by the owner; nothing else counts as an offer. Write them straight into
 `week.json` and `work/<week>/briefs.md` with the file tools, no throwaway scripts. Do not ask about a draft plan while
 the storyboards run; finish the briefs first.
 
-**The go-ahead (the one stop before spending).** Show, per group, one short table (V1-V3: on-screen hook, hook action, who is on screen,
-delivery) and one line with the shared Lines 2-5 and the shared part of the voice-over, then a single line with the batch names (checked against the naming
+**The go-ahead (the one stop before spending).** Show, per group, its line (persona, angle, mode, variable, control)
+and one short table (V1-V3: format, on-screen hook, who is on screen, delivery), then a single line with the batch names (checked against the naming
 rule by you, not by the person), time and cost. Full shot lists stay in `briefs.md`, linked, not pasted. Then one
-popup with a question per group: "Chạy cả 3 video (Khuyên dùng)", "Sửa hook", "Đổi angle"; a fix they type goes in
+popup with a question per group: "Chạy cả 3 video (Khuyên dùng)", "Sửa hook", "Đổi angle, mode hoặc variable"; a fix they type goes in
 "Other". Start the approved groups while you fix the others.
 
 **4. Video batches** (about 6-8 minutes each; Grok makes 2 parts at a time, so 12 batches take about 30-40 minutes):
@@ -229,8 +245,9 @@ Mark the whole stretch, frame to frame; judge the spares too, they are the repla
 
 **7. CapCut.** Write `work/<week>/capcut.json` (format: `capcut/example.json`) with `"project": "<Mon DD> - <output
 name>"` and `"media": "<Mon DD> <output name>"` (ask for the name if `week.json` has none), one timeline per video,
-named by the codified name without the date, with `"group": "<SKU> <angle>"` (the V1-V3 of a group share footage
-for replacements), turning each brief's on-screen lines into the house edit:
+named by the codified name without the date, with `"group": "<SKU>"` (the V1-V3 of a group share footage
+for replacements; older weeks used "<SKU> <angle>"), `"format"` (the video's) and `"mode"` (the group's) from
+`week.json`, turning each brief's on-screen lines into the house edit:
 - `line1` [big, small, accent]: the hook split into a short subject (2-4 words), the linking words, and the last
   1-3 words that carry the tension (shown in orange italic). No trailing period; a "?" is fine.
   "Big empty wall?" became ["Big empty wall", "leaves you feeling ", "unresolved?"].
@@ -263,23 +280,28 @@ size if a batch has two). Put the script on the timeline as `"vo"` and give it a
 - `"times"`: leave it out. With `"vo"` set, the build finds where each sentence starts from the script and the
   voice's pauses (a comma pause can be as long as a full stop, so it uses both; when one sentence comes out far
   off the voice's pace, it tries a finer pause pass, which catches a voice running two sentences together) and shows each line while its
-  sentence is spoken. With the 7-sentence argument, Line 1 stays up through the tension and Line 2's animated
-  title (the punchline) starts with sentence 3; an older 6-sentence script puts it on sentence 2. It prints the
+  sentence is spoken, on the sentences the timeline's `"format"` names in `capcut/templates/formats.json` (Line 2,
+  the animated title, is the punchline: sentence 3 in most formats, sentence 2 in "list"; an edit plan's `"lines"`
+  overrides it). Without a format: Line 2 on sentence 3 of a 7-sentence script, sentence 2 of a 6-sentence one. It prints the
   starts and which sentence is the punchline; when a start is off (the voice ran two sentences together and
   paused at a comma), give `"ends"`: where each sentence but the last ends in the voice file, in seconds; give
   `"times"` by hand only if they look wrong;
 - `"cuts"` `[[when, video, source s, zoom?], ...]`, `when` = `"s3"` (sentence 3 starts) or `"s3+1.4"` (1.4 s into
   it): for each sentence a clean shot that shows what is said (shelves when it says shelves), from the video, its
   spare or the group's other videos, never a bad stretch; the punchline (`"s3"`) starts on a hard cut to a different
-  shot than the opening, zoom 1.15. The tension (`"s2"`) and any sentence that states a problem get a shot of the problem (the before-state
+  shot than the opening, zoom 1.15 where the format's `"punch_zoom"` is true. The edit follows the format's
+  `"pace"`: list cuts on every sentence, ritual holds one slow shot a sentence, story stays handheld; so a group's three
+  timelines never cut alike. In formats with a before-state, the tension (`"s2"`) and any sentence that states a problem get a shot of the problem (the before-state
   or a stand-in), never a shot of our product (ad-brief-compiler, 8). Look at the shot sheets to pick them. A shot is never run on into a bad stretch or the video's
   next generated part (it would flash other footage): when the clean footage runs out the build fills the rest of
   the sentence itself with clean footage of the same scene (the video and its spare first, then the group's other
   videos outside their person; the before-state only from the before-state) and prints each fill; a planned shot that
   would show another variant's person is replaced the same way. No hand splits;
-- `"transitions"`: leave it out for a Slide Blur into the punchline (`"s3"`, or `"s2"` for a 6-sentence script).
+- `"transitions"`: leave it out for a Slide Blur into the punchline (the format's, or none for "ritual").
 **Plan check (before every save, about 10 minutes).** Run `python capcut/plan_sheet.py work/<week>/capcut.json`. It
-prints each timeline's sentence lengths (a "CHECK" means a sentence plays too fast or too slow for its words: the
+prints SAME when two groups of the week share voice-over words before the offer or Lines 1-4 words, when the
+videos of an explore group share them or a format, or when the hooks of an iterate group share theirs (write one of
+them new), CHECK for a timeline without a known `"format"`, each timeline's sentence lengths (a "CHECK" means a sentence plays too fast or too slow for its words: the
 voice ran two sentences together, so give `"ends"`), the clean stretches of every video, and makes one sheet per group
 in `work/<week>/plan/` with every frame each timeline will actually show, every 0.6 s. Look at every frame for the
 bad list of step 6b, hands and feet above all. Then run `python capcut/cut_sheet.py work/<week>/capcut.json`: the

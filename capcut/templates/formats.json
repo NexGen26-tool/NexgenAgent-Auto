@@ -1,0 +1,10 @@
+{
+  "_about": "The ad formats of the ad-brief-compiler (section 'Formats'). For each: how many sentences its voice-over has, the sentence (1 = first) on which each on-screen line starts (a line stays up until the next one starts), the ad style code for the sheet, whether sentence 2 plays the before-state, and the edit's rhythm. build_project.py, plan_sheet.py and cut_sheet.py read 'lines' to time the text; a timeline's \"format\" picks the row, an edit plan's \"lines\" overrides it.",
+  "turn":   {"name": "Problem to turn",       "sentences": 7, "lines": {"line2": 3, "line3": 4, "line4": 5, "line5": 6, "cta": 7}, "style": "PD", "before": true,  "pace": "one or two shots a sentence", "punch_zoom": true},
+  "story":  {"name": "Owner story",           "sentences": 7, "lines": {"line2": 3, "line3": 4, "line4": 5, "line5": 6, "cta": 7}, "style": "UG", "before": false, "pace": "handheld, one shot a sentence, no punch zoom", "punch_zoom": false},
+  "list":   {"name": "Three reasons",         "sentences": 6, "lines": {"line2": 2, "line3": 3, "line4": 4, "line5": 5, "cta": 6}, "style": "PD", "before": false, "pace": "a hard cut on every sentence, one shot each", "punch_zoom": true},
+  "myth":   {"name": "Objection, then truth", "sentences": 7, "lines": {"line2": 3, "line3": 4, "line4": 5, "line5": 6, "cta": 7}, "style": "PD", "before": true,  "pace": "one or two shots a sentence", "punch_zoom": true},
+  "after":  {"name": "After first",           "sentences": 7, "lines": {"line2": 3, "line3": 4, "line4": 5, "line5": 6, "cta": 7}, "style": "BA", "before": true,  "pace": "open on the finished room, hard cut to the before, Slide Blur back", "punch_zoom": true},
+  "ritual": {"name": "A day with it",         "sentences": 7, "lines": {"line2": 3, "line3": 4, "line4": 5, "line5": 6, "cta": 7}, "style": "UG", "before": false, "pace": "one slow move a sentence, no punch zoom, no Slide Blur", "punch_zoom": false, "transitions": []},
+  "gift":   {"name": "For someone",           "sentences": 7, "lines": {"line2": 3, "line3": 4, "line4": 5, "line5": 6, "cta": 7}, "style": "PD", "before": false, "pace": "one or two shots a sentence", "punch_zoom": true}
+}

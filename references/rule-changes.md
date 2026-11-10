@@ -2,6 +2,53 @@
 
 Changes to how the fast lane works, newest first: what changed, why, and what it was tested on.
 
+## 2026-11-10 (owner) - One ad set, one declared variable: explore with three formats, iterate with three hooks
+
+**Why:** the owner: "the argument and editing has been the same for the past batch... Meta Ads hates same ads, we
+need to change angle, format or variables to target different audiences with different angles." The Nov 9 week ran
+one skeleton in all 12 videos ("Mine was a blank ___. One ___ changed that. ___, so ___. Free delivery..."), one edit,
+and all four groups sold "focal point"; nothing was declared as the thing being tested. The media buyer builds one ad
+set per angle and persona, so a group stays one SKU + angle + persona. The owner then: "Be dynamic. Three hooks when
+its best to do so, and 3 formats when its best to do so."
+
+**Principle (distilled from the team's creative-testing practice, now this repo's own rule):** every test changes
+one declared variable from a control and records it, so a result can say what won; the three ads of a test share one
+body when the question is the opening, and differ in format when the question is the argument itself.
+
+**What changed:**
+- `ad-brief-compiler` "Variant set": a group is one SKU, angle and persona (one ad set) with a `"mode"`: **explore**
+  (nothing proven: three formats, sharing only product truth, offer and CTA) or **iterate** (the owner names a
+  winning `"control"`: its body with one changed variable, three hooks). Every group declares its `"variable"` (a
+  table of the usual ones: format, persona, speaker, opener, proof device, proof timing, length and density, home and
+  style, voice and sound, text, offer and proof, execution; anything else may be one) or "first run". Across the
+  week no two groups sell one angle or one skeleton, and no format runs more than twice.
+- `ad-brief-compiler` "Formats" (new): seven argument shapes (turn, story, list, myth, after, ritual, gift), each with
+  its sentence jobs, punchline sentence, ad style and edit rhythm. The old 7-sentence argument is "turn".
+- `capcut/templates/formats.json` (new): per format the sentence each on-screen line starts on, the ad style, the
+  before-state, pace, punch zoom and transitions. `build_project.py`, `plan_sheet.py` and `cut_sheet.py` time the
+  lines from a timeline's `"format"` (an edit plan's `"lines"` overrides it); without one the old 7/6-sentence
+  default stays, so older weeks rebuild as before.
+- `plan_sheet.py` prints SAME for look-alikes by mode: between groups and inside an explore group, 4 shared
+  voice-over words before the offer or 3 shared words in Lines 1-4, or one format twice in an explore group; inside an
+  iterate group, a shared hook sentence or Line 1; any format run more than twice in the week. CHECK for a timeline
+  with no known `"format"` or `"mode"`.
+- CLAUDE.md step 1: the plan popup asks per product which earlier video won ("Chưa có (explore)" first); `week.json`
+  groups carry `"mode"`, `"variable"`, `"control"`, videos `"format"`; `capcut.json` timelines `"format"`, `"mode"`
+  and `"group": "<SKU>"`. `references/naming.md`: the ad style follows the format; `log.md` adds mode, variable,
+  control and format. `brand/pick_cast.py` reads a video's persona when one is set, else the group's.
+
+**Repo rule (owner, Nov 10):** everything a week needs is in this repo. A principle learned elsewhere is written in
+here first (this log, a skill, a script) and only then used, so anyone who installs the repo gets the same quality.
+
+**Next, not done:** study how Negen's own skills (Product Storyboard Reference + VO, Conversion Creative V3) read and
+follow our briefs: compare a few weeks of brief fields with what came out, then tune those skills in Negen.
+
+**Tested on:** the build's timing on sample 7- and 6-sentence scripts with and without a format (old default
+unchanged, "list" puts the punchline on sentence 2, a format that does not fit its script stops with a message); a
+dry run of the Nov 9 week's 12 timelines (same sentence starts and punchlines as before); the look-alike check on the
+Nov 9 week (flags the shared skeleton between groups and "turn" four times) and on a clean explore group (passes).
+Not yet on a real week.
+
 ## 2026-11-07 (owner, this week's V3s) - No jump cuts, no flashes, the before-state only under the problem, true scale
 
 **Why:** the owner on three V3 timelines: console V3 "cut so bad" (12 shots in 15 s, near-identical wides back to

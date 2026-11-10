@@ -9,7 +9,7 @@ description: Convert an approved Negen product storyboard (8 panels A01-B04 + VO
 
 Fill Negen's Section 7 "Ad brief" so a Conversion Creative V3 batch turns the approved storyboard into a 20-second, 9:16 ad.
 
-Do not generate video. Do not invent a new angle. Keep the storyboard's argument, and fix only what is listed under "Corrections you must make".
+Do not generate video. The storyboard gives the product's look and staging; the argument comes from the group's persona, angle, mode and format ("Variant set" and "Formats"). Fix the storyboard only where "Corrections you must make" says.
 
 **The storyboard sets the look; the brief sets the argument.** The owner's best-looking videos (Oct 31 batch) came
 straight from the storyboard's panels: a real person living with the product in a fully furnished, lived-in room,
@@ -71,8 +71,8 @@ For long or wide products (TV stands, consoles, kitchen islands, sideboards, lon
 - ACTOR A is the video's `"cast"` in `week.json` (picked by `brand/pick_cast.py` from `brand/cast.json`: someone
   from the group's target buyers, either relatable, the buyer today, or aspirational, who they want to become). Write
   "ACTOR A (<cast.who>)" in full, in the same words, in every row they appear. Never write in your own person
-  instead, and never let the storyboard's person carry over: the three videos of a group show three different people
-  on purpose. Guests only when the angle needs them (a party); the host casts already describe them.
+  instead, and never let the storyboard's person carry over: the three videos of an explore group show three
+  different people on purpose; an iterate group shows one person in all three, so only the hook changes. Guests only when the angle needs them (a party); the host casts already describe them.
 - Relatable rows show ACTOR A doing the everyday version (keys down after work, a book on a Sunday). Aspirational
   rows show them at ease in the finished home (hosting, a calm morning). Same room, product and argument either way.
 - Rows with no person end with "No person."
@@ -150,24 +150,88 @@ line played over our own console, so the viewer read ours as the plain one.
 
 ---
 
-## Variant set: always 3 briefs per SKU + angle
+## Variant set: one ad set, three videos, one thing tested
 
-The team tests in groups of 3: one SKU, one angle, three videos. Return three complete Ad briefs, V1, V2 and V3.
+A group is one SKU, one angle and one persona: one Meta ad set, as the media buyer builds them. Return three
+complete Ad briefs, V1, V2 and V3. The persona is the group's buyer, from the SKU's family in
+`brand/personas.json` (code prefix: CST consoles, CFT coffee tables, TBS tree shelves...; VALIDATED before MAPPED);
+a SKU with no family gets one written there first, in the same fields, from the product page and the brand's buyers.
+The angle is that persona's.
 
-Keep identical across V1-V3: AD JOB, PROOF, OFFER, CALL TO ACTION, the product truth, the tension, and on-screen
-Lines 2-5 (unless the hook change makes a line wrong).
+**Why (owner, Nov 10).** The Nov 9 week ran one skeleton in all 12 videos ("Mine was a blank ___. One ___ changed
+that. ___, so ___. Free delivery..."), the same edit, and all four groups sold "focal point". Meta reads look-alike
+ads as one and delivers fewer of them, and nothing was declared as the thing being tested, so a result could not
+say what won. Each group now has a mode, a declared variable and its own shape.
 
-Change in each variant:
-- **Hook:** a different moment of use or situation in A01, and a different on-screen Line 1. The three hooks must
-  be clearly different ideas, not rewordings (for example: a use moment, a before-state problem, a tactile detail).
-- **Delivery:** a different way of showing the same argument: camera style (handheld follow vs. dolly past
-  the foreground vs. a slow orbit), pacing (fast cuts vs. one long move per row), and use scene. Note the intended VO tone in one
-  line (for example: calm, direct, playful).
-- **Voice-over:** only the first sentence (the hook) changes; sentences 2 to the end are the same in V1-V3. The
-  tension (sentence 2) must still follow from each hook.
+**Mode: explore or iterate.** Chosen per group in step 1 from what the owner says won before (the repo cannot see
+Meta results, so it asks):
+- **explore** (a new SKU or angle, or nothing proven yet): V1-V3 are three formats (below) for the same persona and
+  angle. The question is which kind of argument works at all. They share only the product truth, the offer line and
+  the CTA; every sentence and on-screen line is their own. The result says which format won, not why.
+- **iterate** (a proven body: a video the owner names as the winner, its `"control"`): V1-V3 are one body, the
+  control's format and argument with the group's one declared variable changed, and three hooks on it. Only the hook
+  changes between them: a different first moment in A01, on-screen Line 1, the first sentence and the hook type, three
+  clearly different ideas (a use moment, a problem, a tactile detail), not rewordings. Sentences 2 to the end and
+  Lines 2-5 are the same in V1-V3. The result says which opening sells that body.
 
-Before the three briefs, print a 3-row summary: Variant | Hook idea | Delivery idea, so the person can check
-they really differ. Batch names: "<Date> - <Product> <Angle> V1", "... V2", "... V3".
+**One declared variable per group.** Every group names the one thing it changes from the last test of the same SKU
+and angle (its `"control"`), or "first run". Write it in `week.json` as `"variable"`, for example "format", "speaker:
+a designer instead of the owner", "opener: close on the piece with a hand on it". Anything in the ad can be the
+variable; these are the usual ones:
+
+| Variable | Examples |
+|---|---|
+| format | one of the formats below; the still made into a film |
+| persona | another buyer of the same angle (another ad set) |
+| speaker | the owner, a designer, a guest, a first-person voice from 0 s |
+| opener | the first frame: product whole, a hand on a part, the before-state, a person arriving |
+| proof device | a before/after on one locked camera, a timelapse, a remove-and-return, a scale beside a person |
+| proof timing | how early the proof is seen or heard (by 3 s, by 5 s) |
+| length and density | about 15 s with 4-5 cards, or longer with more beats |
+| home and style | room type, home style (modern, mid-century, casual US home), time of day |
+| voice and sound | the voice's gender or tone, the music bed, no music |
+| text | card style, text density, Line 1 as a question or a statement |
+| offer and proof | the offer line, a price line, a review line (only what `brand/brands.json` and the page give) |
+| execution | the same argument in another production look |
+
+Change only the declared variable against the control; keep the rest of the control as it was, so the result reads.
+A first run has no control and declares "first run".
+
+**Across the week.** No two groups sell the same angle or run the same argument skeleton; no format more than twice
+in 12 videos (an iterate group counts as one use of its format); a SKU does not repeat its last test's angle and
+persona with nothing declared as changed. The plan check prints SAME for look-alikes (CLAUDE.md, step 7).
+
+Before the three briefs, print the group line (SKU, angle, persona, mode, variable, control) and a 3-row summary:
+Variant | Format | Hook idea | Delivery, so the person can check them. Batch names: "<Date> - <Product> <Angle> V1",
+"... V2", "... V3".
+
+## Formats
+
+Every ad uses one format: the shape of its argument and of its edit. An explore group uses three of them, an
+iterate group one (the control's, unless format is its variable). Each has its sentence jobs below (the voice-over
+follows them one sentence each, in order), and a row in `capcut/templates/formats.json` that tells the CapCut build
+on which sentence each on-screen line starts, the ad style code for the sheet, and the edit's rhythm. Write the
+format's key into the video's `"format"` in `week.json` and on its timeline in `capcut.json`, with the group's
+`"mode"`.
+
+| Key | Format | Sentences, one job each | Line 2 (punchline) on | Ad style | Best for |
+|---|---|---|---|---|---|
+| turn | Problem to turn | 1 hook, 2 tension (before-state), 3 turn, 4 reason, 5 doubt cleared, 6 offer or scarcity, 7 CTA | 3 | PD | problem-aware buyers |
+| story | Owner story | 1 the moment or doubt in first person ("I almost kept my old table."), 2 what I expected, 3 what happened, 4 the detail that won me over, 5 who I'd tell, 6 offer, 7 CTA | 3 | UG | approval and belonging desires |
+| list | Three reasons | 1 the promise ("Three things guests notice first."), 2 reason one, 3 reason two, 4 reason three, 5 offer, 6 CTA | 2 | PD | solution-aware, comparing |
+| myth | Objection, then truth | 1 the belief said plainly ("Solid wood in a small hall? Too bulky."), 2 what people settle for (before-state), 3 the truth, 4 the proof, 5 the fit answer, 6 offer, 7 CTA | 3 | PD | a strong barrier in the persona |
+| after | After first | 1 the finished room ("This used to be my emptiest wall."), 2 the before (before-state), 3 the change, 4 what made the difference, 5 the fit answer, 6 offer, 7 CTA | 3 | BA | unaware buyers, big visual change |
+| ritual | A day with it | 1 a morning moment, 2 an evening moment, 3 what it is in my day, 4 the reason, 5 the doubt cleared, 6 offer, 7 CTA | 3 | UG | comfort and enjoyment desires |
+| gift | For someone | 1 who it is for ("For the friend with books on every floor."), 2 why it lands for them, 3 the one they would not buy themselves, 4 the reason, 5 the choice (size, finish), 6 offer, 7 CTA | 3 | PD | Nov-Dec, gift buyers |
+
+- Every format keeps the rules of the VO SCRIPT section below (40-46 words, spoken, an argument, page facts only);
+  only the jobs and their order change. "list" has 6 sentences, every other format 7.
+- The before-state (corrections, 8) belongs to the formats with one: turn, myth and after put it on sentence 2 and
+  in A02. Story, list, ritual and gift have no before-state: their A02 shows the persona's situation with the
+  product, and `"before"` in the shot check stays `[]` unless a stretch plays under a problem sentence.
+- "after" opens on the finished room with the product, so its edit plan sets `"line1_end": "s2"`.
+- The scene rows follow the format's sentences in order (SCENES below): each row shows what its sentence says.
+- A new format is added in both places at once: a row here and a row in `capcut/templates/formats.json`.
 
 ---
 
@@ -195,8 +259,8 @@ Short. Spry: "Shop the <product>" (for example "Shop the shelf"). ET Woodcrafts:
 We write the voice-over; Negen's "AI writes it" writes its own words, which then do not match the on-screen text.
 The script is the ad's argument. A script whose middle is "An oval top on an S-curve base. Keys down, palm on the
 grain. Six widths." lists features and does not sell (look test, 2026-10-28). The owner's converting scripts (the
-creative team's Oct 31 copy) move from a tension to a turn to a reason, then clear a doubt. Seven sentences, one job
-each:
+creative team's Oct 31 copy) move from a tension to a turn to a reason, then clear a doubt. The table below is the
+"turn" format; every format (above) has its own jobs, one sentence each, under the same rules:
 
 | # | Job | What it says | Example (curved console) |
 |---|---|---|---|
@@ -218,14 +282,20 @@ each:
 - Spoken English, no claim the product page does not support, no offer or scarcity that `brand/brands.json` does not
   list.
 - A full stop, "?" or "!" ends a sentence and nothing else does; the CapCut build finds the sentences by them and by
-  the voice's pauses, and times each on-screen line to its sentence. Commas are fine. Exactly 7 of them: a doubt
-  asked and answered in one slot takes a comma ("Too precious, it's my everyday seat."), not a "?".
-- The tension sentence plays over a picture of the problem without our product (see 8): its scene row is A02.
+  the voice's pauses, and times each on-screen line to its sentence. Commas are fine. Exactly as many as the format
+  has (7, or 6 for "list"): a doubt asked and answered in one slot takes a comma ("Too precious, it's my everyday
+  seat."), not a "?".
+- In a format with a before-state, that sentence plays over a picture of the problem without our product (see 8):
+  its scene row is A02.
+- First person ("Mine was...") is the voice of story, ritual and the tension of turn, myth and after; it is not the
+  voice of every ad. A list or gift ad speaks to the viewer.
 
 ### ON-SCREEN TEXT
 Exactly 5 lines, each the key words of its VO sentences, each with From and To in seconds:
-Line 1 = the hook (on screen through sentences 1 and 2: the tension is heard, not written), Line 2 = the turn (the
-punchline), Line 3 = the reason, Line 4 = the doubt cleared, Line 5 = the offer or scarcity. Time them from the VO at
+Line 1 = the hook (on screen until Line 2 starts), Line 2 = the punchline, Lines 3-5 = the next sentences, on the
+sentences the format's row in `capcut/templates/formats.json` names. For "turn": Line 1 through the tension (heard,
+not written), Line 2 the turn, Line 3 the reason, Line 4 the doubt cleared, Line 5 the offer or scarcity; for "list":
+Line 2-4 the three reasons, Line 5 the offer. Time them from the VO at
 about 2.5 words a second from 0 s (Negen's own estimate). The last line must end by 17 s, because Negen adds the CTA
 end card from 17.1 s.
 
@@ -241,9 +311,13 @@ Each line 2-6 words, buyer-facing, no generic luxury words, no claims the produc
 - Camera direction: one or two sentences, under about 200 characters. Start with the camera move. Then what is in frame: the room, ACTOR A and what they do with the product (body placed), or "No person." if none.
 - A04 ends mid-action; B01 continues the same action from the same state.
 - Each row shows what the VO is saying at that moment (the shelves when it says "open shelves"); write the rows
-  from the VO sentences, not the other way round: A01 hook, A02 tension, A03 turn, A04 + B01 reason, B02 doubt
-  cleared, B03 offer or scarcity (the product whole, in use), B04 end frame.
-- A02 is the tension: a hard cut to the before-state in another part of the home (a bare hallway wall, bottles
+  from the VO sentences, not the other way round. For 7 sentences: A01 sentence 1, A02 sentence 2, A03 sentence 3
+  (the punchline), A04 + B01 sentence 4, B02 sentence 5, B03 sentence 6 (the product whole, in use), B04 end frame;
+  for "list": A01 promise, A02 reason one (the punchline), A03 + A04 reason two, B01 + B02 reason three, B03 offer,
+  B04 end frame. The Job dropdown follows what each row now does (a reason row is Proof or Detail).
+- Camera and pacing follow the format's rhythm (`"pace"` in `capcut/templates/formats.json`): list cuts hard on
+  every sentence, ritual takes one slow move per row, story is handheld.
+- In a format with a before-state, A02 is the tension: a hard cut to the before-state in another part of the home (a bare hallway wall, bottles
   crowding a counter), and the row says "no <product>, no furniture against this wall" so the model does not draw
   ours or a look-alike. It is never a stand-in that resembles our product.
 - A03 carries the punchline (Line 2): a hard cut back to our product in a framing different from A01 (reverse
@@ -268,7 +342,8 @@ B04 | End frame | 2 | <camera direction>
 - Every row with a hand says where ACTOR A's body is; no hands from below to wall height: YES/NO
 - Simple poses only: standing, walking, sitting upright with both feet on the floor; nothing opened on camera: YES/NO
 - One time of day and light in all rows: YES/NO
-- VO is 40-46 words in 7 sentences: hook, tension, turn, reason, doubt cleared, offer or scarcity, CTA: YES/NO
+- VO is 40-46 words in the format's sentences (7, or 6 for list), one job each, in the format's order: YES/NO
+- The group's mode holds: explore = three formats sharing no sentence or line but the offer and CTA; iterate = one body (the control plus the declared variable) and three different hooks: YES/NO
 - No sentence only names a feature (each feature is a reason or an answer): YES/NO
 - A02 shows the tension's before-state with no product of our kind in it: YES/NO
 - A03 opens on a hard cut back to our product in a different framing (the punchline): YES/NO
