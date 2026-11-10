@@ -119,6 +119,9 @@ def draft_format():
 def link_media(src, folder, name=None):
     os.makedirs(folder, exist_ok=True)
     dst = folder + "/" + (name or os.path.basename(src))
+    if os.path.exists(dst) and not os.path.samefile(src, dst) and (
+            os.path.getsize(dst) != os.path.getsize(src) or os.path.getmtime(dst) < os.path.getmtime(src)):
+        os.remove(dst)  # the video was downloaded again (a new voice-over, say): the old copy must not stay
     if not os.path.exists(dst):
         try: os.link(src, dst)
         except OSError: shutil.copy(src, dst)
@@ -137,6 +140,8 @@ def find_ffmpeg():
 def extract_vo(video, folder):
     """The Negen file has the voice-over mixed in; pull it out as its own audio file."""
     dst = folder + "/" + os.path.splitext(os.path.basename(video))[0] + " - VO.m4a"
+    if os.path.exists(dst) and os.path.getmtime(dst) < os.path.getmtime(video):
+        os.remove(dst)  # the video is newer than its voice-over extract: take the voice-over again
     if not os.path.exists(dst):
         ffmpeg = find_ffmpeg()
         if ffmpeg:
@@ -368,16 +373,38 @@ def sfx_events(d, r):
 
 MIN_PIECE = 0.5   # clean footage shorter than this is not used
 REPLACE_MIN = 1.0 # a bad stretch this long or longer is replaced; a shorter one (a blend) is simply cut out
+FADE_PAD = 0.35   # Negen's crossfades last 0.8-1.0 s; a marked blend is widened this much on each side
 
 
-def clean_parts(name, dur, shots):
-    """The usable stretches of one video, from its shot check: everything minus the bad stretches, which are
-    widened to a hard cut within 0.3 s."""
+def variant(name):
+    """The video a file belongs to: its spare counts as the same video (same person, same takes)."""
+    return os.path.splitext(os.path.basename(name))[0].replace(" - spare", "")
+
+
+def blocked(name, shots, own=None):
+    """[(start, end, why)] of one file that a timeline may not show: the bad stretches of the shot check (a blend
+    widened by FADE_PAD, since the fade shows before and after the frames marked), the crossfades shot_sheet.py found
+    ("fades"), and, when the file is another variant of the group than the timeline's own video (own), the stretches
+    where that variant's person is on screen ("person"), so one timeline never shows two different people."""
+    e = (shots or {}).get(os.path.basename(name), {}); out = []
+    for a, b, *why in e.get("bad", []):
+        w = why[0] if why else "bad"
+        pad = FADE_PAD if "blend" in w and not e.get("fades_padded") else 0.0  # "fades_padded": widened by hand already
+        out.append((max(0.0, a - pad), b + pad, w))
+    out += [(max(0.0, a - 0.1), b + 0.1, "crossfade (found by shot_sheet.py)") for a, b in e.get("fades", [])]
+    if own is not None and variant(name) != variant(own):
+        out += [(a, b, "another variant's person") for a, b in e.get("person", [])]
+    return sorted(out)
+
+
+def clean_parts(name, dur, shots, own=None):
+    """The usable stretches of one video, from its shot check: everything minus what blocked() lists, widened to a
+    hard cut within 0.3 s."""
     e = shots[name]; cut_at = e.get("cuts", [])
     def snap(t, side):
         near = [c for c in cut_at if abs(c - t) <= 0.3 and (c <= t if side < 0 else c >= t)]
         return min(near, key=lambda c: abs(c - t)) if near else t
-    bad = sorted((max(0.0, snap(a, -1)), min(dur, snap(b, 1))) for a, b, *_ in e["bad"])
+    bad = sorted((max(0.0, snap(a, -1)), min(dur, snap(b, 1))) for a, b, _ in blocked(name, shots, own))
     parts, pos = [], 0.0
     for a, b in bad:
         if a - pos >= MIN_PIECE: parts.append((pos, a))
@@ -395,7 +422,7 @@ def plan_footage(main, total, shots, pool):
     parts, bad = clean_parts(name, dur, shots)
     avail = []  # [(priority, file, start, end)] clean pool footage, the first 0.3 s of each stretch skipped
     for i, f in enumerate(pool):
-        for a, b in clean_parts(os.path.basename(f), mp4_info(f)[0], shots)[0]:
+        for a, b in clean_parts(os.path.basename(f), mp4_info(f)[0], shots, own=main)[0]:
             if b - a - 0.3 >= MIN_PIECE: avail.append([i, f, a + 0.3, b])
     pieces, notes, t = [], [], 0.0
 
@@ -473,7 +500,112 @@ def place_times(d, r, times, total):
     place("line4", *times["line4"]); place("line5", *times["line5"]); place("cta", times["cta"], total / US)
 
 
-def cuts_to_pieces(cuts, total, folder, shots=None):
+ROWS = [0, 2, 5, 8, 10, 13, 15, 18, 99]  # where Negen's 8 scene rows start in every 20 s video (2+3+3+2+3+2+3+2 s)
+TENSION_ROW = 1                          # row 2 (A02, 2-5 s): the before-state, filled only from the same row
+FILL_SLOW = 0.75                         # a shot that would play slower than this gets a second shot instead
+
+
+def row_of(t): return max(i for i in range(8) if ROWS[i] <= t)
+
+
+def group_pool(cfg, c, shots):
+    """The footage a timeline may borrow: its own spare first, then the other videos (and spares) of its group;
+    checked footage only."""
+    def spare(video):
+        p = os.path.join(os.path.dirname(video), "spare", os.path.splitext(os.path.basename(video))[0] + " - spare.mp4")
+        return [p] if os.path.exists(p) else []
+    v = os.path.expanduser(c["video"]); out = spare(v)
+    for o in cfg["timelines"]:
+        if o is not c and c.get("group") and o.get("group") == c["group"]:
+            ov = os.path.expanduser(o["video"]); out += [ov] + spare(ov)
+    return [p for p in out if shots.get(os.path.basename(p), {}).get("checked")]
+
+
+def fill_short(pieces, zooms, pool, shots, own, notes):
+    """A piece that runs out of clean footage before its sentence ends keeps its clean run and is followed by clean
+    footage of the same scene row (the same video and its spare first, so the person stays the same, then the group's
+    other videos outside their person stretches), footage the timeline does not use yet. The before-state row is
+    filled only from itself; other rows may fall back to any row but the before-state."""
+    if not pool: return pieces, zooms
+    key = lambda p: os.path.normcase(os.path.normpath(p))  # the same file may be written with / or \
+    used = {}
+    for f, a, l, _ in pieces: used.setdefault(key(f), []).append((a - 0.3, a + l + 0.3))
+    def free(f, row, any_row):
+        out = []
+        for a, b in clean_parts(os.path.basename(f), mp4_info(f)[0], shots, own=own)[0]:
+            if any_row:  # any row but the before-state: its footage would put the problem under a later sentence
+                if ROWS[TENSION_ROW] - 0.3 <= a < ROWS[TENSION_ROW + 1]: a = ROWS[TENSION_ROW + 1]
+                if a < ROWS[TENSION_ROW] < b: b = ROWS[TENSION_ROW]
+            else: a, b = max(a, ROWS[row] + 0.1), min(b, ROWS[row + 1] + 0.5)
+            for u0, u1 in sorted(used.get(key(f), [])):
+                if u0 < b and a < u1:
+                    if u0 - a >= MIN_PIECE: out.append((a, u0))
+                    a = max(a, u1)
+            if b - a >= MIN_PIECE: out.append((a, b))
+        return out
+    new_p, new_z = [], []
+    for (f, a, l, shown), z in zip(pieces, zooms):
+        if l >= FILL_SLOW * shown or shown - l < 0.2:
+            new_p.append((f, a, l, shown)); new_z.append(z); continue
+        row = row_of(a); left = shown - l; got = [(f, a, l, l)]
+        if any(b0 <= a < b1 for b0, b1 in (shots.get(os.path.basename(f), {}).get("before") or [])):
+            new_p.append((f, a, l, shown)); new_z.append(z); continue  # the before-state is never patched with other footage
+        if l < 0.3: left, got = shown, []  # a flash this short is dropped: the fill takes the whole sentence
+        for any_row in (False, True):
+            if any_row and row == TENSION_ROW: break
+            while left >= 0.3:
+                cands = [(variant(p) == variant(own), b - s, p, s) for p in {key(x): x for x in [own] + list(pool)}.values() for s, b in free(p, row, any_row)]
+                if not cands: break
+                _, ln, p, s = max(cands); take = min(ln, left)
+                if left - take < 0.3 or ln >= FILL_SLOW * left: take = min(ln, left); show = left if ln >= FILL_SLOW * left else take
+                else: show = take
+                got.append((p, s, take, show)); used.setdefault(key(p), []).append((s - 0.3, s + take + 0.3)); left -= show
+            if left < 0.3: break
+        if not got: got = [(f, a, l, l)]  # nothing to fill with: keep the short shot, slowed
+        if left >= 0.01:  # what is still missing is taken up by slowing the pieces a little
+            k = shown / sum(x[3] for x in got); got = [(p, s, t, sh * k) for p, s, t, sh in got]
+        if notes is not None and len(got) > 1:
+            notes.append("%s from %.2f s ran out of clean footage: filled with %s" % (os.path.basename(f)[-28:], a,
+                         ", ".join("%s %.2f s" % (os.path.basename(p)[-28:], t) for p, _, t, _ in got[1:])))
+        new_p += got; new_z += [z] + [1.0 if isinstance(z, dict) else z] * (len(got) - 1)  # a crop is for its own shot only
+    return new_p, new_z
+
+
+JUMP_DIFF = 29.0  # two shots this alike at the cut (mean grey difference, 0-255) read as a jump cut, not a new shot
+MIN_SHOT = 0.8    # a shot shown shorter than this reads as a flash
+
+
+def _tiny(f, t):
+    raw = subprocess.run([find_ffmpeg() or "ffmpeg", "-v", "error", "-ss", "%.2f" % max(0.0, min(t, mp4_info(f)[0] - 0.1)), "-i", f,
+                          "-frames:v", "1", "-vf", "scale=36:64,format=gray", "-f", "rawvideo", "-"], capture_output=True).stdout
+    return raw[:36 * 64]
+
+
+def smooth(pieces, zooms, notes=None, before=None):
+    """Merges a shot into the one before it when the two look alike at the cut (a jump cut: the same wide twice from two
+    takes) or when it is a flash under MIN_SHOT: the shot before runs on, slowed when it must. The punchline (a shot
+    with a zoom) is never merged away."""
+    if len(pieces) < 2: return pieces, zooms
+    out_p, out_z = [list(pieces[0])], [zooms[0]]
+    for (f, a, l, shown), z in zip(pieces[1:], zooms[1:]):
+        pf, pa, pl, ps = out_p[-1]
+        x, y = _tiny(pf, pa + pl - 0.05), _tiny(f, a + 0.05)
+        diff = sum(abs(i - j) for i, j in zip(x, y)) / max(1, len(x))
+        why = "jump cut (%.0f)" % diff if diff < JUMP_DIFF else "flash (%.2f s)" % shown if shown < MIN_SHOT else ""
+        still = sum(abs(i - j) for i, j in zip(_tiny(pf, pa + 0.05), x)) / max(1, len(x)) < 10  # a locked-off shot may hold long
+        if any(b0 <= a < b1 for b0, b1 in (before or {}).get(os.path.basename(f), [])): why = ""  # never merge the before-state away
+        if why and z == 1.0 and (pl / (ps + shown) >= 0.5 or still):
+            out_p[-1][3] = ps + shown  # the shot before runs on
+            if notes is not None: notes.append("%s at %.2f s merged into the shot before: %s" % (os.path.basename(f)[-28:], a, why))
+            continue
+        out_p.append([f, a, l, shown]); out_z.append(z)
+    return [tuple(p) for p in out_p], out_z
+
+
+def before_of(f, shots): return (shots or {}).get(os.path.basename(f), {}).get("before")
+
+
+def cuts_to_pieces(cuts, total, folder, shots=None, own=None, notes=None, pool=None, tension=None):
     """An edit plan's cut list [[timeline second, video, source second, zoom?], ...] -> pieces and zooms. A video is
     a file name in the timeline's videos folder or its spare folder. A shot that would run past the end of its file
     or into the video's next generated part (its cuts in shots.json) or its next bad stretch (a blend usually marks the
@@ -486,12 +618,33 @@ def cuts_to_pieces(cuts, total, folder, shots=None):
     cuts = sorted(cuts, key=lambda c: c[0]); pieces, zooms = [], []
     for i, c in enumerate(cuts):
         end = cuts[i + 1][0] if i + 1 < len(cuts) else total
-        f = find(c[1]); shown = end - c[0]
-        sh = (shots or {}).get(os.path.basename(f), {})
-        stops = sh.get("cuts", []) + [b[0] for b in sh.get("bad", [])]
-        part_end = min([x for x in stops if x > c[2] + 0.15] + [mp4_info(f)[0]])
-        src = min(shown, part_end - c[2])
-        pieces.append((f, c[2], src, shown)); zooms.append(c[3] if len(c) > 3 else 1.0)
+        f = find(c[1]); shown = end - c[0]; start = c[2]
+        sh = (shots or {}).get(os.path.basename(f), {}); block = blocked(f, shots, own)
+        bef = before_of(f, shots); in_t = tension and tension[0] - 0.05 <= c[0] < tension[1] - 0.05
+        if bef is not None:  # the shot check marked where this video shows the before-state (no product)
+            if in_t and not any(a <= start < b for a, b in bef) and notes is not None:
+                notes.append("NOT A BEFORE-STATE: %s at %.2f s plays under the tension sentence" % (os.path.basename(f)[-28:], start))
+            if in_t: block = block + [(0.0, a, "not the before-state") for a, b in bef[:1]] + [(b, 99.0, "not the before-state") for a, b in bef[-1:]]
+            else: block = block + [(a, b, "before-state") for a, b in bef]
+        person = False
+        for a, b, why in block:  # a cut that starts inside a fade or a bad stretch moves past it
+            if a <= start < b:
+                if why == "another variant's person": person = True; break  # dropped: fill_short() takes the sentence
+                if notes is not None: notes.append("%s cut at %.2f s moved to %.2f s (%s)" % (os.path.basename(f)[-28:], start, b, why))
+                start = b
+        stops = sh.get("cuts", []) + [a for a, _, _ in block]
+        part_end = min([x for x in stops if x > start + 0.15] + [mp4_info(f)[0]])
+        src = 0.1 if person else max(0.1, min(shown, part_end - start))
+        if person and notes is not None: notes.append("%s at %.2f s shows another variant's person: replaced" % (os.path.basename(f)[-28:], start))
+        pieces.append((f, start, src, shown)); zooms.append(c[3] if len(c) > 3 else 1.0)
+    if pool is not None and own is not None:
+        if tension:  # a fill never brings before-state footage into another sentence (row-based fills keep to the row)
+            shots = {k: dict(v, bad=v.get("bad", []) + [[a, b, "before-state"] for a, b in v.get("before", [])]) for k, v in shots.items()}
+        pieces, zooms = fill_short(pieces, zooms, pool, shots, own, notes)
+        pieces, zooms = smooth(pieces, zooms, notes, {k: v.get("before") or [] for k, v in shots.items()})
+        if notes is not None and len(pieces) > 10:
+            notes.append("CHOPPY: %d shots in %.1f s; this video has too little clean footage of its own: regenerate it "
+                         "(a new batch is a spend: ask) or accept" % (len(pieces), total))
     return pieces, zooms
 
 
@@ -499,7 +652,10 @@ def add_transitions(d, segs, at_times, zooms):
     """A Slide Blur into the shot that starts at each given time (on the shot before it, as CapCut keeps it), and the
     edit plan's punch-in zoom on each shot. Returns the times that got no transition (effect not downloaded)."""
     for s, z in zip(segs, zooms):
-        if z != 1.0: s["clip"]["scale"] = {"x": z, "y": z}; s["uniform_scale"] = {"on": True, "value": 1.0}
+        if isinstance(z, dict):  # a crop: {"zoom": 2.4, "cx": 0.21, "cy": 0.65} keeps that point of the frame centred
+            k = z["zoom"]; s["clip"]["scale"] = {"x": k, "y": k}; s["uniform_scale"] = {"on": True, "value": 1.0}
+            s["clip"]["transform"] = {"x": 2 * (0.5 - z["cx"]) * k, "y": 2 * (z["cy"] - 0.5) * k}
+        elif z != 1.0: s["clip"]["scale"] = {"x": z, "y": z}; s["uniform_scale"] = {"on": True, "value": 1.0}
     tp = json.load(open(HERE + "/templates/transition_slide_blur.json", encoding="utf-8"))
     path = EFFECTS + "/" + tp.pop("path_rel")
     missing = []
@@ -573,7 +729,7 @@ class Timeline:
         set_text(mat(d, "texts", r["cta"]), [(cfg.get("cta") or brand["cta"], 0)])
 
         # cut to the voice-over: pauses shortened, the timeline ends CTA_HOLD after the last word
-        spans = speech_spans(self.vo, mp4_info(self.vo)[0])
+        spans = speech_spans(self.vo, mp4_info(self.vo)[0]); self.vo_cut = False
         total = min(dur, us(sum(b - a for a, b in spans) / VO_SPEED + CTA_HOLD)); self.dur = total
         joints, at = [], 0  # where the shortened pauses sit on the timeline
         for a, b in spans[:-1]: at += us((b - a) / VO_SPEED); joints.append(at)
@@ -584,6 +740,13 @@ class Timeline:
         if not ed.get("times") and cfg.get("vo"):  # times from the script's sentences and the voice's own pauses
             ed["times"] = vo_times(cfg["vo"], spans, total / US, self.vo, ed.get("ends"))
             self.times = ed["times"]
+            if self.times and ed.get("line1_end") == "s2":  # Line 1 leaves when the before-state starts (a product hook
+                self.times["line1"][1] = self.times["starts"][1]  # must not stand over the room without the product)
+            if self.times and "starts" in self.times:  # the last sentence spoken far faster than the rest: the voice was cut off
+                sents = [x for x in re.split(r"(?<=[.?!])\s+", cfg["vo"].strip()) if x]
+                st = list(self.times["starts"]) + [total / US - CTA_HOLD]
+                rate = [len(re.sub(r"[^A-Za-z0-9]", "", x)) / max(st[i + 1] - st[i], 0.01) for i, x in enumerate(sents[:len(st) - 1])]
+                if len(rate) > 2: self.vo_cut = rate[-1] > 1.5 * sorted(rate[:-1])[len(rate[:-1]) // 2]
             if ed["times"] and ed.get("cuts"):  # cut points named by sentence ("s2", "s4+0.9") take the sentence's start
                 st = ed["times"]["starts"]
                 at = lambda x: x if not isinstance(x, str) else st[int(x[1]) - 1] + (float(x[3:]) if "+" in x else 0.0)
@@ -594,12 +757,17 @@ class Timeline:
                              "in the edit plan (CLAUDE.md step 7)." % self.name)
         if ed.get("times"): place_times(d, r, ed["times"], total)
         if ed.get("cuts"):  # Claude's edit plan: footage chosen per sentence of the voice-over
-            pieces, zooms = cuts_to_pieces(ed["cuts"], total / US, os.path.dirname(src), shots)
+            moved = []
+            tens = (self.times["starts"][1], self.times["starts"][2]) if self.times and len(self.times.get("starts", [])) > 2 else None
+            pieces, zooms = cuts_to_pieces(ed["cuts"], total / US, os.path.dirname(src), shots, own=src, notes=moved, pool=pool, tension=tens)
             segs = lay_footage(d, r, pieces, media_dir)
             missing = add_transitions(d, segs, ed.get("transitions", []), zooms)
-            self.notes = ["edit plan: %d shots, %d transitions" % (len(pieces), len(ed.get("transitions", [])) - len(missing))]
-            for f, a, length, shown in pieces:  # a bad stretch in a planned shot, or a shot slowed below 0.75x, is reported
-                bad = [b for b in (shots or {}).get(os.path.basename(f), {}).get("bad", []) if a < b[1] and b[0] < a + length]
+            self.notes = ["edit plan: %d shots, %d transitions" % (len(pieces), len(ed.get("transitions", [])) - len(missing))] + moved
+            for f, a, length, shown in pieces:  # unusable footage in a planned shot, or a shot slowed below 0.75x, is reported
+                if variant(f) != variant(src) and "person" not in (shots or {}).get(os.path.basename(f), {}):
+                    self.notes.append("%s is another variant's footage and its shot check has no \"person\" list: "
+                                      "check by eye that its person is not on screen" % os.path.basename(f)[-28:])
+                bad = [b for b in blocked(f, shots, src) if a < b[1] and b[0] < a + length]
                 if bad: self.notes.append("%s %.2f-%.2f s uses a bad stretch: %s" % (os.path.basename(f)[-28:], a, a + length, bad[0][2]))
                 elif length / shown < 0.75: self.notes.append("%s from %.2f s slowed to %.2fx to fill %.1f s; split the sentence into two shots"
                                                               % (os.path.basename(f)[-28:], a, length / shown, shown))
@@ -749,7 +917,9 @@ if __name__ == "__main__":
         p = os.path.join(os.path.dirname(video), "spare", os.path.splitext(os.path.basename(video))[0] + " - spare.mp4")
         return [p] if os.path.exists(p) else []
 
-    def pool(c):  # own spare first, then the other videos (and spares) of the same group; checked footage only
+    def pool(c): return group_pool(cfg, c, shots)
+
+    def _old_pool(c):  # kept for reference: group_pool() is the same, shared with plan_sheet.py and cut_sheet.py
         v = os.path.expanduser(c["video"]); out = spare(v)
         for o in cfg["timelines"]:
             if o is not c and c.get("group") and o.get("group") == c["group"]:
@@ -767,10 +937,15 @@ if __name__ == "__main__":
             {None: "-", True: "yes", False: "NOT DOWNLOADED"}[t.music], t.sfx[0], miss, ok))
         if t.sfx[1]: print("    sound effects not in CapCut yet, left out:", ", ".join(t.sfx[1]))
         if t.times: print("    sentences start at", [round(x, 2) for x in t.times["starts"][1:]], "punchline", t.times["punch"])
+        if getattr(t, "vo_cut", False): print("    VOICE-OVER CUT OFF: the last sentence plays far faster than the rest, so the video ends before it does. "
+                                             "Make a new voice-over in Negen (Review > the video > New voice-over) or shorten the script.")
         if t.notes is None: print("    shot check: not done for this video, footage used as it is")
         for n in t.notes or []: print("    shot check:", n)
     gone = sorted({t.music_name for t in tls if t.music is False})
     if gone: print("NOTE: music not in CapCut yet, so left out: %s. Use it once in CapCut (Audio > search the name), "
                    "then build again." % ", ".join(gone))
     if "--save" in sys.argv: save(cfg["project"], tls)
+    if "--only" in sys.argv:  # rebuild just these timelines (comma-separated parts of their names), leave the rest
+        want = sys.argv[sys.argv.index("--only") + 1].split(","); tls = [t for t in tls if any(w in t.name for w in want)]
+        print("only:", [t.name for t in tls])
     if "--replace" in sys.argv: replace_in(cfg["project"], tls, os.path.dirname(os.path.abspath(sys.argv[1])))

@@ -2,6 +2,123 @@
 
 Changes to how the fast lane works, newest first: what changed, why, and what it was tested on.
 
+## 2026-11-07 (owner, this week's V3s) - No jump cuts, no flashes, the before-state only under the problem, true scale
+
+**Why:** the owner on three V3 timelines: console V3 "cut so bad" (12 shots in 15 s, near-identical wides back to
+back, a before-state hallway under the proof sentence); coffee table V3's before-state drew a toy-sized woman next to
+a huge sofa under "This one piece pulls the room together"; lamp V3 opened with four cuts of the same woman looking
+up and down, the "blank wall" sentence over the lit lamp.
+
+**What changed:**
+- `capcut/build_project.py`: two shots that look alike at the cut (a jump cut) or a shot under 0.8 s (a flash) merge
+  into the shot before (a locked-off shot may hold long); more than 10 shots prints CHOPPY (regenerate or accept).
+  The shot check marks each video's clean before-state in `"before"` in shots.json: only those stretches may play
+  under the tension sentence, they never play elsewhere, fills never patch them or bring them into other sentences,
+  and a tension shot from elsewhere prints NOT A BEFORE-STATE. A cut may crop (`{"zoom", "cx", "cy"}`) to take a
+  clean part of a frame (coffee V3: the empty sofa without the toy-sized woman). `"line1_end": "s2"` ends Line 1
+  when the before-state starts, so a product hook never stands over the room without the product. `--only` rebuilds
+  just the named timelines and leaves hand edits on the others.
+- Shot check (CLAUDE.md 6b): scale drift (a person or the product at the wrong size against the room) and people
+  drift (the people change between parts of one video) are bad; `"before"` is marked for every video.
+
+## 2026-11-07 (owner, this week's console) - Close-ups keep the outline; size and offer lines over the whole product
+
+**Why:** the owner caught two console V2 frames: "Five widths fit your wall" over a close-up where the carved base had
+become a thin floating ribbon, and "Free delivery, made to order" over a base drawn as two humps with the man cut in
+half by the frame edge. The shot check passed both: the close-ups were judged without the product photo beside them.
+
+**What changed:** the standing direction and the briefs keep where a part meets the top and the floor in every
+close-up; size lines play over a wide of the whole product with a person for scale, offer and CTA over a clean whole
+product; the shot check names the drift (thin ribbon, humps, a part that no longer meets top and floor) and a person
+cut in half; `cut_sheet.py` puts the product photo at the top of every sheet so each row is judged against it.
+
+## 2026-11-07 (pilot feedback) - Picture, voice and text match; on-screen lines written new
+
+**Why:** the owner on the conversion pilot: the voice-over said "Ours wobbled every time someone leaned in" over
+three friends smiling around the folding table, and the on-screen lines kept repeating the last two weeks ("Give it
+a ___", "One ___ changed that", "Free delivery, made to order").
+
+**What changed:** the ad-brief-compiler writes every row as the visible action of its sentence, with its feeling
+(a problem row: the problem happens, nobody smiles); the standing direction says so for every batch; the shot check
+adds "mismatch"; `cut_sheet.py` prints the sentence beside each cut; on-screen lines have banned skeletons and new
+jobs (persona thought, claim, proof caption, number, offer), and `plan_sheet.py` prints REPEAT for any 3-word run
+used in the last three weeks.
+
+## 2026-11-07 - No impossible reflections, no passers-by; the build fills short shots itself
+
+**Why:** the owner caught a frame in console V1 where a second person's leg walks through the foreground and the
+mirror shows the man who stands beside it. The shot check had no rule for either; five of the six console videos had a
+person drawn inside the mirror. The owner also wants the lane agent-to-agent with as few hand passes as possible.
+
+**What changed:**
+- Prevention: `references/video-direction.md` (every batch) says ACTOR A is the only person and nobody walks through
+  the foreground. A reflection is wanted only when it can be right (the owner: show it if it does not drift, else
+  not): one mirror-moment row at most, ACTOR A facing the mirror with a matching reflection; every other row with a
+  mirror says it shows only the room. The shot check cuts any reflection that is wrong.
+- Shot check (CLAUDE.md 6b): two new bad kinds, an impossible reflection and someone else in the shot (a passer-by,
+  a stray leg or arm); a hand, arm or sleeve counts as the video's person in `"person"`.
+- `capcut/build_project.py`: a shot that runs out of clean footage gets the rest of its sentence filled with clean
+  footage of the same scene (`fill_short`: own video and spare first, then the group's other videos outside their
+  person, the before-state only from itself, footage not used yet in the timeline); a flash under 0.3 s is dropped; a
+  planned shot that would show another variant's person is replaced. This replaces the hand split ("split the
+  sentence into two shots"). `plan_sheet.py` and `cut_sheet.py` show the same pieces.
+
+**Tested on:** the Nov 9 week: mirror and leg stretches marked in five console clips, the three console timelines
+re-planned by the build, every cut checked frame by frame (`cut_sheet.py`), 12 timelines rebuilt.
+
+## 2026-11-06 - Cuts land after Negen's crossfade has finished
+
+**Why:** the owner saw cuts in the Nov 9 week's edits where the next shot starts while Negen's own fade between two
+scenes is still on screen (a see-through person or lamp over the room). Negen's scene changes are crossfades of about
+0.8-1.0 s; the shot check marked about 0.5 s of each, and the cut points sat right at the edge of the mark.
+
+**What changed:**
+- Shot check (CLAUDE.md, step 6b): a blend is marked from the first frame where the next shot shows through to the
+  last frame where the old one does, about 1 s, not 0.5 s. When in doubt, mark 0.35 s more on each side.
+- Edit plan: a cut never starts or ends inside a marked blend. A sentence whose clean footage runs short gets a second
+  shot from the same scene of the group (same video or its spare first, so the person on screen stays the same).
+- The tension sentence (s2) shows the before-state only; it is never filled with footage of the lit or finished product.
+- One person per timeline: footage borrowed from another variant of the group shows the product only, never that
+  variant's person (the owner saw two different women in wall art V1).
+- Check before saving: one frame every 0.1 s at the start and end of every cut, not only the plan sheet's 0.6 s.
+- The voice matches the person on screen (the owner: men get the male voice). A Negen voice-over that runs past the
+  20 s video loses its CTA sentence (coffee table V2 and V3 with Dawn).
+
+**Automated (applies from the next week):**
+- `capcut/shot_sheet.py` finds Negen's crossfades itself (a frame that is the mix of the frames around it), marks them
+  orange on the sheet and writes them to `"fades"` in `shots.json`.
+- `capcut/build_project.py`: every blend is widened by 0.35 s each side (`FADE_PAD`); a cut that starts inside a fade,
+  a bad stretch or another variant's person moves to its end and the build says so; no shot runs on into one. Another
+  variant's footage is unusable inside its `"person"` stretches, in the edit plan and in the automatic replacements.
+  A cut-off voice-over (its last sentence plays far faster than the rest) is reported. A video downloaded again (a new
+  voice-over) replaces its old copy in the CapCut media folder and its voice-over extract; before, the build kept the
+  old copies and the new voice never reached CapCut.
+- `capcut/plan_sheet.py` flags a cut-off last sentence and checks borrowed footage the same way.
+- `capcut/cut_sheet.py` (new): the first and last frames of every cut, 0.1 s apart, rows from another variant marked.
+- `brand/pick_cast.py` gives every video its `"voice"` from the person's gender and the brand's `"voices"` in
+  `brand/brands.json` (Spry: Dawn for a woman, Evan for a man; ETW: Evan for everyone, its brand voice).
+
+**By hand at the shot check:** `"person"` stretches per video (no script can tell people apart yet).
+
+**Tested on:** the Nov 9 week, 12 timelines, rebuilt with `--replace` (old timelines in `capcut-backup/`). This week's
+`shots.json` carries `"fades_padded": true` (its blends were widened by hand) so the build does not widen them twice.
+
+## 2026-10-29 - Who is on screen: a cast matched to the buyers, varied every week
+
+**Why:** the owner wants the people in the videos to look like our customers, or like who they want to become, not
+the same model-like woman in cream every time (Oct 31: one look across the console and chair groups).
+
+**What changed:**
+- `brand/cast.json`: 30 people in four pools (everyday buyers F/M 40-49, hosts, first-home nesters in their 30s,
+  material skeptics M45-54), each relatable or aspirational, in varied looks and colours. Persona codes map to a pool
+  (WIN-02 host, WIN-03 nester, CST-07 skeptic...); the rest use everyday. Grounded in the team persona DB and
+  purchaser overlay (casting band F40-49, gender about 50/50, US Sunbelt homes; skeptic lanes M45-54).
+- `brand/pick_cast.py` (CLAUDE.md step 1): one person per video, three different per group, relatable and
+  aspirational alternating, nobody from last week while the pool allows; the same result if run again.
+- `ad-brief-compiler` 5: ACTOR A is the video's cast, written in full in every row; the go-ahead table shows who.
+
+**Tested on:** three simulated weeks of this week's 12 groups: no person repeated week to week, the mix alternating.
+
 ## 2026-10-28 (night) - Run the week as written; catch drift before saving; fewer hand fixes
 
 **Why:** this week took most of a day instead of 3-4 hours. The route was switched three times (storyboard-to-video

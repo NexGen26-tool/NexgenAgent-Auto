@@ -136,6 +136,12 @@ an angle question per chosen product (2-3 angles each). Write `week.json`:
 "brief": {}, "awareness": "TOF|MOF|BOF", "hook_type": "", "code": "", "name": "", "file": ""}, ...]}]}`. Ask the
 persona code with the angle question (the sheet's Persona dropdown, e.g. TBS-01). Find the product id (`pid`): on a New batch page type the SKU into the product search and
 read the value of the matching `input[name=products]` checkbox.
+Then run `python brand/pick_cast.py work/<week>`: it gives every video its person on screen (`"cast"` in `week.json`)
+from `brand/cast.json`, matched to the group's persona (the casting band and homes come from the team's purchaser
+data), mixing relatable and aspirational, three different people per group, nobody from last week. The briefs use
+that person as ACTOR A. It also sets each video's `"voice"` from the person's gender (`"voices"` in
+`brand/brands.json`: Spry has Dawn for a woman, Evan for a man), so the voice matches who is on screen. To change who
+appears, edit `brand/cast.json`, not the briefs.
 
 **2. Storyboards** (about 5-7 minutes, one batch can hold all 4 products):
 open `/generate/new?skill=8742da5f-3f5e-45aa-8a01-ecc289a697f1&products=<pid>,<pid>,...`
@@ -156,7 +162,7 @@ A03 opening the punchline on a hard cut. The offer and scarcity lines come from
 `week.json` and `work/<week>/briefs.md` with the file tools, no throwaway scripts. Do not ask about a draft plan while
 the storyboards run; finish the briefs first.
 
-**The go-ahead (the one stop before spending).** Show, per group, one short table (V1-V3: on-screen hook, hook action,
+**The go-ahead (the one stop before spending).** Show, per group, one short table (V1-V3: on-screen hook, hook action, who is on screen,
 delivery) and one line with the shared Lines 2-5 and the shared part of the voice-over, then a single line with the batch names (checked against the naming
 rule by you, not by the person), time and cost. Full shot lists stay in `briefs.md`, linked, not pasted. Then one
 popup with a question per group: "Chạy cả 3 video (Khuyên dùng)", "Sửa hook", "Đổi angle"; a fix they type goes in
@@ -164,8 +170,8 @@ popup with a question per group: "Chạy cả 3 video (Khuyên dùng)", "Sửa h
 
 **4. Video batches** (about 6-8 minutes each; Grok makes 2 parts at a time, so 12 batches take about 30-40 minutes):
 for each brief open `/generate/new?from_batch=<video_template_batch of that store>`, run `fill_batch.js` with
-`start: false`, the brief's `vo`, `voice` = the brand's `voice` in `brand/brands.json` (a group's `"voice"` in
-`week.json` wins), `unlit: "<product noun>"` when the group's `week.json` has `"unlit": "<product noun>"` (set it when the product page says
+`start: false`, the brief's `vo`, `voice` = the video's `"voice"` in `week.json` (pick_cast.py sets it; without
+one, the brand's `voice` in `brand/brands.json`), `unlit: "<product noun>"` when the group's `week.json` has `"unlit": "<product noun>"` (set it when the product page says
 the product has no lights but its photos show some: the wine rack; the routine then starts every scene row with the
 full UNLIT note) and `direction` = the text block of `references/video-direction.md`; check the log says
 `voice=<that voice>`, `vo=text fit=pad`, `direction ok`, `READY=true` and the name is right, then run it again with `start: true`
@@ -185,16 +191,34 @@ codified name from `references/naming.md` (date as DD-MM-YYYY). Note the picked 
 The batch's other video is kept as spare footage in `videos/spare/`.
 
 **6b. Shot check** (about 3 minutes for the sheets, then a look at each). Run `python capcut/shot_sheet.py
-work/<week>`: one sheet per video and spare in `work/<week>/shots/` (a frame every 0.5 s, cuts in yellow) and
-`work/<week>/shots.json`. Open each sheet next to the product photo and write every bad stretch into that video's
-`"bad"` list as `[start, end, "why"]`, then set `"checked": true`. Bad means:
+work/<week>`: one sheet per video and spare in `work/<week>/shots/` (a frame every 0.5 s, cuts in yellow, Negen's
+crossfades in orange: the script finds them itself and writes them to `"fades"`) and `work/<week>/shots.json`. Open
+each sheet next to the product photo and write every bad stretch into that video's `"bad"` list as
+`[start, end, "why"]`, and where the video's own person is on screen into `"person"` as `[[start, end], ...]`, counting a hand, an arm or a
+sleeve as the person (another variant of the group may borrow the footage only outside it, so one timeline never shows
+two people), then set `"checked": true`. Bad means:
 - an arm or hand with no body that could hold it: rising from below the frame to wall height, out of the wall, the
   product or a window, a hand lying on the floor;
 - product drift: a different shape, orientation, colour, number of parts or front (a tree shelf turns into a pillar
-  or a symmetric tree, a wide panel turns tall, a carved front turns flat, a vanity splits into two boxes);
+  or a symmetric tree, a wide panel turns tall, a carved front turns flat, a vanity splits into two boxes, a console's
+  thick S-curve base turns into a thin floating ribbon or two humps). Judge every frame against the product photo's
+  outline, close-ups hardest: a part that no longer meets the top and the floor the way the photo shows is drift;
+- a person cut in half by the frame edge;
+- scale drift: a person or the product at the wrong size against the room (a toy-sized person next to a huge sofa);
+- people drift: the people change between parts of one video (the host becomes another woman);
+Also write each video's clean before-state (the problem, no product) into `"before"` as `[[start, end]]` (`[]` when it
+has none): the build plays only those stretches under the tension sentence and never elsewhere.
 - hallucination: objects appearing or vanishing (glass shelves, a person in a mirror), people outside a window,
   a jump from day to evening;
-- a blend: two shots overlapping (about 0.5 s at most scene changes).
+- a reflection that cannot be there: a mirror, glass or window showing a person who stands beside it, behind it or
+  nowhere in the room, or showing them from the wrong side. With a mirror in the room, look into it in every frame;
+- someone else in the shot: a second person, or a leg or arm crossing the frame edge (a passer-by walking through
+  the foreground) that does not belong to the video's person;
+- a mismatch: the shot does not show what its sentence says, or shows the opposite feeling (smiles over a problem
+  sentence). Such a stretch is not used for that sentence; `cut_sheet.py` prints the sentence beside every cut;
+- a blend: two shots overlapping (Negen's crossfade, about 1 s at most scene changes) that the orange marks missed.
+  The build widens every blend by 0.35 s each side and moves any cut that starts inside one, a bad stretch or another
+  variant's person to its end, and says so.
 - text burned into the picture (captions the model wrote from the script).
 - body drift: an extra or missing arm, leg or foot; legs crossed at the knee with both feet on the floor; a limb
   merging into furniture; feet floating; physics that cannot happen (a door swinging the wrong way, a hand through
@@ -249,15 +273,23 @@ size if a batch has two). Put the script on the timeline as `"vo"` and give it a
   spare or the group's other videos, never a bad stretch; the punchline (`"s3"`) starts on a hard cut to a different
   shot than the opening, zoom 1.15. The tension (`"s2"`) and any sentence that states a problem get a shot of the problem (the before-state
   or a stand-in), never a shot of our product (ad-brief-compiler, 8). Look at the shot sheets to pick them. A shot is never run on into a bad stretch or the video's
-  next generated part (it would flash other footage): the build slows it to fit instead and says so when it drops
-  under 0.75x; then split that sentence into two shots;
+  next generated part (it would flash other footage): when the clean footage runs out the build fills the rest of
+  the sentence itself with clean footage of the same scene (the video and its spare first, then the group's other
+  videos outside their person; the before-state only from the before-state) and prints each fill; a planned shot that
+  would show another variant's person is replaced the same way. No hand splits;
 - `"transitions"`: leave it out for a Slide Blur into the punchline (`"s3"`, or `"s2"` for a 6-sentence script).
 **Plan check (before every save, about 10 minutes).** Run `python capcut/plan_sheet.py work/<week>/capcut.json`. It
 prints each timeline's sentence lengths (a "CHECK" means a sentence plays too fast or too slow for its words: the
 voice ran two sentences together, so give `"ends"`), the clean stretches of every video, and makes one sheet per group
 in `work/<week>/plan/` with every frame each timeline will actually show, every 0.6 s. Look at every frame for the
-bad list of step 6b, hands and feet above all. Anything bad: add the stretch to `shots.json`, pick another shot, run
-it again. Save only when the sheets are clean and the build reports no bad stretch used.
+bad list of step 6b, hands and feet above all. Then run `python capcut/cut_sheet.py work/<week>/capcut.json`: the
+first and last frames of every cut, 0.1 s apart, in `work/<week>/plan/cuts/`; no crossfade may show at a cut, and a
+row marked OTHER VARIANT shows the product only, and every row shows what its sentence says, with the sentence's
+feeling. A REPEAT from the plan check means an on-screen line reuses the last weeks' words: write it new. Anything bad: add the stretch to `shots.json`, pick another shot, run
+it again. When the build or the plan sheet says the voice-over is cut off (its last sentence plays far too fast), make
+a new voice-over in Negen (Review > the video > "New voice-over for video v1", pick the voice, Write my own, Keep
+speed; "Make voice-over again" repeats the old voice at once and costs a voice-over), export and download the batch
+again; the build takes the new file and its voice-over by itself. Save only when the sheets are clean and the build reports no bad stretch used.
 Saving: `--save` makes the project the first time; once it exists, `--replace` rebuilds its timelines in place (old
 timelines are backed up in `work/<week>/capcut-backup/`). Rule changes:
 `references/rule-changes.md`.

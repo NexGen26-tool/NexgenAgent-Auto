@@ -67,9 +67,14 @@ For long or wide products (TV stands, consoles, kitchen islands, sideboards, lon
   UNLIT" still gave lit shelves in every End-of-year take (2026-10-28). Set the group's `"unlit": "<product noun>"` in `week.json`; `fill_batch.js` then
   adds the full note to every row by itself.
 
-### 5. Continuity
-- One recurring person, ACTOR A, described once in full (for example "ACTOR A, a woman in her thirties, cream knit
-  sweater, olive trousers") and repeated in every row they appear; guests only when the angle needs them (a party).
+### 5. Continuity and casting
+- ACTOR A is the video's `"cast"` in `week.json` (picked by `brand/pick_cast.py` from `brand/cast.json`: someone
+  from the group's target buyers, either relatable, the buyer today, or aspirational, who they want to become). Write
+  "ACTOR A (<cast.who>)" in full, in the same words, in every row they appear. Never write in your own person
+  instead, and never let the storyboard's person carry over: the three videos of a group show three different people
+  on purpose. Guests only when the angle needs them (a party); the host casts already describe them.
+- Relatable rows show ACTOR A doing the everyday version (keys down after work, a book on a Sunday). Aspirational
+  rows show them at ease in the finished home (hosting, a calm morning). Same room, product and argument either way.
 - Rows with no person end with "No person."
 - Anything placed stays placed; anything removed stays removed; the final frame shows the accumulated state.
 - One time of day and one light for all 8 rows, the storyboard's own (usually warm low sun from one side, soft long
@@ -84,6 +89,41 @@ Videos where an arm appears from nowhere get cut in the edit. Every row with a h
 Never: hands rising from below the frame to something at or above eye level (wall art, high shelves, mirrors); a
 hand or arm coming out of the wall, the product or a window; two hands with no person in a wide shot; a hand in a
 top-down shot of a floor. Close-ups of wall-mounted products have no hand ("No hand.").
+
+Sculptural products (a carved base, a freeform top, a shaped frame) drift in close-ups: with the outline out of frame
+the model invents a new shape (Nov 9 console: a thin floating ribbon, two humps). Every close-up row keeps in frame
+where the part meets the top and the floor ("the base's curve from where it leaves the floor up to where it meets the
+top"); never the base alone, never a part with both ends cut off.
+
+A size or number line plays over a wide of the whole product with a person beside it for scale; the offer and the CTA
+over a clean shot of the whole product, the person whole or out of frame, never cut by the frame edge.
+
+Picture, voice and text say the same thing, sentence by sentence (owner, Nov 7: "Ours wobbled every time someone
+leaned in" played over three friends smiling around the folding table). Every scene row shows its sentence as an
+action the viewer can see, with the feeling the sentence carries:
+- A problem sentence shows the problem happening and the people bothered by it: the folding table tips under an
+  elbow, a glass slides, ACTOR A grabs it and steadies the table, nobody smiles. Write the action and the expression
+  in the row ("frowning", "catches the glass", "presses the table flat with both hands"); the model smiles otherwise.
+- A claim or proof sentence shows the thing it names (grain when it says grain, a glass standing flat when it says
+  room for drinks), never a generic wide.
+- The on-screen line on top of it says the same idea in fewer words, or names the proof on screen; it never
+  contradicts the picture.
+
+On-screen lines are written new every week (owner, Nov 7: the overlays kept repeating the last two weeks). Banned
+skeletons, because they have run every week: "Give it a ___", "One ___ changed that", "This one ___", "Solid wood / ___"
+as Line 3, "Free delivery, made to order" or "Every piece is one of a kind" as Line 5. Each line takes its words from
+this ad's own voice-over and persona: Line 1 the persona's own thought or a number, Line 2 the one claim in 2-4 words,
+Line 3 a caption of the proof on screen ("Glass stays put"), Line 4 the doubt answered with a number from the page
+("32 to 60 in wide"), Line 5 the offer in this ad's words. The plan check prints REPEAT for any 3-word run used in the
+last three weeks.
+
+Mirrors, glass and windows in the room (a mirror above a console, a glass door): a reflection of ACTOR A is wanted
+when it can be right, and only then. At most one row per video is a mirror moment: ACTOR A stands in front of the
+mirror facing it, and the row says "the reflection matches ACTOR A exactly". Every other row with a mirror in frame
+says "the mirror shows only the room", with ACTOR A beside it or walking past. (Nov 9 console week: the model drew the
+man inside the mirror while he stood beside it in five of six videos; the shot check cuts every wrong reflection, and
+the build fills the gap from clean footage.) ACTOR A is the only person in the row unless the brief names a group; no one else walks
+through the foreground.
 
 **Simple poses, simple physics.** The video model draws extra feet and broken limbs in tangled poses and gets hinged
 things wrong (Oct 28: a third foot on the chair, a cupboard door swinging the wrong way). In every row:
@@ -241,7 +281,7 @@ B04 | End frame | 2 | <camera direction>
 - Skill: Conversion Creative V3. Shots: PART A and PART B. Format 9:16. Length 20 s. Continuous, Cut.
 - References: pick the storyboard poster from Pick from media > Generated. Tick Style, Composition and Lighting, and "Also send this image to the image model" (the start pictures then see the
   storyboard's look, not only a summary of it). Do NOT tick Camera or Everything (they make the camera static).
-- Voice-over: "Write my own" with the VO SCRIPT, the brand's voice from `brand/brands.json` (`voice`), Advanced >
+- Voice-over: "Write my own" with the VO SCRIPT, the video's `"voice"` in `week.json` (pick_cast.py matches it to the person on screen), Advanced >
   Fit to the video length: "Keep speed".
 - Direct the video: the standing direction in references/video-direction.md, as-is.
 - Brand: SpryInterior for Spry products, ET Woodcrafts for ETW products.

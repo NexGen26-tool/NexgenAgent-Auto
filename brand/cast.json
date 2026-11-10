@@ -1,0 +1,204 @@
+{
+  "_about": "Who is on screen. brand/pick_cast.py gives every video of the week one person from this list, matched to the group's persona, mixing relatable and aspirational, never the same person twice in a group and not reused from the last two weeks. The brief writes that person as ACTOR A in every row. Source: the team's persona DB and purchaser overlay (spry-creative-system analysis/persona-db-team_codified.md, owner-adopted 2026-08-06): casting band F40-49, gender about 50/50, US Sunbelt homes; the material-skeptic lanes keep M45-54. Relatable = looks like the buyer today, real and lived-in. Aspirational = who the buyer wants to become: put together, confident, at ease in a finished home; still a real person, never a model look.",
+  "personas": {
+    "_rule": "persona code -> pool. Codes not listed use their family's default below, then 'everyday'.",
+    "WIN-02": "host",
+    "CFT-03": "host",
+    "DIN-01": "host",
+    "WIN-06": "host",
+    "WIN-03": "nester",
+    "WIN-05": "nester",
+    "CFT-02": "nester",
+    "CFT-07": "nester",
+    "CST-04": "nester",
+    "TBS-02b": "nester",
+    "TBS-04": "skeptic",
+    "CST-07": "skeptic",
+    "CFT-06": "skeptic",
+    "WIN-07": "skeptic",
+    "OUT-01": "skeptic",
+    "TBS-07": "skeptic"
+  },
+  "people": [
+    {
+      "id": "E1",
+      "pool": "everyday",
+      "kind": "relatable",
+      "who": "a woman in her mid-forties with shoulder-length brown hair, light olive skin, rust-red linen shirt, dark jeans, barefoot at home"
+    },
+    {
+      "id": "E2",
+      "pool": "everyday",
+      "kind": "relatable",
+      "who": "a Black woman in her early forties with short natural curls, mustard knit sweater, wide grey trousers"
+    },
+    {
+      "id": "E3",
+      "pool": "everyday",
+      "kind": "relatable",
+      "who": "a man in his mid-forties with a short salt-and-pepper beard, navy henley, chinos"
+    },
+    {
+      "id": "E4",
+      "pool": "everyday",
+      "kind": "relatable",
+      "who": "a Latina woman in her late forties with long dark wavy hair, sage-green cardigan over a white tee, linen trousers"
+    },
+    {
+      "id": "E5",
+      "pool": "everyday",
+      "kind": "aspirational",
+      "who": "a woman in her mid-forties with a sleek blonde bob, camel cashmere sweater, tailored cream trousers, gold hoop earrings"
+    },
+    {
+      "id": "E6",
+      "pool": "everyday",
+      "kind": "aspirational",
+      "who": "an East Asian woman in her early forties with a low dark ponytail, black silk shirt, wide black trousers, minimal silver jewelry"
+    },
+    {
+      "id": "E7",
+      "pool": "everyday",
+      "kind": "aspirational",
+      "who": "a Black man in his mid-forties with a close-cropped beard, charcoal merino polo, tailored stone trousers"
+    },
+    {
+      "id": "E8",
+      "pool": "everyday",
+      "kind": "aspirational",
+      "who": "a woman in her late forties with silver-streaked long hair worn loose, terracotta linen dress, leather sandals"
+    },
+    {
+      "id": "H1",
+      "pool": "host",
+      "kind": "relatable",
+      "who": "a woman in her mid-forties with auburn hair in a loose bun, striped blue-and-white button-down, dark jeans, hosting three friends of different backgrounds in their forties"
+    },
+    {
+      "id": "H2",
+      "pool": "host",
+      "kind": "relatable",
+      "who": "a Latino man in his late forties with a trimmed grey beard, olive overshirt, white tee, hosting a mixed group of friends in their forties"
+    },
+    {
+      "id": "H3",
+      "pool": "host",
+      "kind": "aspirational",
+      "who": "a Black woman in her mid-forties with long braids pulled back, emerald satin blouse, black trousers, hosting a relaxed, well-dressed group of friends in their forties"
+    },
+    {
+      "id": "H4",
+      "pool": "host",
+      "kind": "aspirational",
+      "who": "a couple in their mid-forties hosting friends: he in a navy knit polo, she in an ivory silk blouse and dark wide trousers, short dark hair"
+    },
+    {
+      "id": "N1",
+      "pool": "nester",
+      "kind": "relatable",
+      "who": "a woman in her early thirties with a messy brown topknot, oversized grey sweatshirt, black leggings, in a just-moved-in home"
+    },
+    {
+      "id": "N2",
+      "pool": "nester",
+      "kind": "relatable",
+      "who": "a South Asian man in his early thirties with short black hair, green crewneck sweatshirt, joggers, in a just-moved-in home"
+    },
+    {
+      "id": "N3",
+      "pool": "nester",
+      "kind": "aspirational",
+      "who": "a woman in her mid-thirties with a glossy dark bob, fitted black turtleneck, tailored camel trousers, in a small, finished, tasteful apartment"
+    },
+    {
+      "id": "N4",
+      "pool": "nester",
+      "kind": "aspirational",
+      "who": "a couple in their early thirties, she with curly red hair in a cream knit, he in a rust overshirt, in a small, finished, tasteful apartment"
+    },
+    {
+      "id": "S1",
+      "pool": "skeptic",
+      "kind": "relatable",
+      "who": "a man in his early fifties with thinning grey hair, flannel shirt with rolled sleeves, work jeans"
+    },
+    {
+      "id": "S2",
+      "pool": "skeptic",
+      "kind": "relatable",
+      "who": "a Black man in his late forties with a grey goatee, denim shirt, khakis"
+    },
+    {
+      "id": "S3",
+      "pool": "skeptic",
+      "kind": "aspirational",
+      "who": "a man in his early fifties with neat silver hair, charcoal quarter-zip sweater, dark tailored trousers, reading glasses in his shirt pocket"
+    },
+    {
+      "id": "E9",
+      "pool": "everyday",
+      "kind": "relatable",
+      "who": "a woman in her early forties with a long sandy-blonde braid, chambray shirt with rolled sleeves, white jeans"
+    },
+    {
+      "id": "E10",
+      "pool": "everyday",
+      "kind": "relatable",
+      "who": "a Filipino American woman in her mid-forties with a black lob, oatmeal hoodie, soft olive joggers"
+    },
+    {
+      "id": "E11",
+      "pool": "everyday",
+      "kind": "relatable",
+      "who": "a white man in his late forties with tousled brown hair and glasses, heather-grey sweater, dark jeans"
+    },
+    {
+      "id": "E12",
+      "pool": "everyday",
+      "kind": "aspirational",
+      "who": "a Latina woman in her mid-forties with glossy dark waves, ivory knit dress, tan leather belt, small gold necklace"
+    },
+    {
+      "id": "E13",
+      "pool": "everyday",
+      "kind": "aspirational",
+      "who": "a woman in her late forties with a short silver pixie cut, crisp white shirt, navy wide-leg trousers, tortoiseshell glasses"
+    },
+    {
+      "id": "E14",
+      "pool": "everyday",
+      "kind": "aspirational",
+      "who": "a Middle Eastern man in his mid-forties with a neat dark beard, olive suede overshirt, cream tee, tailored trousers"
+    },
+    {
+      "id": "H5",
+      "pool": "host",
+      "kind": "relatable",
+      "who": "a Black man in his mid-forties with a shaved head, burgundy sweater, jeans, hosting a mixed group of friends in their forties"
+    },
+    {
+      "id": "H6",
+      "pool": "host",
+      "kind": "aspirational",
+      "who": "a woman in her late forties with a sleek silver-blonde bob, black wrap dress, hosting a relaxed, well-dressed group of friends in their forties"
+    },
+    {
+      "id": "N5",
+      "pool": "nester",
+      "kind": "relatable",
+      "who": "a Latina woman in her early thirties with a curly ponytail, denim jacket over a white tee, in a just-moved-in home"
+    },
+    {
+      "id": "N6",
+      "pool": "nester",
+      "kind": "aspirational",
+      "who": "a Black man in his early thirties with short twists, cream cable-knit sweater, tailored black trousers, in a small, finished, tasteful apartment"
+    },
+    {
+      "id": "S4",
+      "pool": "skeptic",
+      "kind": "aspirational",
+      "who": "a Latino man in his early fifties with a grey moustache, navy cardigan over an oxford shirt, dark trousers"
+    }
+  ]
+}
