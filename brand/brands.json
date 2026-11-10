@@ -1,5 +1,7 @@
 {
   "etw": {
+    "assign_sheet": {"url": "https://nexgenbros.sg.larksuite.com/wiki/TfvMwlCv3iZG45kKBCGlWjx8gYQ", "tab": "ETW"},
+    "meta_ad_account": "24345822548370588",
     "store": "ET Woodcrafts",
     "logo": "etw-logo-black.png",
     "logo_scale": 0.425,
@@ -52,6 +54,8 @@
     ]
   },
   "spry": {
+    "assign_sheet": {"url": "https://nexgenbros.sg.larksuite.com/wiki/TfvMwlCv3iZG45kKBCGlWjx8gYQ", "tab": "Spry"},
+    "meta_ad_account": "864899615696893",
     "store": "Spryinterior",
     "logo": "spry-logo-brown.png",
     "logo_scale": 0.3,

@@ -24,8 +24,8 @@ In chat, write only at a milestone (storyboards done, all videos started, videos
 something needs them, in one or two lines. Never narrate tool steps, page scripts, ids, retries or a workaround that
 worked; record problems in `log.md` instead.
 
-**Stops.** The person is asked at most three times a week before CapCut: the step-0 popup, the product and angle
-popup (only when they asked for suggestions), and one go-ahead popup before any video batch starts. Everything else
+**Stops.** The person is asked at most three times a week before CapCut: the step-0 popup, the plan popup (the
+picked products with their plans, step 1), and one go-ahead popup before any video batch starts. Everything else
 runs without asking.
 
 **Run the week as written: 3-4 hours, one route.** A week of 12 is about 3-4 hours from the first popup to the saved
@@ -99,6 +99,8 @@ Updates: `/fastlane-update` pulls the latest version and runs the check again.
 - `negen/read_storyboard.js` reads one product's storyboard (angle, shots, VO) and its poster id in one call.
 - `negen/fill_batch.js` fills and starts one video batch (inputs documented at the top of the file).
 - `negen/batch_status.js` one line per batch with its state and step counts.
+- `negen/read_sheet.js` reads one tab of the team's tracking sheet from the open sheet page (step 1a).
+- `brand/pick_products.py work/<week>` picks the week's products from the sheet and Meta (step 1a).
 - `negen/export_batch.js` makes a share link for one batch's videos; `python negen/download_export.py <link>
   <out.mp4>` downloads it and keeps the better of the two videos (AI score + product match). The browser blocks
   downloads, so always use this route.
@@ -124,11 +126,30 @@ folder, the CapCut project ("<Mon DD> - <output name>") and the CapCut media fol
 Ask it in one popup together with the first step-1 question:
 - "Đặt tên cho đợt video tuần này?": the names used in earlier weeks (`work/*/week.json`, newest first, up to 3);
   with none, two neutral patterns such as "<Mon DD> Spry ETW test". The person picks or types; the name is theirs.
-- "Test sản phẩm nào?": "Gợi ý giúp mình các sản phẩm chưa test" (first), "Giống tuần trước" (only when a
-  previous week exists); they type SKUs in "Other".
+- No product question here: step 1 picks the products itself ("Pick the products"); the person sees the pick in the
+  plan popup and can change it there.
 - "Tên của bạn trong sheet (Name)?" and "Ngày ghi trên tên video?": their creator label (for example "Triết Agent";
   offer the one from earlier weeks) and the date for the codified names. Save them in `week.json` as
   `"creator"` and `"date"`. Every finished video is named and logged by `references/naming.md`.
+
+**1a. Pick the products** (about 5 minutes, no question to the person). Owner rule (Nov 10): first check whether the
+team already assigned products to this person in the tracking sheet; if not, pick them from what sells on Meta.
+- Read the sheet: open each brand's `assign_sheet.url` in `brand/brands.json` in the browser (no sign-in), click its
+  `assign_sheet.tab` ("Spry", then "ETW") (a tab loads when it is opened), load `negen/read_sheet.js` like the other routines, and run
+  it once per tab with `{tab: "Spry", months: ["Tháng <M>/<YYYY>", "<last month>"]}`. Save both results as
+  `work/<week>/sheet.json`: `{"Spry": <result>, "ETW": <result>}`.
+- Read Meta: with the Meta Ads connector (`ads_get_ad_entities`), per ad account in `brand/brands.json`
+  (`meta_ad_account`), level `ad`, last 90 days, fields `name`, `amount_spent`, `omni_add_to_cart`, `omni_purchase`,
+  `omni_purchase_values`, sorted by `amount_spent_descending`, 100 ads. Save them as `work/<week>/meta.json`, one
+  `{"store", "name", "spend", "atc", "purchases", "value"}` per ad. Without the connector, an Ads Manager export of the
+  same columns for the last 90 days does the same; without either, pick from the sheet alone and say so in `log.md`.
+- Run `python brand/pick_products.py work/<week>`. Rows of this month assigned to the person (`"creator"`) with an
+  empty "Trạng thái video" are their products, with the persona and angle when the row has them. With none, it ranks
+  each store's SKUs by Meta purchases, then purchase value per dollar, skipping SKUs someone else holds an open row for
+  this month and SKUs this lane made in the last 14 days; a SKU whose best ad is this person's own video goes iterate
+  on it. Take its first 2 per store; it writes `work/<week>/pick.json`. Only what Meta shows is used (no store
+  orders); a SKU with one purchase on little spend is a weak signal, so prefer the next one when its numbers are far
+  stronger.
 
 **1. Plan the groups.** 12 videos = 4 groups: 2 Spry groups + 2 ETW groups. A group is one SKU + one angle + one
 persona + three videos (V1, V2, V3): one Meta ad set, as the media buyer builds them. Each group has a mode and one
@@ -137,12 +158,11 @@ declared variable (ad-brief-compiler, "Variant set"):
 - **iterate** (the owner names an earlier video that won, the `"control"`): one body, the control with the group's
   one variable changed, and three hooks on it.
 The persona comes from the SKU's family in `brand/personas.json`. No two groups of the week sell the same angle; no
-format more than twice in 12 videos; read earlier `work/*/week.json` for what each SKU ran last. When asked to
-suggest, find untested products in Negen Products and show them as one popup: a multi-select question per store
-("Chọn 2 sản phẩm Spry", "Chọn 2 sản phẩm ETW"), up to 4 candidates each with a one-line reason. Then one popup with
-one question per chosen product with 2-3 ready plans (each plan in one line: persona, angle, mode, variable, and the
-three formats or the control), and in the same popup "Video nào đã thắng trước đây?" per product: the SKU's earlier
-codified names from `work/*/week.json` and "Chưa có (explore)" first; a named winner makes that group iterate.
+format more than twice in 12 videos; read earlier `work/*/week.json` for what each SKU ran last. The products are
+step 1a's pick. Show them in one popup with one question per chosen product with 2-3 ready plans (each plan in one line: persona, angle, mode, variable, and the
+three formats or the control; the first plan follows `pick.json`'s mode and control, and its line says why the
+product was picked: "giao trên sheet" or its Meta numbers), plus "Đổi sản phẩm" for a product they want to swap (they
+type the SKU in "Other"). A plan with a control makes that group iterate.
 Write `week.json`:
 `{"week": "...", "name": "<output name>", "groups": [{"store": "etw|spry", "product": "...", "sku": "...", "pid": "...", "angle": "...",
 "persona": "", "mode": "explore|iterate", "variable": "first run|<what changes>", "control": "<codified name>|",

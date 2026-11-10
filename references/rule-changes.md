@@ -2,6 +2,29 @@
 
 Changes to how the fast lane works, newest first: what changed, why, and what it was tested on.
 
+## 2026-11-10 (owner) - The products are picked, not asked: the sheet's assignment first, then what sells on Meta
+
+**Why:** the owner: "nên có 1 rule để pick sản phẩm: check xem có được assign trên sheet chưa -> nếu chưa thì tự pick
+sản phẩm. Pick dựa trên data đã work của SKU đó, với lại sản phẩm nào đã work, đang bán được" and, on the data:
+"lấy từ Meta. Dựa trên những gì view được và tính được thôi. Generic là được rồi."
+
+**What changed:**
+- CLAUDE.md step 1a (new): read the team's tracking sheet ("Source Video chạy Ads v2", each brand's `assign_sheet` in
+  `brand/brands.json`) and Meta (the Meta Ads connector, each brand's `meta_ad_account`, ads of the last 90 days), then
+  `python brand/pick_products.py work/<week>`. The step-0 popup no longer asks which products.
+- `negen/read_sheet.js` (new): reads one tab of the sheet from the open page with no sign-in. The sheet is shared for
+  viewing but draws its cells on a canvas and blocks copy, so the routine reads the page's own sheet model
+  (`window.spread`). A tab loads when it is clicked.
+- `brand/pick_products.py` (new): rows of this month assigned to the person with an empty "Trạng thái video" are their
+  products; otherwise each store's SKUs ranked by Meta purchases, then purchase value per dollar, from the SKU in the
+  codified ad names, skipping SKUs another person holds an open row for this month and SKUs this lane made in the last
+  14 days. A SKU whose best ad is this person's own video goes iterate on it, the rest explore.
+- The plan popup (step 1) shows the picked products with why each was picked and lets the person swap one.
+
+**Tested on:** the live sheet (Spry 366 and ETW 330 rows for Oct-Nov; "Triết Agent" is this lane's Assigned name) and
+a sample of last-90-day Meta ads: Spry picked SILDTCSC009 (56 purchases, 6.6x), SILDTCS012, SINLCS042, SINLSATB179,
+skipping four SKUs held by others this month and SINLSACS108 (made by this lane on Nov 9). Not yet in a real week.
+
 ## 2026-11-10 (owner) - One ad set, one declared variable: explore with three formats, iterate with three hooks
 
 **Why:** the owner: "the argument and editing has been the same for the past batch... Meta Ads hates same ads, we
