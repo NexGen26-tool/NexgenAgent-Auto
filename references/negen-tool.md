@@ -39,6 +39,10 @@ product true to its photos. How it ran:
   1.5, included in the subscription. This is V1.
 - V2 and V3: Edit Part 1 with that variant's hook row > Save > Make again > "Make again (included in subscription)".
   Each makes a new version of the whole video (v2, v3...); click the version chip to select one.
+- A batch's voice-over can be changed after it is done (any route): Review > the video > "New voice-over for video
+  vN" (the small button under the voice-over chips) > voice > Make voice-over, about $0.01. "Make voice-over again"
+  starts at once with the voice already used: do not press it to change the voice. The new one becomes the current
+  version, and the export ZIP holds it.
 - Voice-over per version: "New voice-over for video vN" > Write my own > voice > Advanced (open the summary) >
   "Keep speed" > Make voice-over (about $0.02). Without Keep speed the voice is stretched to 20 s.
 - Download: the share link holds only the current version. Fetch `/media/<id>` of the version's "video + VO" in the

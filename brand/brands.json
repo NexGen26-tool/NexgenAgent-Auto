@@ -5,6 +5,7 @@
     "logo_scale": 0.425,
     "cta": "Explore the Collection",
     "voice": "Evan",
+    "voices": {"man": "Evan"},
     "offer": {
       "line": "Free shipping",
       "code": "FS"
@@ -56,6 +57,7 @@
     "logo_scale": 0.3,
     "cta": "Shop now",
     "voice": "Dawn",
+    "voices": {"woman": "Dawn", "man": "Evan"},
     "offer": {
       "line": "Free delivery",
       "code": "FS"

@@ -1,0 +1,664 @@
+{
+ "_about": "Persona pack for the briefs (ad-brief-compiler, Conversion). Synced from persona-db-team_codified.md by brand/sync_personas.py; objections and category_proof are written by hand.",
+ "personas": {
+  "TBS-01": {
+   "family": "TBS — Tree Bookshelf  (week-1 SKU; SINLTB071)",
+   "name": "Beige/Bland-Corner Owner — bare wall or a \"works-but-soulless\" shelf; restyled it twice and the corner still reads flat",
+   "awareness": "Unaware→Solution",
+   "desire": "#8 social approval, superiority, enjoyment",
+   "barrier": "\"my shelf works fine, what's the problem\"",
+   "angle": "Empty wall is wasting a masterpiece → sculptural wood tree",
+   "hook_seed": "\"My bookshelf does its job and says absolutely nothing about me\"",
+   "tier": "P1",
+   "status": "MAPPED"
+  },
+  "TBS-02": {
+   "family": "TBS — Tree Bookshelf  (week-1 SKU; SINLTB071)",
+   "name": "Overflow Reader — books piled on floor/cabinet tops for years; tried baskets, cubes, ladder shelf; (sub-branch: small-home, every floor shelf eats the walkway)",
+   "awareness": "Problem→Solution",
+   "desire": "#5 comfortable, #8 social approval",
+   "barrier": "\"ordinary shelves are ugly & wobbly\" / \"everything eats floor\"",
+   "angle": "Don't keep books in an ugly wobbly shelf — make them part of the tree",
+   "hook_seed": "\"I had 600 books on the floor of this corner for 2 years\"",
+   "tier": "P1",
+   "status": "VALIDATED (Test 08, compound w/ TBS-01)"
+  },
+  "TBS-03": {
+   "family": "TBS — Tree Bookshelf  (week-1 SKU; SINLTB071)",
+   "name": "Statement Hunter / Tab-Hoarder — 9 comparison tabs open, all look the same; fears the big piece won't fit the wall",
+   "awareness": "Solution→Product",
+   "desire": "superiority, #8 social approval",
+   "barrier": "\"they all look the same / it won't fit my wall\"",
+   "angle": "Not cookie-cutter — made to fit YOUR wall (→ Customization territory)",
+   "hook_seed": "\"You've got 9 bookshelf tabs open and they all look the same. Here's the one that isn't\"",
+   "tier": "P1",
+   "status": "MAPPED"
+  },
+  "TBS-04": {
+   "family": "TBS — Tree Bookshelf  (week-1 SKU; SINLTB071)",
+   "name": "Material/Sturdiness Skeptic — saw \"wood\" that was particleboard, or assembled 3 wobbly shelves in 5 yrs; shakes before he trusts",
+   "awareness": "Product-Aware",
+   "desire": "#6 freedom from fear, superiority",
+   "barrier": "\"real or fake wood? thin branches hold books?\"",
+   "angle": "REAL WOOD · REAL CRAFT — touch & load proof",
+   "hook_seed": "\"This is my fourth bookshelf in 5 years. The first 3 are thrown away\"",
+   "tier": "P2a",
+   "status": "MAPPED"
+  },
+  "TBS-05": {
+   "family": "TBS — Tree Bookshelf  (week-1 SKU; SINLTB071)",
+   "name": "Thoughtful Child — adult child (buyer ≠ user) gifting a book-loving parent; tired of mugs/gift cards",
+   "awareness": "Solution-Aware",
+   "desire": "#7 care for loved ones",
+   "barrier": "\"what to gift a book lover they'd never buy themselves?\"",
+   "angle": "The gift a book lover would never buy for themselves",
+   "hook_seed": "\"My mom has hundreds of books and I've given her a mug every year\"",
+   "tier": "P1-adj / Gift niche",
+   "status": "MAPPED"
+  },
+  "TBS-06": {
+   "family": "TBS — Tree Bookshelf  (week-1 SKU; SINLTB071)",
+   "name": "$2,289 Hesitator — loves it, in cart, stalls on price + custom + shipping a bulky piece",
+   "awareness": "Product→Most-Aware",
+   "desire": "#8 social approval, value, identity",
+   "barrier": "\"$2,289 for a shelf — justifiable?\"",
+   "angle": "Here's exactly where the money goes + free ship / made to order",
+   "hook_seed": "\"Yes, it's $2,289 for a bookshelf. Here's exactly where that money goes\"",
+   "tier": "P1 (BOF)",
+   "status": "MAPPED"
+  },
+  "TBS-07": {
+   "family": "TBS — Tree Bookshelf  (week-1 SKU; SINLTB071)",
+   "name": "Provenance Skeptic / Authenticity-Seeking Aesthete — loves the piece but stalls: seen a cheaper lookalike, photos look \"too perfect/AI\", unsure it's real",
+   "awareness": "Product→Most-Aware",
+   "desire": "#3 freedom from fear (not scammed) + #8 social approval",
+   "barrier": "\"It looks great… but is it real? Photos look like AI; what if it's a knockoff or doesn't match on arrival?\"",
+   "angle": "It's genuinely handmade, solid wood, one-of-a-kind, arrives like the photo — proven by REAL footage",
+   "hook_seed": "Three proofs of realness — real making · real object · real customers (no origin reveal; clone unnamed)",
+   "tier": "\"No two are alike — watch one become a bookshelf, by hand\"",
+   "status": "TBS-07 (local)",
+   "desire_full": "Freedom from fear (#3 — not being scammed / not losing $2k on a fake) + Social approval (#8 — owning a genuine, one-of-a-kind handmade piece). Age overlay 45-54 (Meta).",
+   "snapshot": "45-54; fell for the tree bookshelf on the feed (saved it, keeps coming back) but stalls before the $1,900–2,289 click: has seen a near-identical piece cheaper elsewhere, read mixed reviews, and the site photos read \"too perfect — almost AI/render.\" Wants to believe it's real; needs proof it's genuinely handmade, solid wood, and will arrive looking like the photo.",
+   "barrier_full": "\"It looks beautiful… but is it real? These photos look like AI. $2,000+ for a shelf — what if it's a knockoff, or doesn't look anything like the picture when it arrives?\" (VOC verbatim: \"Is this AI photos?\" · \"doesn't look anything like this\" · cheaper lookalike elsewhere)",
+   "benefit": "This is the real thing — shaped by hand, solid wood throughout, every grain one-of-a-kind, arrives exactly like the photo. Real proof (real making, real object, real customers) erases the scam/AI/knockoff doubt — WITHOUT naming the knockoff or revealing where it's made.",
+   "angles": "A) \"Made by hand, in motion\" (real-craft footage; no origin reveal) · B) \"What real solid wood actually is\" (tangible authenticity + value; indirect on the clone) · C) \"Real unboxing, real homes\" (customer proof). [ledger: TBS-A13 / A14 / A15 — register on lock]",
+   "hook_ideas": "A) \"No two are alike — watch one tree become a bookshelf, by hand.\" · B) \"This is what 80 pounds of solid wood feels like.\" · C) \"Watch a real unboxing — start to finish, nothing cut out.\" (9 hooks total in the CPDs)",
+   "proof": [
+    "real making footage (hands carving — NO location/origin)",
+    "weight & scale demo (80 lb, person for scale)",
+    "solid-wood cross-section + knock test",
+    "one-of-a-kind live-edge grain macro",
+    "real unboxing video",
+    "real-customer install UGC wall (40+ homes)"
+   ],
+   "hard_no": [
+    "AI renders",
+    "origin/Vietnam reveal",
+    "naming the Etsy/$32/scam clone"
+   ]
+  },
+  "CST-01": {
+   "family": "CST — Console Table",
+   "name": "Empty corner/entry, can't name the problem",
+   "awareness": "Unaware",
+   "desire": "#5,#8",
+   "barrier": "\"the empty corner is fine\"",
+   "angle": "The problem you didn't know you had — soulless corner → focal point",
+   "tier": "P1",
+   "status": "MAPPED"
+  },
+  "CST-02": {
+   "family": "CST — Console Table",
+   "name": "Messy entryway — needs a landing for keys/mail",
+   "awareness": "Problem-Aware",
+   "desire": "#8,#5",
+   "barrier": "\"don't know what fits & looks good\"",
+   "angle": "First impression of the home is the entryway — don't leave it unfinished",
+   "tier": "P1",
+   "status": "VALIDATED-DEMAND"
+  },
+  "CST-03": {
+   "family": "CST — Console Table",
+   "name": "\"Full but flat / dead-space\" home — needs an anchor (flat room / dark hallway / under-TV / twice-a-year dining)",
+   "awareness": "Problem→Solution",
+   "desire": "#8,#5",
+   "barrier": "\"room's full but still flat\"",
+   "angle": "The one piece a full-but-flat room revolves around",
+   "tier": "P1",
+   "status": "MAPPED"
+  },
+  "CST-04": {
+   "family": "CST — Console Table",
+   "name": "Small apartment — wants a console but fears floor/walkway",
+   "awareness": "Solution-Aware",
+   "desire": "#5, superiority",
+   "barrier": "\"nice but my place is small\"",
+   "angle": "Console that takes zero floor — floating/narrow for small homes",
+   "tier": "P1",
+   "status": "MAPPED"
+  },
+  "CST-05": {
+   "family": "CST — Console Table",
+   "name": "Odd nook — fears depth/door-clearance, \"nothing fits\"",
+   "awareness": "Product-Aware",
+   "desire": "#5,#6",
+   "barrier": "\"every console crowds my door\"",
+   "angle": "Proportioned for the nook nothing ever fit — measurements on screen",
+   "tier": "P1",
+   "status": "VALIDATED"
+  },
+  "CST-06": {
+   "family": "CST — Console Table",
+   "name": "Careful buyer — fears style mismatch; needs versatility + social proof",
+   "awareness": "Solution→Product",
+   "desire": "#5,#8",
+   "barrier": "\"will it fit MY room? what if I redecorate?\"",
+   "angle": "Fits any style — effortlessly + 4.9★/388+ reviews/Best Seller",
+   "tier": "P1",
+   "status": "MAPPED"
+  },
+  "CST-07": {
+   "family": "CST — Console Table",
+   "name": "Wood enthusiast — real vs engineered skeptic",
+   "awareness": "Product-Aware",
+   "desire": "#6, superiority",
+   "barrier": "\"real wood or will it break like the last?\"",
+   "angle": "Buy once, use 20 years — sturdiness test + joinery macro",
+   "tier": "P2a",
+   "status": "MAPPED"
+  },
+  "CST-08": {
+   "family": "CST — Console Table",
+   "name": "Already follows Spry — closing online (matching + reassurance)",
+   "awareness": "Most-Aware",
+   "desire": "superiority/#8, enjoyment",
+   "barrier": "\"online — will the grain match the photo?\"",
+   "angle": "One-of-one grain + matching set + buy-online reassurance",
+   "tier": "P1 / Repeat",
+   "status": "MAPPED"
+  },
+  "CFT-01": {
+   "family": "CFT — Coffee Table  (+ Cat Tree adjacency)",
+   "name": "Living room \"missing something\" — no center / old table",
+   "awareness": "Unaware→Problem",
+   "desire": "#5,#8",
+   "angle": "The room is missing the anchor in the middle",
+   "tier": "P1"
+  },
+  "CFT-02": {
+   "family": "CFT — Coffee Table  (+ Cat Tree adjacency)",
+   "name": "Upgrade from temp/IKEA → first \"real\" piece",
+   "awareness": "Solution→Problem",
+   "desire": "#8, superiority",
+   "angle": "The first real piece to build the room around",
+   "tier": "P1 / Nester"
+  },
+  "CFT-03": {
+   "family": "CFT — Coffee Table  (+ Cat Tree adjacency)",
+   "name": "The Host — gatherings on a flimsy temp table",
+   "awareness": "Problem-Aware",
+   "desire": "#8,#7",
+   "angle": "Center of every gathering — don't let it be the temp table",
+   "tier": "P1"
+  },
+  "CFT-04": {
+   "family": "CFT — Coffee Table  (+ Cat Tree adjacency)",
+   "name": "Slow-living ritualist (coffee/tea/candle)",
+   "awareness": "Solution-Aware",
+   "desire": "enjoyment,#5",
+   "angle": "Space for your daily ritual",
+   "tier": "P1"
+  },
+  "CFT-05": {
+   "family": "CFT — Coffee Table  (+ Cat Tree adjacency)",
+   "name": "Family w/ small kids — durable & safe",
+   "awareness": "Problem→Product",
+   "desire": "#7,#6",
+   "angle": "Made for real life — kid-proof, rounded edges",
+   "tier": "P2a / P1"
+  },
+  "CFT-06": {
+   "family": "CFT — Coffee Table  (+ Cat Tree adjacency)",
+   "name": "Burned by cheap table — buy once",
+   "awareness": "Product-Aware",
+   "desire": "freedom from pain, value",
+   "angle": "Real materials, built to last — cost-per-year math",
+   "tier": "P2a"
+  },
+  "CFT-07": {
+   "family": "CFT — Coffee Table  (+ Cat Tree adjacency)",
+   "name": "Just moved in / moved in together — first anchor",
+   "awareness": "Problem→Most",
+   "desire": "#5,#7, identity",
+   "angle": "The heart of your home — first real piece for the new place",
+   "tier": "P1 / Nester"
+  },
+  "OUT-01": {
+   "family": "OUT — Outdoor / Patio  (added 2026-08-06, owner-approved; first SKU SITHCHR006)",
+   "name": "Has a patio/deck they barely use; replaced flimsy outdoor furniture at least once (blew over, greyed, wobbled, rotted)",
+   "awareness": "Unaware→Problem",
+   "desire": "#7, freedom from pain",
+   "barrier": "\"everything outdoor falls apart in two seasons — why buy nice again?\"",
+   "angle": "Outdoor furniture that doesn't move — beam-mass, stays out, stays put",
+   "tier": "P2a"
+  },
+  "OUT-02": {
+   "family": "OUT — Outdoor / Patio  (added 2026-08-06, owner-approved; first SKU SITHCHR006)",
+   "name": "Entertains outdoors; the patio is the real living room half the year",
+   "awareness": "Problem→Solution",
+   "desire": "#8,#7",
+   "barrier": "\"seating that looks like patio furniture, not furniture\"",
+   "angle": "The outdoor room that reads as a room, not a set of chairs",
+   "tier": "P1",
+   "status": "candidate"
+  },
+  "OUT-03": {
+   "family": "OUT — Outdoor / Patio  (added 2026-08-06, owner-approved; first SKU SITHCHR006)",
+   "name": "Bought a house with a good garden they haven't finished",
+   "awareness": "Unaware",
+   "desire": "#5,#8",
+   "barrier": "\"the garden is nice, the terrace is empty\"",
+   "angle": "The terrace has been waiting for one thing",
+   "tier": "P1",
+   "status": "candidate"
+  },
+  "DIN-01": {
+   "family": "DIN — Dining Table  (added 2026-08-14, owner-approved D3; first SKU SINLDT020)",
+   "name": "Has chosen the table, stalled on the price; wants to know what the money buys",
+   "awareness": "Product-Aware",
+   "desire": "#6, superiority",
+   "barrier": "\"I like it, I just can't see why it costs this\"",
+   "angle": "What the price buys — hand-finishing, mass, grain uniqueness, refinish-forever",
+   "tier": "P2a"
+  },
+  "DIN-02": {
+   "family": "DIN — Dining Table  (added 2026-08-14, owner-approved D3; first SKU SINLDT020)",
+   "name": "Hosts often; the current table cannot seat the people who actually come",
+   "awareness": "Problem→Solution",
+   "desire": "#8,#7",
+   "barrier": "\"we eat in shifts / people stand\"",
+   "angle": "The table that seats everyone who actually turns up",
+   "tier": "P1",
+   "status": "candidate"
+  },
+  "DIN-03": {
+   "family": "DIN — Dining Table  (added 2026-08-14, owner-approved D3; first SKU SINLDT020)",
+   "name": "Wants a dining room that reads as finished, not furnished",
+   "awareness": "Unaware→Problem",
+   "desire": "#5,#8",
+   "barrier": "\"the room has a table in it, it isn't a dining room\"",
+   "angle": "One piece turns a room with a table into a dining room",
+   "tier": "P1",
+   "status": "candidate"
+  },
+  "SDB-01": {
+   "family": "SDB — Sideboard / Storage Cabinet  (added 2026-10-23, owner-directed; first SKU SINLKISD005)",
+   "name": "Box-Tired Room Finisher — needs a sideboard for real storage, but every option is the same rectangle box and a big box would make the room heavier",
+   "awareness": "Solution-Aware (MOF)",
+   "desire": "#8 social approval, #5 comfortable living",
+   "barrier": "\"they all look like the same box\"",
+   "angle": "Storage that is also the room's focal point — the curve",
+   "hook_seed": "\"A sideboard that shows off.\"",
+   "tier": "P1",
+   "status": "MAPPED",
+   "desire_full": "Social approval (#8 — a room that looks designed, not just furnished) + Comfortable living (#5 — one home for the dishes, books and things worth showing). Age overlay 45-54 (Meta).",
+   "snapshot": "45-54, owns the home. The long wall behind the dining table or sofa is bare, or holds a tired flat-pack cabinet. Has been scrolling sideboards and every one is a rectangle with doors; worries a big box will make the room heavier. Wants one piece that stores everything and is the thing people notice when they walk in.",
+   "barrier_full": "\"They all look like the same box. Do I really want another big rectangle against the wall?\" (no VOC verbatim yet — needs verbatim)",
+   "benefit": "The curve: a solid wood sideboard with a rounded frame that reads as the room's focal point, with open shelves to show the good things beside closed storage to hide the rest.",
+   "angles": "A) Curved Focal Point — storage that is the room's centerpiece (fast-lane test, week of 30/10/2026) · B) Show and hide — open shelves for display, closed storage for clutter · C) Not another box — silhouette contrast with the usual rectangle.",
+   "hook_ideas": "A) \"A sideboard that shows off.\" (Product Hook) · B) \"Most sideboards are just boxes.\" (Call out Hook) · C) \"Not another box.\" (Call out Hook) — the three fast-lane variants, codes VIDPDMHP2NA / VIDPDMHC1NA / VIDPDMHC3NA.",
+   "proof": [
+    "hand tracing the rounded edge (macro)",
+    "wide shot with the whole piece inside the central 70% so the curve reads as the focal point",
+    "open shelf styled with real things beside a door closing flush",
+    "solid wood grain macro"
+   ],
+   "hard_no": [
+    "showing the inside of the closed storage unless the product photos show it",
+    "any claim the product page does not state"
+   ]
+  },
+  "DGN-01": {
+   "family": "P3 — Trade / Designer / Commercial (B2B · invisible to Meta)",
+   "name": "Designer unaware Spry offers trade pricing / made-to-order",
+   "awareness": "Unaware (of program)",
+   "barrier": "\"probably retail-only; no designer price?\"",
+   "angle": "You're a designer? Trade pricing — unique wood, made to order, no inventory",
+   "tier": "P3"
+  },
+  "DGN-02": {
+   "family": "P3 — Trade / Designer / Commercial (B2B · invisible to Meta)",
+   "name": "Designer reseller (buys to mark up for clients)",
+   "awareness": "Product→Most-Aware",
+   "barrier": "\"enough margin? stable quality/lead-time to put my name on?\"",
+   "angle": "Sell clients pieces found nowhere else — trade price, ship to your client",
+   "tier": "P3"
+  },
+  "DGN-03": {
+   "family": "P3 — Trade / Designer / Commercial (B2B · invisible to Meta)",
+   "name": "Designer using product as spec/render/portfolio",
+   "awareness": "Solution→Product",
+   "barrier": "\"do I get assets/specs to win client approval?\"",
+   "angle": "Spec the piece that gets the client to say yes — full assets & specs",
+   "tier": "P3"
+  },
+  "WIN-01": {
+   "family": "WIN — Wine Holder",
+   "name": "Wine lover wanting a home-bar statement (backlit live-edge wall)",
+   "awareness": "Unaware→Product",
+   "angle": "A wine lover's dream / focal-point wine wall",
+   "tier": "P1 niche"
+  },
+  "WIN-02": {
+   "family": "WIN — Wine Holder",
+   "name": "Host wanting a dinner-table focal point",
+   "awareness": "Problem-Aware",
+   "angle": "Make your home dinner feel 5-star",
+   "tier": "Niche"
+  },
+  "WIN-03": {
+   "family": "WIN — Wine Holder",
+   "name": "Small-apartment wine lover — space-saving",
+   "awareness": "Problem-Aware",
+   "angle": "Space-saving elegance — stop bottles cluttering the kitchen",
+   "tier": "Niche"
+  },
+  "WIN-04": {
+   "family": "WIN — Wine Holder",
+   "name": "Amateur collector — display with pride",
+   "awareness": "Solution-Aware",
+   "angle": "Show off the collection you worked for",
+   "tier": "Niche"
+  },
+  "WIN-05": {
+   "family": "WIN — Wine Holder",
+   "name": "Newly independent — instant grown-up upgrade",
+   "awareness": "Problem-Aware",
+   "angle": "One small piece that makes your place feel less \"first apartment\"",
+   "tier": "Niche"
+  },
+  "WIN-06": {
+   "family": "WIN — Wine Holder",
+   "name": "Housewarming gift seeker",
+   "awareness": "Problem-Aware",
+   "angle": "Unforgettable housewarming gift",
+   "tier": "Gift niche"
+  },
+  "WIN-07": {
+   "family": "WIN — Wine Holder",
+   "name": "Burned by a cheap rack — durability proof",
+   "awareness": "Product-Aware",
+   "angle": "Built to last, not to rust",
+   "tier": "P2a"
+  },
+  "REC-01": {
+   "family": "REC — Record Player Stand",
+   "name": "Stacks records flat — unaware it damages them",
+   "awareness": "Unaware",
+   "angle": "You're storing records wrong (and damaging them)",
+   "tier": "P1 (edu)"
+  },
+  "REC-02": {
+   "family": "REC — Record Player Stand",
+   "name": "Audiophile protecting an investment",
+   "awareness": "Solution-Aware",
+   "angle": "Store them right, protect your investment",
+   "tier": "Niche"
+  },
+  "REC-03": {
+   "family": "REC — Record Player Stand",
+   "name": "Collector displaying colored vinyl (upgrade from carton)",
+   "awareness": "Problem→Product",
+   "angle": "Show off your colors / records ≠ a cardboard box",
+   "tier": "Vinyl niche"
+  },
+  "REC-04": {
+   "family": "REC — Record Player Stand",
+   "name": "Keeper of memory/heirloom records",
+   "awareness": "Problem-Aware",
+   "angle": "Put your story back on display",
+   "tier": "Niche"
+  },
+  "REC-05": {
+   "family": "REC — Record Player Stand",
+   "name": "Retiree reviving the vinyl hobby",
+   "awareness": "Product-Aware",
+   "angle": "Pick the hobby back up — properly",
+   "tier": "Niche"
+  },
+  "REC-06": {
+   "family": "REC — Record Player Stand",
+   "name": "Gift for a vinyl lover",
+   "awareness": "Product-Aware",
+   "angle": "The gift for the vinyl nerd in your life",
+   "tier": "Gift niche"
+  },
+  "REC-07": {
+   "family": "REC — Record Player Stand",
+   "name": "Cafe/bar/record-shop owner — check-in focal point",
+   "awareness": "Solution-Aware",
+   "angle": "The secret to an Instagrammable vinyl lounge",
+   "tier": "P3 (commercial)"
+  },
+  "REC-08": {
+   "family": "REC — Record Player Stand",
+   "name": "Price hesitator — \"investment not expense\"",
+   "awareness": "Product-Aware",
+   "angle": "An investment, not an expense",
+   "tier": "P2a / BOF"
+  },
+  "TVC-01": {
+   "family": "TVC — TV Cabinet",
+   "name": "Bare under-TV wall — wants designer look + hidden storage",
+   "awareness": "Problem→Product",
+   "angle": "Designed in one piece — sculptural curves + hidden storage",
+   "tier": "P1"
+  },
+  "TVC-02": {
+   "family": "TVC — TV Cabinet",
+   "name": "Cable chaos",
+   "awareness": "Problem-Aware",
+   "angle": "Hide the cable chaos",
+   "tier": "P1"
+  },
+  "TVC-03": {
+   "family": "TVC — TV Cabinet",
+   "name": "Family movie-night media wall",
+   "awareness": "Solution-Aware",
+   "angle": "Build the family movie-night wall",
+   "tier": "P1"
+  },
+  "TVC-04": {
+   "family": "TVC — TV Cabinet",
+   "name": "Many devices/clutter around the TV",
+   "awareness": "Problem-Aware",
+   "angle": "A home for all your gear",
+   "tier": "P1"
+  },
+  "TVC-05": {
+   "family": "TVC — TV Cabinet",
+   "name": "Burned by a cheap TV unit (sag/peel)",
+   "awareness": "Product-Aware",
+   "angle": "No more sagging, no more peeling",
+   "tier": "P2a"
+  },
+  "TVC-06": {
+   "family": "TVC — TV Cabinet",
+   "name": "Messy TV wall seen as \"normal\"",
+   "awareness": "Unaware",
+   "angle": "Your TV wall could look so much better",
+   "tier": "P1 (edu)"
+  },
+  "SWB-01": {
+   "family": "SWB — Swing Bench (outdoor)",
+   "name": "Stressed — needs a \"switch-off\" corner",
+   "awareness": "Problem-Aware",
+   "angle": "Your spot to switch off",
+   "tier": "Niche"
+  },
+  "SWB-02": {
+   "family": "SWB — Swing Bench (outdoor)",
+   "name": "Couple wanting a romantic porch corner",
+   "awareness": "Solution-Aware",
+   "angle": "A little corner just for two",
+   "tier": "Niche"
+  },
+  "SWB-03": {
+   "family": "SWB — Swing Bench (outdoor)",
+   "name": "Empty porch/balcony — fill it into seating",
+   "awareness": "Problem-Aware",
+   "angle": "Turn that empty porch into a place to be",
+   "tier": "P1 (outdoor)"
+  },
+  "SWB-04": {
+   "family": "SWB — Swing Bench (outdoor)",
+   "name": "Gift for parents/housewarming — \"hours of calm\"",
+   "awareness": "Product-Aware",
+   "angle": "Gift them hours of calm",
+   "tier": "Gift niche"
+  },
+  "SWB-05": {
+   "family": "SWB — Swing Bench (outdoor)",
+   "name": "Burned by a cheap swing",
+   "awareness": "Product-Aware",
+   "angle": "Built to swing for years",
+   "tier": "P2a"
+  },
+  "SWB-06": {
+   "family": "SWB — Swing Bench (outdoor)",
+   "name": "Has a porch, never uses it (unaware)",
+   "awareness": "Unaware",
+   "angle": "You have an outdoor space you never use",
+   "tier": "P1 (edu)"
+  },
+  "FLS-01": {
+   "family": "FLS — Floating Shelf · WAL — Wall Art",
+   "name": "Empty dead corner — wants a vertical focal point",
+   "awareness": "Problem-Aware",
+   "angle": "Empty corner → harmonious focal point (black-edge corner shelf)",
+   "tier": "P1"
+  },
+  "WAL-01": {
+   "family": "FLS — Floating Shelf · WAL — Wall Art",
+   "name": "Gift for mom / statement art for a blank wall",
+   "awareness": "Problem→Solution",
+   "angle": "From slices of wood → wall art (gift / blank-wall statement)",
+   "tier": "P1 / Gift"
+  },
+  "CHR-01": {
+   "family": "CHR — Accent / Lounge Chair  (added 2026-10-23, owner: \"add new code for chair\"; first SKU SILDTTNACC004)",
+   "name": "Finished living room or reading corner, tasteful but a little safe; has saved sculptural chairs and assumed they are for looking at, too precious or too hard to sit in every evening",
+   "awareness": "Solution→Product-Aware",
+   "desire": "#1 comfort, #8 social approval / individuality",
+   "barrier": "\"beautiful, but would anyone actually sit in it?\"",
+   "angle": "A sculpture you sit in — the piece the room is seen by, and the seat the evening ends in",
+   "tier": "P1",
+   "status": "NEW (sheet row sent to the owner 2026-10-23)"
+  }
+ },
+ "objections": {
+  "_about": "Cross-cutting objections any buyer may carry (persona-db 'Cross-cutting OBJECTIONS'). Answer in the creative, never target them.",
+  "colour": "brown vs walnut vs oak: name the finish exactly as the product page does",
+  "lead_time": "made to order takes weeks: say it honestly with the scarcity line, never 'ships now'",
+  "reassurance": "a real business: the brand name on screen, the offer as the page states it",
+  "legitimacy": "is it real, is it AI: grounded, physical shots only; no glow-ray or floating renders"
+ },
+ "category_proof": {
+  "_about": "Per product family: the objections the team banked (spry-creative-system analysis/pain-points-bank.md, ids kept) and the proof shots that answer them. Generated footage cannot prove craft or making (usp-directions: real capture only), so proof here is a page fact made visible: a legible use, scale with ACTOR A, a grounded grain macro.",
+  "CFT": {
+   "objections": [
+    {
+     "id": "PP-CFT-01",
+     "barrier": "the table I have is the wrong size: it looks marooned, or it eats the walkway",
+     "answer": "the sizes on the product page, shown with ACTOR A for scale"
+    },
+    {
+     "id": "PP-CFT-03",
+     "barrier": "my last cheap table lifted, ringed or wobbled inside a year; what if I buy wrong again?",
+     "answer": "solid wood as the page states it, one grain from top to leg, grounded macro; never a dollar sum (KI-033)"
+    },
+    {
+     "id": "PP-CFT-04",
+     "barrier": "a sculptural top: where does the cup go, is it flat enough to use?",
+     "answer": "a cup or book resting flat and stable on the top, early, in a frame where the flatness is legible (the 22.67x winner's opening)"
+    }
+   ],
+   "proof": [
+    "cup or book resting flat on the top in the first rows",
+    "ACTOR A beside it for scale",
+    "grounded grain macro, top running into the leg",
+    "people around it using it"
+   ]
+  },
+  "CST": {
+   "objections": [
+    {
+     "id": "PP-CON-03",
+     "barrier": "the first view of the house feels unfinished: a bare entry wall",
+     "answer": "the console as the first thing seen, wide, inside the central 70%"
+    },
+    {
+     "id": "PP-CON-04",
+     "barrier": "nothing is ever the right size for that spot",
+     "answer": "the widths and depth on the product page, said and on screen"
+    },
+    {
+     "id": "PP-CON-07",
+     "barrier": "it's just a hallway, there's nothing to do with it",
+     "answer": "the hallway as a place: ACTOR A stops at the console, keys down, a lamp on"
+    }
+   ],
+   "proof": [
+    "the whole piece wide in the room, ACTOR A beside it for scale",
+    "keys or a bowl set on the top (it is used, not just looked at)",
+    "grounded grain macro of the carved base"
+   ]
+  },
+  "WAL": {
+   "objections": [
+    {
+     "id": "inferred",
+     "barrier": "will it look like the photo on my wall, at my size?",
+     "answer": "the widths on the product page with the sofa below for scale; the same panel in two lights"
+    },
+    {
+     "id": "inferred",
+     "barrier": "art over the sofa is a big commitment: what if it looks cheap up close?",
+     "answer": "a grounded macro of the carved relief and its shadow"
+    }
+   ],
+   "proof": [
+    "the whole panel over a real sofa, ACTOR A in frame for scale",
+    "macro of the carved relief with its own shadow",
+    "the glow on and off when the page states lighting"
+   ]
+  },
+  "LIGHT": {
+   "objections": [
+    {
+     "id": "inferred",
+     "barrier": "a lamp you hang like art: is it a real light or a decoration, and how is it wired?",
+     "answer": "the page's wiring and bulb facts, said; the room lit by it alone"
+    },
+    {
+     "id": "inferred",
+     "barrier": "will it be too big or too small over my bed?",
+     "answer": "the sizes on the product page with the headboard below for scale"
+    }
+   ],
+   "proof": [
+    "the room at dusk lit only by it",
+    "ACTOR A beside it for scale",
+    "macro of the wood with the light behind it"
+   ]
+  }
+ },
+ "rules": {
+  "_about": "Copy rules the team proved on this account (claim-and-craft-gate.md, pain-points-bank.md authoring rules, persona-db notes).",
+  "owner_voice": "first person in the body ('Mine was...'); second person only in the hook; never the 'your space deserves' scold (the documented 0-ATC click-trap)",
+  "one_claim": "one ownable claim per ad: it must not survive pasted onto another SKU unchanged (Reeves)",
+  "said_aloud": "every line must sound like a real person said it mid-sentence; vendor words fail: elevate, handcrafted, unique, functional art, timeless, stunning, transform (Bernbach)",
+  "hook_types": "console and sideboard conversions came from Product (HP) and Intrigue (HI) hooks, none from Call out (HC) (ledger 2026-07-27, small sample): on CST/SDB no V uses a plain call-out",
+  "no_sums": "never a beatable dollar total ('$1,509 once vs $300 x 3')"
+ }
+}
