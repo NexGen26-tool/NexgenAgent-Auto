@@ -228,8 +228,9 @@ The batch's other video is kept as spare footage in `videos/spare/`.
 
 **6b. Shot check** (about 3 minutes for the sheets, then a look at each). Run `python capcut/shot_sheet.py
 work/<week>`: one sheet per video and spare in `work/<week>/shots/` (a frame every 0.5 s, cuts in yellow, Negen's
-crossfades in orange: the script finds them itself and writes them to `"fades"`) and `work/<week>/shots.json`. Open
-each sheet next to the product photo and write every bad stretch into that video's `"bad"` list as
+crossfades in orange: the script finds them itself and writes them to `"fades"`) and `work/<week>/shots.json`. Each
+sheet is headed by the product photo from `work/<week>/product-photos/` (file name containing the SKU) when there is
+one; open each sheet, judge it against that photo and write every bad stretch into that video's `"bad"` list as
 `[start, end, "why"]`, and where the video's own person is on screen into `"person"` as `[[start, end], ...]`, counting a hand, an arm or a
 sleeve as the person (another variant of the group may borrow the footage only outside it, so one timeline never shows
 two people), then set `"checked": true`. Bad means:

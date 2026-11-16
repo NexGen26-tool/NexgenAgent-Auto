@@ -2,6 +2,24 @@
 
 Changes to how the fast lane works, newest first: what changed, why, and what it was tested on.
 
+## 2026-11-16 (owner) - The product photo heads every shot sheet; persona sync needs a path
+
+**Why:** product drift was caught by the owner's eye in four reviews, after Negen's own product match had scored the
+drifted clips 8.5-9; the shot sheet had no product photo on it to judge against.
+`brand/sync_personas.py` defaulted to a path on one member's computer and failed everywhere else.
+
+**What changed:**
+- `capcut/shot_sheet.py` (step 6b): each sheet is headed by the week's product photo for that video's SKU, from
+  `work/<week>/product-photos/` (else `work/product-photos/`), as `cut_sheet.py` already does. No photo: the sheet is
+  made as before, and the run says "(no product photo)".
+- `brand/sync_personas.py`: no default source; give the registry path as the argument or in `NEXGEN_PERSONAS_SRC`,
+  else it stops with the usage line. Bracketed tracking notes in the registry are no longer copied into the pack.
+- `brand/personas.json`, `brand/cast.json`: source notes that pointed at files outside this repo are removed; the
+  persona content is unchanged.
+
+**Tested on:** a copy of the Nov 9 week (24 videos and spares, 4 product photos): every sheet headed by its SKU's
+photo.
+
 ## 2026-11-10 (owner) - The products are picked, not asked: the sheet's assignment first, then what sells on Meta
 
 **Why:** the owner: "nên có 1 rule để pick sản phẩm: check xem có được assign trên sheet chưa -> nếu chưa thì tự pick

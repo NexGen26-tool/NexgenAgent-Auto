@@ -1,5 +1,5 @@
 {
- "_about": "Persona pack for the briefs (ad-brief-compiler, Conversion). Synced from persona-db-team_codified.md by brand/sync_personas.py; objections and category_proof are written by hand.",
+ "_about": "Persona pack for the briefs (ad-brief-compiler, Conversion). Synced from the team persona registry by brand/sync_personas.py; objections and category_proof are written by hand.",
  "personas": {
   "TBS-01": {
    "family": "TBS — Tree Bookshelf  (week-1 SKU; SINLTB071)",
@@ -81,8 +81,8 @@
    "snapshot": "45-54; fell for the tree bookshelf on the feed (saved it, keeps coming back) but stalls before the $1,900–2,289 click: has seen a near-identical piece cheaper elsewhere, read mixed reviews, and the site photos read \"too perfect — almost AI/render.\" Wants to believe it's real; needs proof it's genuinely handmade, solid wood, and will arrive looking like the photo.",
    "barrier_full": "\"It looks beautiful… but is it real? These photos look like AI. $2,000+ for a shelf — what if it's a knockoff, or doesn't look anything like the picture when it arrives?\" (VOC verbatim: \"Is this AI photos?\" · \"doesn't look anything like this\" · cheaper lookalike elsewhere)",
    "benefit": "This is the real thing — shaped by hand, solid wood throughout, every grain one-of-a-kind, arrives exactly like the photo. Real proof (real making, real object, real customers) erases the scam/AI/knockoff doubt — WITHOUT naming the knockoff or revealing where it's made.",
-   "angles": "A) \"Made by hand, in motion\" (real-craft footage; no origin reveal) · B) \"What real solid wood actually is\" (tangible authenticity + value; indirect on the clone) · C) \"Real unboxing, real homes\" (customer proof). [ledger: TBS-A13 / A14 / A15 — register on lock]",
-   "hook_ideas": "A) \"No two are alike — watch one tree become a bookshelf, by hand.\" · B) \"This is what 80 pounds of solid wood feels like.\" · C) \"Watch a real unboxing — start to finish, nothing cut out.\" (9 hooks total in the CPDs)",
+   "angles": "A) \"Made by hand, in motion\" (real-craft footage; no origin reveal) · B) \"What real solid wood actually is\" (tangible authenticity + value; indirect on the clone) · C) \"Real unboxing, real homes\" (customer proof).",
+   "hook_ideas": "A) \"No two are alike — watch one tree become a bookshelf, by hand.\" · B) \"This is what 80 pounds of solid wood feels like.\" · C) \"Watch a real unboxing — start to finish, nothing cut out.\"",
    "proof": [
     "real making footage (hands carving — NO location/origin)",
     "weight & scale demo (80 lb, person for scale)",
@@ -564,7 +564,7 @@
   "legitimacy": "is it real, is it AI: grounded, physical shots only; no glow-ray or floating renders"
  },
  "category_proof": {
-  "_about": "Per product family: the objections the team banked (spry-creative-system analysis/pain-points-bank.md, ids kept) and the proof shots that answer them. Generated footage cannot prove craft or making (usp-directions: real capture only), so proof here is a page fact made visible: a legible use, scale with ACTOR A, a grounded grain macro.",
+  "_about": "Per product family: the objections the team banked and the proof shots that answer them. Generated footage cannot prove craft or making (real capture only), so proof here is a page fact made visible: a legible use, scale with ACTOR A, a grounded grain macro.",
   "CFT": {
    "objections": [
     {
@@ -654,11 +654,11 @@
   }
  },
  "rules": {
-  "_about": "Copy rules the team proved on this account (claim-and-craft-gate.md, pain-points-bank.md authoring rules, persona-db notes).",
+  "_about": "Copy rules the team proved on this account.",
   "owner_voice": "first person in the body ('Mine was...'); second person only in the hook; never the 'your space deserves' scold (the documented 0-ATC click-trap)",
   "one_claim": "one ownable claim per ad: it must not survive pasted onto another SKU unchanged (Reeves)",
   "said_aloud": "every line must sound like a real person said it mid-sentence; vendor words fail: elevate, handcrafted, unique, functional art, timeless, stunning, transform (Bernbach)",
-  "hook_types": "console and sideboard conversions came from Product (HP) and Intrigue (HI) hooks, none from Call out (HC) (ledger 2026-07-27, small sample): on CST/SDB no V uses a plain call-out",
+  "hook_types": "console and sideboard conversions came from Product (HP) and Intrigue (HI) hooks, none from Call out (HC) (small sample): on CST/SDB no V uses a plain call-out",
   "no_sums": "never a beatable dollar total ('$1,509 once vs $300 x 3')"
  }
 }
