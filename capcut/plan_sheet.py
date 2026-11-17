@@ -125,13 +125,13 @@ def main():
         vo = bp.extract_vo(video, out_dir)
         spans = bp.speech_spans(vo, bp.mp4_info(vo)[0])
         total = sum(b - a for a, b in spans) / bp.VO_SPEED + bp.CTA_HOLD
-        times = ed.get("times") or (bp.pilot_times(t, spans, total, vo, ed.get("ends")) if t.get("pilot") else
+        times = ed.get("times") or (bp.scripted_times(t, spans, total, vo, ed.get("ends")) if t.get("scripted") else
                                       bp.vo_times(t["vo"], spans, total, vo, ed.get("ends"), bp.line_map(t)) if t.get("vo") else None)
         print("\n" + t["name"])
         if not times or "starts" not in times:
             print("  CHECK: no sentence starts (give \"ends\" or \"times\" in the edit plan)"); continue
         st = times["starts"] + [total - bp.CTA_HOLD]
-        sentences = list(t["pilot"]["parts"]) if t.get("pilot") else [s for s in re.split(r"(?<=[.?!])\s+", t["vo"].strip()) if s]
+        sentences = list(t["scripted"]["parts"]) if t.get("scripted") else [s for s in re.split(r"(?<=[.?!])\s+", t["vo"].strip()) if s]
         rates = [len(re.sub(r"[^A-Za-z0-9]", "", s)) / max(st[i + 1] - st[i], 0.01) for i, s in enumerate(sentences)]
         median = sorted(rates[:-1])[len(rates[:-1]) // 2]
         for i, s in enumerate(sentences):

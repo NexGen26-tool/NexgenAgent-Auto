@@ -272,7 +272,7 @@ def vo_times(vo_text, spans, total, path=None, ends=None, lines=None):
     tension, turn, reason, doubt cleared, offer, CTA) put Line 2 on sentence 3, 6 sentences (older briefs) sentence
     n on Line n. "starts" holds every sentence's start for cuts named "s1".."s9". Some voices (Negen's default) pause
     under SENT_PAUSE between sentences; then a finer pass over the file finds them."""
-    # a list is a script already split into its parts (a "pilot" timeline: the parts end at ; and , too)
+    # a list is a script already split into its parts (a "scripted" timeline: the parts end at ; and , too)
     sentences = list(vo_text) if isinstance(vo_text, list) else [s for s in re.split(r"(?<=[.?!])\s+", vo_text.strip()) if s]
     if len(sentences) < 5 or (not lines and len(sentences) < 6): return None
     # "ends" in the edit plan: where each sentence but the last ends in the voice file, in seconds, when the match
@@ -836,26 +836,26 @@ def add_transitions(d, segs, at_times, zooms):
     return missing
 
 
-# ------------------------------------------------------------------------------------------------ pilot card lists
-# A "pilot" timeline carries a script written elsewhere, word for word (the head-to-head week of 27/11/2026): its hook
+# ------------------------------------------------------------------------------------------------ scripted card lists
+# A "scripted" timeline carries a finished script, word for word: its hook
 # overlay and a list of cards, each card mapped to the voice-over part it comes in with. capcut.json timeline:
-#   "pilot": {"parts": [hook VO, body VO 1, body VO 2, ...],          the script split at the writer's own numbering
+#   "scripted": {"parts": [hook VO, body VO 1, body VO 2, ...],          the script split at the writer's own numbering
 #             "cards": [{"text": ["line", "line 2"], "vo": 1}, ..., {"logo": true}]}
 # with "line1" [big, small, accent] = the hook overlay's own words. Each card comes on LEAD before the voice starts
 # its part and stays until the next card; the hook overlay stays until the first card; a {"logo": true} card shows
 # the brand logo alone (no words added) for CTA_HOLD after the voice. The cards' words are the writer's, not the
 # voice's, so they are not checked against the voice (no TEXT-VOICE). Every card is set in the style's Line 4 face.
 
-def pilot_cfg(cfg):
-    """A pilot timeline gets placeholder Lines 2-5 so the house edit can be filled; their clips are removed later."""
-    if not cfg.get("pilot"): return cfg
+def scripted_cfg(cfg):
+    """A scripted timeline gets placeholder Lines 2-5 so the house edit can be filled; their clips are removed later."""
+    if not cfg.get("scripted"): return cfg
     return dict(cfg, line2=["·", "·"], line3=["·", "·"], line4="·", line5=["·", "·"], cta="·")
 
 
-def pilot_times(cfg, spans, total, vo_path, ends=None):
-    """Where each part of a pilot script starts on the timeline: the pauses (vo_times on the parts), then the first
+def scripted_times(cfg, spans, total, vo_path, ends=None):
+    """Where each part of a scripted script starts on the timeline: the pauses (vo_times on the parts), then the first
     word of each part from the speech recogniser where it found the part (more exact at a ; or , joint)."""
-    parts = cfg["pilot"]["parts"]
+    parts = cfg["scripted"]["parts"]
     times = vo_times(parts, spans, total, vo_path, ends, None)
     if not times: return None
     s = list(times["starts"])
@@ -870,10 +870,10 @@ def pilot_times(cfg, spans, total, vo_path, ends=None):
     return times
 
 
-def pilot_cards(d, r, cfg, times, total, spec, notes):
-    """Lay the pilot cards on the timeline (see above) as copies of Line 4 in the style; remove the house edit's
+def scripted_cards(d, r, cfg, times, total, spec, notes):
+    """Lay the scripted cards on the timeline (see above) as copies of Line 4 in the style; remove the house edit's
     Lines 2-5 and CTA clips. Returns the sound-effect events [(time, kind)]."""
-    P = cfg["pilot"]; st = times["starts"]; T = total / US; voice_end = T - CTA_HOLD
+    P = cfg["scripted"]; st = times["starts"]; T = total / US; voice_end = T - CTA_HOLD
     cards = [c for c in P["cards"] if not c.get("logo")]; logo = any(c.get("logo") for c in P["cards"])
     ons = []
     for c in cards:
@@ -921,7 +921,7 @@ def typeset_K(): return K
 
 class Timeline:
     def __init__(self, cfg, media_dir, shots=None, pool=(), slot=0):
-        cfg = pilot_cfg(cfg)
+        cfg = scripted_cfg(cfg)
         self.name = cfg["name"]
         brand = BRANDS[cfg["brand"]]
         video = link_media(os.path.expanduser(cfg["video"]), media_dir)
@@ -990,11 +990,11 @@ class Timeline:
         # shot check: bad stretches (shots.json) cut out or replaced with clean footage from the spare / the group
         self.notes = None; self.times = None
         src =os.path.expanduser(cfg["video"]); ed = dict(cfg.get("edit") or {})
-        if cfg.get("pilot") and not ed.get("times"):  # a pilot card list: parts start where the voice starts them
-            ed["times"] = pilot_times(cfg, spans, total / US, self.vo, ed.get("ends"))
+        if cfg.get("scripted") and not ed.get("times"):  # a scripted card list: parts start where the voice starts them
+            ed["times"] = scripted_times(cfg, spans, total / US, self.vo, ed.get("ends"))
             self.times = ed["times"]; self.text_notes = []
             if self.times:
-                parts = cfg["pilot"]["parts"]; st = list(self.times["starts"]) + [total / US - CTA_HOLD]
+                parts = cfg["scripted"]["parts"]; st = list(self.times["starts"]) + [total / US - CTA_HOLD]
                 rate = [len(re.sub(r"[^A-Za-z0-9]", "", x)) / max(st[i + 1] - st[i], 0.01) for i, x in enumerate(parts[:len(st) - 1])]
                 if len(rate) > 2: self.vo_cut = rate[-1] > 1.5 * sorted(rate[:-1])[len(rate[:-1]) // 2]
                 if ed.get("cuts"):
@@ -1025,8 +1025,8 @@ class Timeline:
         if any(isinstance(c[0], str) for c in ed.get("cuts", [])):
             raise SystemExit("%s: could not find where each sentence of the voice-over starts. Give \"times\" by hand "
                              "in the edit plan (CLAUDE.md step 7)." % self.name)
-        if ed.get("times") and not cfg.get("pilot"): place_times(d, r, ed["times"], total)
-        self.text_overlaps = [] if cfg.get("pilot") else trim_title(d, r, inner)  # Line 2 leaves when Line 3 comes in (owner, Nov 17)
+        if ed.get("times") and not cfg.get("scripted"): place_times(d, r, ed["times"], total)
+        self.text_overlaps = [] if cfg.get("scripted") else trim_title(d, r, inner)  # Line 2 leaves when Line 3 comes in (owner, Nov 17)
         if ed.get("cuts"):  # Claude's edit plan: footage chosen per sentence of the voice-over
             moved = []
             tens = tension_of(cfg, self.times)
@@ -1047,7 +1047,7 @@ class Timeline:
             pieces, self.notes = plan_footage(src, total / US, shots, pool)
             lay_footage(d, r, pieces, media_dir)
         self.style, spec = typeset.style_for(cfg)
-        if spec and cfg.get("pilot"):  # a pilot script's words keep the writer's case (no upper-casing by the style)
+        if spec and cfg.get("scripted"):  # a scripted script's words keep the writer's case (no upper-casing by the style)
             spec = copy.deepcopy(spec); spec["line1"].pop("case0", None)
         if spec:  # the type system: this ad's style instead of the one house look (references/typography.md)
             tn = []
@@ -1057,15 +1057,15 @@ class Timeline:
                                        _scarcity=brand.get("scarcity_on_screen")),
                             spec, K, EFFECTS, mat, seg_of, tn, inner=inner, clone=lambda s, m: add_text_track(d, s, m))
             self.notes = (self.notes or []) + ["type: %s" % self.style] + tn
-        self.pilot_sfx = None
-        if cfg.get("pilot"):
-            if not self.times: raise SystemExit("%s: could not find where each part of the pilot script starts. Give "
+        self.scripted_sfx = None
+        if cfg.get("scripted"):
+            if not self.times: raise SystemExit("%s: could not find where each part of the scripted script starts. Give "
                                                 "\"ends\" in the edit plan." % self.name)
-            pn = []; self.pilot_sfx = pilot_cards(d, r, cfg, self.times, total, spec, pn)
+            pn = []; self.scripted_sfx = scripted_cards(d, r, cfg, self.times, total, spec, pn)
             st = self.times["starts"]
-            self.notes = (self.notes or []) + pn + ["pilot cards: hook 0.00-%s, %s%s (%s)" % (
-                "%.2f" % self.pilot_sfx[0][0], ", ".join("%.2f" % t for t, k in self.pilot_sfx if k == "card"),
-                ", logo %.2f" % self.pilot_sfx[-1][0] if self.pilot_sfx[-1][1] == "cta" else "",
+            self.notes = (self.notes or []) + pn + ["scripted cards: hook 0.00-%s, %s%s (%s)" % (
+                "%.2f" % self.scripted_sfx[0][0], ", ".join("%.2f" % t for t, k in self.scripted_sfx if k == "card"),
+                ", logo %.2f" % self.scripted_sfx[-1][0] if self.scripted_sfx[-1][1] == "cta" else "",
                 self.times.get("timing", "pauses"))]
         if getattr(self, "text_notes", None):
             self.notes = (self.notes or []) + ["text timing: %s" % (self.times or {}).get("timing", "-")] + self.text_notes
@@ -1073,8 +1073,8 @@ class Timeline:
         add_vo(d, self.vo, spans)
         track = pick_music(brand, cfg, slot); self.music_name = track["name"] if track else "-"
         self.music = add_music(d, track) if track else None
-        self.sfx = add_sfx(d, self.pilot_sfx if self.pilot_sfx is not None else sfx_events(d, r)) if cfg.get("sfx", True) else (0, [])
-        if spec and not cfg.get("pilot") and inner is not None:  # the type styles: Line 2 as plain text (owner, Nov 17)
+        self.sfx = add_sfx(d, self.scripted_sfx if self.scripted_sfx is not None else sfx_events(d, r)) if cfg.get("sfx", True) else (0, [])
+        if spec and not cfg.get("scripted") and inner is not None:  # the type styles: Line 2 as plain text (owner, Nov 17)
             flatten_title(d, r, inner); self.compound = None
         self.d = d
 

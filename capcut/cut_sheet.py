@@ -80,13 +80,13 @@ def main():
         vo = bp.extract_vo(video, os.path.join(week, "plan"))
         spans = bp.speech_spans(vo, bp.mp4_info(vo)[0])
         total = sum(b - a for a, b in spans) / bp.VO_SPEED + bp.CTA_HOLD
-        times = ed.get("times") or (bp.pilot_times(t, spans, total, vo, ed.get("ends")) if t.get("pilot") else
+        times = ed.get("times") or (bp.scripted_times(t, spans, total, vo, ed.get("ends")) if t.get("scripted") else
                                       bp.vo_times(t["vo"], spans, total, vo, ed.get("ends"), bp.line_map(t)) if t.get("vo") else None)
         st = times["starts"] if times and "starts" in times else None
         at = lambda x: x if not isinstance(x, str) else st[int(x[1]) - 1] + (float(x[3:]) if "+" in x else 0.0)
         cuts = [[at(c[0])] + list(c[1:]) for c in ed["cuts"]]
         pieces, zooms = bp.cuts_to_pieces(cuts, total, os.path.dirname(video), shots, own=video, pool=bp.group_pool(cfg, t, shots), tension=bp.tension_of(t, times))
-        sents = list(t["pilot"]["parts"]) if t.get("pilot") else [x for x in re.split(r"(?<=[.?!])\s+", t.get("vo", "").strip()) if x]
+        sents = list(t["scripted"]["parts"]) if t.get("scripted") else [x for x in re.split(r"(?<=[.?!])\s+", t.get("vo", "").strip()) if x]
         starts = (st or [0.0])[1:]; tl, at_t = [], 0.0
         for p in pieces: tl.append(at_t); at_t += p[3]
         def sentence(x):
