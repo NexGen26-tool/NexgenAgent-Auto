@@ -1,0 +1,27 @@
+{
+ "_about": "Transitions the build puts into the punchline cut, first one CapCut has downloaded wins (capcut/build_project.py add_transitions). Pale Clarity is the owner's own pick (added by hand to V5, V6 and V8 of the 13/11 set, Nov 17); Slide Blur was the house edit's.",
+ "order": [
+  {
+   "name": "Pale Clarity",
+   "effect_id": "7676379242849979666",
+   "resource_id": "7676379242849979666",
+   "third_resource_id": "0",
+   "duration": 266666,
+   "is_overlap": true,
+   "category_id": "100000",
+   "category_name": "",
+   "path_rel": "7676379242849979666/c261e3d3d7b4f696fd8865ab39d083f1"
+  },
+  {
+   "name": "Slide Blur",
+   "effect_id": "7689810243240463634",
+   "resource_id": "7689810243240463634",
+   "third_resource_id": "0",
+   "duration": 266666,
+   "is_overlap": true,
+   "category_id": "25835",
+   "category_name": "remen",
+   "path_rel": "7689810243240463634/3aff06309f387c8381bd1341a5645d96"
+  }
+ ]
+}

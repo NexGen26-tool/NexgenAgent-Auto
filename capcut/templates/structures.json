@@ -1,5 +1,5 @@
 {
- "_about": "Shot structures: how an ad is filmed and cut, picked per video from what its script argues (ad-brief-compiler section 2). A video's format (templates/formats.json) is the argument; its structure is the camera and the edit. Each: what it is, which arguments it serves, the 8 scene rows (A01-B04, [size, move, what the row shows]; 'argued' has one map per format), the edit's pace, whether the punchline gets the 1.15 zoom and a Slide Blur ('transitions': [] for none; left out = the format's), whether the size must change at every cut (cut_sheet.py prints SAME SIZE), and the risk to write against. Every structure fits Negen's Conversion Creative V3 skill, which cuts each 10 s part into about three shots with real cuts and wants a visible event in the first 1-2 s: no structure is one continuous take, and none opens on a static beauty shot or a slow decorative push-in. An explore group uses at least two structures across V1-V3; an iterate group keeps the control's unless structure is its variable.",
+ "_about": "Shot structures: how an ad is filmed and cut, picked per video from what its script argues (ad-brief-compiler section 2). A video's format (templates/formats.json) is the argument; its structure is the camera and the edit. Each: what it is, which arguments it serves, the 8 scene rows (A01-B04, [size, move, what the row shows]; 'argued' has one map per format), the edit's pace, whether the punchline gets the 1.15 zoom and a punchline transition ('transitions': [] for none; left out = the format's, see templates/transitions.json), whether the size must change at every cut (cut_sheet.py prints SAME SIZE), and the risk to write against. Every structure fits Negen's Conversion Creative V3 skill, which cuts each 10 s part into about three shots with real cuts and wants a visible event in the first 1-2 s: no structure is one continuous take, and none opens on a static beauty shot or a slow decorative push-in. An explore group uses at least two structures across V1-V3; an iterate group keeps the control's unless structure is its variable.",
  "argued": {
   "name": "Argued cuts",
   "idea": "each sentence its own shot size and camera move, the shot proving what the sentence says; the size changes at every cut",
@@ -309,7 +309,7 @@
   "name": "Follow, cut on action",
   "idea": "one lived moment with one person, filmed handheld and cut on action: every cut carries on the movement of the shot before (she sets the cup down, cut, her hand lets go, cut, she sits back), the size stepping wide, medium, close as she reaches the product; about three shots a part, never one continuous take",
   "fits": "story, ritual: a lived moment, first person, the product as part of the day",
-  "pace": "cut on action: one shot a sentence, each cut continuing the movement before it; no punch zoom, no Slide Blur",
+  "pace": "cut on action: one shot a sentence, each cut continuing the movement before it; no punch zoom, no transition (the cut on action is the joint)",
   "punch_zoom": false,
   "transitions": [],
   "size_changes": true,
@@ -361,9 +361,8 @@
   "name": "Still-life tableaux",
   "idea": "an event on the hook, then composed, calm frames like a catalogue page in a lived room: the product centred, ACTOR A stepping into and out of frame, slow slides and push-ins, the light doing the work; a hard cut between frames",
   "fits": "gift, aspiration, a premium piece, an offer-led ad: the piece as something worth owning",
-  "pace": "an event on the hook, then one composed shot a sentence, clean hard cuts, no zoom",
+  "pace": "an event on the hook, then one composed shot a sentence, clean hard cuts and a soft transition into the punchline, no zoom",
   "punch_zoom": false,
-  "transitions": [],
   "size_changes": true,
   "risk": "Negen's Conversion Creative V3 rejects a static beauty shot or a slow decorative push-in as the opening: the hook is an event (ACTOR A sets the piece's last object in place, steps into frame), the calm frames come after; near-still frames also make Negen copy the poster, so every row names a slow move and ACTOR A moves",
   "rows": [

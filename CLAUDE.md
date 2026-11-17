@@ -347,14 +347,15 @@ size if a batch has two). Put the script on the timeline as `"vo"` and give it a
   the sentence itself with clean footage of the same scene (the video and its spare first, then the group's other
   videos outside their person; the before-state only from the before-state) and prints each fill; a planned shot that
   would show another variant's person is replaced the same way. No hand splits;
-- `"transitions"`: leave it out for a Slide Blur into the punchline (the format's, or none for "ritual").
+- `"transitions"`: leave it out for a transition into the punchline (`capcut/templates/transitions.json`: Pale Clarity,
+  the owner's pick, else Slide Blur; none for a "follow" structure, which cuts on action).
 **Plan check (before every save, about 10 minutes).** Run `python capcut/plan_sheet.py work/<week>/capcut.json`. It
 prints SAME when two groups of the week share voice-over words before the offer or Lines 1-4 words, when the
 videos of an explore group share them or a format, or when the hooks of an iterate group share theirs (write one of
 them new), CHECK for a timeline without a known `"format"`, each timeline's sentence lengths (a "CHECK" means a sentence plays too fast or too slow for its words: the
 voice ran two sentences together, so give `"ends"`), the clean stretches of every video, and makes one sheet per group
 in `work/<week>/plan/` with every frame each timeline will actually show, every 0.6 s. Look at every frame for the
-bad list of step 6b, hands and feet above all. Then run `python capcut/cut_sheet.py work/<week>/capcut.json`: the
+bad list of step 6b, hands and feet above all. Then run `python capcut/text_preview.py work/<week>/capcut.json`: every moment the on-screen text changes, drawn over its frame in `work/<week>/plan/text/`. Look at each for text over a face or the product's defining part, an accent lost in the wood, a line too small or crowding the edge (`references/typography.md`, "The text preview"); fix the style's place or the words and preview again. Then run `python capcut/cut_sheet.py work/<week>/capcut.json`: the
 first and last frames of every cut, 0.1 s apart, in `work/<week>/plan/cuts/`; no crossfade may show at a cut, and a
 row marked OTHER VARIANT shows the product only, and every row shows what its sentence says, with the sentence's
 feeling. A REPEAT from the plan check means an on-screen line reuses the last weeks' words: write it new. Anything bad: add the stretch to `shots.json`, pick another shot, run

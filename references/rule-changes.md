@@ -2,6 +2,41 @@
 
 Changes to how the fast lane works, newest first: what changed, why, and what it was tested on.
 
+## 2026-11-17 (owner, the 13/11 set) - The owner's hand edits are the build's text design; a text preview before saving
+
+**Why:** the owner: "bake them in. Also pay more attention to designing the text overlay so it looks nice and easy to
+read like the way I changed it. The positioning, colors, sizing, scale, animation, when they appear". All twelve saved
+timelines were compared, text by text, with what the build made; the changes the owner made by hand are now defaults.
+
+**What changed** (details in `references/typography.md`, "The owner's hand edits, built in"):
+- **`capcut/build_project.py`:**
+  - Line 2 is laid as two plain text clips; the animated title clip is gone in the type styles.
+  - The hook leaves at the punchline sentence's start.
+  - The hook's linking words come with their words.
+  - The punchline transition is the first downloaded from `capcut/templates/transitions.json` (Pale Clarity, then
+    Slide Blur), ritual and tableau included.
+  - The scarcity beat is timed to the scarcity words of the offer sentence.
+- **`capcut/typeset.py`:**
+  - no full stop on screen;
+  - the "stagger" layout for Line 3;
+  - italic lines;
+  - the hook as two clips (subject, then the rest);
+  - the scarcity line ("Limited / monthly order", `brand/brands.json` `scarcity_on_screen`);
+  - a stronger shadow (alpha 0.65).
+- **`capcut/templates/type_styles.json`:**
+  - keepsake: label 9, link 7.5, bright accents, staggered Line 3 lower, fit line 8 italic;
+  - counter: the count in the hook at 11, the hook lower (y 0.30);
+  - editorial: link and accent in the sans at 7, staggered Line 3;
+  - accents lifted to light yellows in counter, contrast, editorial and keepsake (statement kept: the owner left it
+    as it was).
+- **`brand/brands.json`:** the ETW music at 0.25 (was 1.0 and 0.813; the owner set 0.20-0.33 by hand).
+- **New `capcut/text_preview.py`** (CLAUDE.md step 7, plan check): every text moment drawn over its frame, to judge the
+  design by eye before saving.
+
+**Tested on:** the 13/11 set, all twelve timelines rebuilt in memory (no missing references, no TEXT-OVERLAP). V8
+rebuilt matches the owner's hand-finished V8 within a few hundredths in size and place. The text preview was checked on
+V3, V8, V9 and V11. The saved project was not touched: the owner's finished timelines stay as they are.
+
 ## 2026-11-17 (owner) - Shot structures fit Negen's own skill
 
 **Why:** the owner asked whether Negen's skill needs changing so the shot rules are built in. Read on Nov 17,

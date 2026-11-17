@@ -1,5 +1,5 @@
 {
- "_about": "The type system of the CapCut build (capcut/typeset.py, references/typography.md). A timeline's \"type\" in capcut.json names a style; without one the style follows the ad's format (\"by_format\"). Each style sets, per on-screen line, the typeface, size hierarchy, colour, the one emphasis, the placement and the finish. Fonts are CapCut library fonts (resource id + file); a font CapCut has not downloaded falls back to the sans with a NOTE. Sizes are CapCut text sizes at segment scale 2. y is the canvas height from -1 (bottom) to 1 (top); safe area: text stays between y -0.52 and 0.70 (Reels and Feed UI cover the top 15% and the bottom 24%) and inside x +-0.86. Line 1's three parts are [subject, linking words, tension word(s)]: the first on its own line, the other two after it; \"case0\": \"upper\" sets the first part as a small tracked label. A \"numbered\" style shows Lines 2-4 as 1/2/3 above each reason (list).",
+ "_about": "The type system of the CapCut build (capcut/typeset.py, references/typography.md). A timeline's \"type\" in capcut.json names a style; without one the style follows the ad's format (\"by_format\"). Each style sets, per on-screen line, the typeface, size hierarchy, colour, the one emphasis, the placement and the finish. Fonts are CapCut library fonts (resource id + file); a font CapCut has not downloaded falls back to the sans with a NOTE. Sizes are CapCut text sizes at segment scale 2. y is the canvas height from -1 (bottom) to 1 (top); safe area: text stays between y -0.52 and 0.70 (Reels and Feed UI cover the top 15% and the bottom 24%) and inside x +-0.86. Line 1's three parts are [subject, linking words, tension word(s)]: the first on its own line, the other two after it; \"case0\": \"upper\" sets the first part as a small tracked label. A \"numbered\" style shows Lines 2-4 as 1/2/3 above each reason (list). \"layout\": \"stagger\" on Line 3 sets its first half to the left and the second below it to the right (\"edge\", default 0.8, is how far out they reach); \"italic\": true on a line slants the sans.",
  "fonts": {
   "sans": {
    "id": "7542214368361057553",
@@ -128,7 +128,7 @@
    }
   },
   "editorial": {
-   "about": "A first-person story or a daily ritual (story, ritual): a magazine pairing, the feeling in the italic display serif, the facts in small tracked sans, warm ivory on the picture, left-aligned in the lower third like a caption; calm, no animated title.",
+   "about": "A first-person story or a daily ritual (story, ritual): a magazine pairing, the feeling in the italic display serif, the facts in small tracked sans, warm ivory on the picture, left-aligned in the lower third like a caption; calm, no animated title; the hook's linking words and accent in the sans at 7, the reason staggered (owner's hand edits on V9, Nov 17).",
    "finish": "shadow",
    "line1": {
     "parts": [
@@ -139,13 +139,13 @@
      ],
      [
       "sans",
-      5.0,
+      7.0,
       "#F6EFE4"
      ],
      [
-      "display",
-      8.5,
-      "#E8B76A"
+      "sans",
+      7.0,
+      "#FFD27A"
      ]
     ],
     "align": "left",
@@ -161,12 +161,12 @@
     "payoff": [
      "display",
      9.5,
-     "#E8B76A"
+     "#FFD27A"
     ],
     "y": -0.22
    },
    "line3": {
-    "layout": "stack",
+    "layout": "stagger",
     "parts": [
      [
       "sans",
@@ -205,7 +205,7 @@
      [
       "display",
       8.0,
-      "#E8B76A"
+      "#FFD27A"
      ]
     ],
     "align": "left",
@@ -228,14 +228,14 @@
    }
   },
   "counter": {
-   "about": "Three reasons (list): each reason is numbered in the italic display serif, big and warm, with the reason in clean sans beside it, left-aligned high in the frame; the count is the structure the viewer follows.",
+   "about": "Three reasons (list): each reason is numbered in the italic display serif, big and warm, with the reason in clean sans beside it, left-aligned high in the frame; the count is the structure the viewer follows; the count in the hook is big (owner, V3: \"3 reasons\" set at 12.6 by hand).",
    "finish": "shadow",
    "numbered": true,
    "line1": {
     "parts": [
      [
       "sans",
-      8.0,
+      11.0,
       "#FFFFFF"
      ],
      [
@@ -246,18 +246,18 @@
      [
       "display",
       9.0,
-      "#F0B860"
+      "#FFE08A"
      ]
     ],
     "align": "left",
-    "y": 0.48,
+    "y": 0.3,
     "max_w": 1.6
    },
    "line2": {
     "setup": [
      "display",
      11.0,
-     "#F0B860"
+     "#FFE08A"
     ],
     "payoff": [
      "sans",
@@ -272,7 +272,7 @@
      [
       "display",
       11.0,
-      "#F0B860"
+      "#FFE08A"
      ],
      [
       "sans",
@@ -289,7 +289,7 @@
      [
       "display",
       11.0,
-      "#F0B860"
+      "#FFE08A"
      ],
      [
       "sans",
@@ -311,7 +311,7 @@
      [
       "sans",
       7.5,
-      "#F0B860"
+      "#FFE08A"
      ]
     ],
     "align": "left",
@@ -334,24 +334,24 @@
    }
   },
   "keepsake": {
-   "about": "A gift (gift): centred and quiet like a card, the italic display serif in ivory with one gold word, a small tracked sans label above it, low in the frame so faces and the product stay clear.",
+   "about": "A gift (gift): centred like a card. A bold tracked label for who it is for over italic display words, one bright gold accent; the reason staggered left then right; the fit line bigger and italic; low in the frame so faces and the product stay clear (owner's hand edits on V8 and V10, Nov 17).",
    "finish": "shadow",
    "line1": {
     "parts": [
      [
       "sans",
-      5.0,
+      9.0,
       "#FBF6EC"
      ],
      [
       "display",
-      8.5,
+      7.5,
       "#FBF6EC"
      ],
      [
       "display",
-      8.5,
-      "#D9A441"
+      7.5,
+      "#FFA900"
      ]
     ],
     "case0": "upper",
@@ -362,18 +362,18 @@
    "line2": {
     "setup": [
      "sans",
-     5.0,
+     6.7,
      "#FBF6EC"
     ],
     "payoff": [
      "display",
      10.0,
-     "#D9A441"
+     "#FFC53D"
     ],
     "y": -0.18
    },
    "line3": {
-    "layout": "stack",
+    "layout": "stagger",
     "parts": [
      [
       "display",
@@ -382,27 +382,28 @@
      ],
      [
       "display",
-      7.5,
-      "#FBF6EC"
+      6.5,
+      "#FFD886"
      ]
     ],
     "align": "center",
-    "y": -0.2,
+    "y": -0.3,
     "max_w": 1.5
    },
    "line4": {
     "parts": [
      [
       "sans",
-      6.0,
+      8.0,
       "#FBF6EC"
      ]
     ],
     "align": "center",
-    "y": -0.3,
-    "max_w": 1.5,
+    "y": -0.38,
+    "max_w": 1.7,
     "case": "upper",
-    "spacing": 0.1
+    "spacing": 0.1,
+    "italic": true
    },
    "line5": {
     "parts": [
@@ -414,7 +415,7 @@
      [
       "display",
       8.0,
-      "#D9A441"
+      "#FFC53D"
      ]
     ],
     "align": "center",
@@ -452,7 +453,7 @@
      [
       "display",
       9.0,
-      "#F2C14E"
+      "#FFDC49"
      ]
     ],
     "case0": "upper",
@@ -469,7 +470,7 @@
     "payoff": [
      "display",
      10.0,
-     "#F2C14E"
+     "#FFDC49"
     ],
     "y": 0.5
    },
@@ -513,7 +514,7 @@
      [
       "display",
       8.0,
-      "#F2C14E"
+      "#FFDC49"
      ]
     ],
     "align": "center",

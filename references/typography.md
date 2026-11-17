@@ -39,9 +39,55 @@ look of the first approved video). A new style is a new entry in `type_styles.js
 - The offer on screen is the brand's `offer.on_screen` from `brand/brands.json` ("Free shipping on every order"),
   never a code; the store is "Spry Interior" or "ET Woodcrafts", never "Spry" alone.
 
+## The owner's hand edits, built in (Nov 17, the 13/11 set)
+
+The owner finished V1-V12 by hand in CapCut. Each change they made across the videos is now the build's default:
+- **Line 2 is plain text.** The punchline's setup and payoff are two ordinary text clips, not the house edit's
+  animated title clip. The owner replaced it by hand in six videos, so it can be edited in place.
+- **The hook's subject leads.** It is the biggest word on screen, from the first frame:
+  - "KNOW SOMEONE" was raised to 9.4, "3 reasons" and "This corner" to 12.6;
+  - the subject is the thing or the person ("This corner"), never a verb phrase ("Used to be");
+  - the linking words and the accent come up as their own clip when the voice says them (V3 was built up word by
+    word).
+- **The hook leaves when the punchline's sentence starts**, and the title comes with its own words, so there is a short
+  breath between them (V8).
+- **Line 3 is staggered** in the gift and story styles: the first half sits left, the second half below it to the
+  right (V1, V2, V8, V9, V10).
+- **No full stop on screen**: "sits within reach", "Stand on wood", "On a shelf". A question mark stays.
+- **The fit line weighs more**: bigger and italic in the gift style (V8 "FOUR SIZES, FOUR FINISHES"; V1 "Customized
+  sizes" in the accent).
+- **A scarcity beat after the offer.** When the voice reaches the scarcity words of the offer sentence, the brand's
+  scarcity line takes Line 5's place: "Limited / monthly order", with "Limited" in the accent. Its words are in
+  `brand/brands.json` `scarcity_on_screen`. The owner added it by hand to V1, V5, V6 and V10.
+- **Accents are light, bright yellows**, never a mid gold or amber. Our products are wood, and a gold or amber accent
+  over walnut or oak disappears. The owner lifted them by hand (#FFA900, #FFDC49, #FFE68D, #FFD886), and the text
+  preview showed the old ones vanishing.
+- **The shadow is stronger** (alpha 0.65), so white and yellow read over a bright window or pale wood.
+- **Music sits under the voice at about 0.25.** The ETW tracks were at 1.0 and the owner turned each down to
+  0.20-0.33.
+- **Every punchline gets a transition** (Pale Clarity, the owner's pick; Slide Blur when it is missing), ritual and
+  story included. The one exception is the "follow" structure, which cuts on action.
+- **No text animations.** In the twelve finished videos the owner used none and removed the title's zoom. Movement
+  comes from timing instead: the subject first, then the words as they are spoken, then the next line on its own
+  words.
+
+## The text preview (plan check)
+
+Run `python capcut/text_preview.py work/<week>/capcut.json`. It makes one sheet per timeline in
+`work/<week>/plan/text/`, drawing every moment the text changes over the frame it plays on, with the safe area in red.
+Look at every frame:
+- text over a face, a hand at work or the product's defining part;
+- an accent that disappears into the wood behind it;
+- a line too small to read at phone size, or crowding the edge;
+- two lines fighting for the eye.
+
+Fix it with the timeline's `"type"`, a style's `"y"`, or the line's words, then preview again. This is how the
+design is judged before saving.
+
 ## Things to avoid
 
 - The same colour, face and position in every ad of a week (Meta reads look-alike ads as one).
 - Text that arrives before its words are spoken, or stays over a sentence about something else.
 - All-caps paragraphs, centred long sentences, more than one accent colour, outlines plus shadows plus boxes.
-- Text over faces, hands at work or the product's outline.
+- Text over faces, hands at work or the product's outline (the text preview shows it).
+- A gold or amber accent over wood; a full stop at the end of a line; the hook's subject smaller than its linking words.

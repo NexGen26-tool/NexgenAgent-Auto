@@ -546,9 +546,60 @@ def key_onsets(cfg, times, spans, vo_path, total, notes):
     # (owner, Nov 17: the "2" stood alone for 1.2 s while the voice already said the reason)
     if (typeset.style_for(cfg)[1] or {}).get("numbered"): l3b = l3 + 0.15
     else: l3b = max(l3b, l3 + 0.4)
-    out.update(line1=[0, l2], line2=l2, line3=[l3, l4], line4=[l4, l5], line5=[l5, cta],
+    # the hook leaves when the punchline's sentence starts, not when the title comes up (owner, Nov 17: V8's hook
+    # moved to end at the sentence, the title then comes with its own words)
+    e1 = min(l2, st[lm["line2"] - 1] - TEXT_GAP) if st[lm["line2"] - 1] > 1.0 else l2
+    # the hook's link words and accent come with their own words (the subject is up from the start)
+    l1b = at(1, flat(cfg["line1"][1:]), "Line 1", report=False) if isinstance(cfg.get("line1"), list) and len(cfg["line1"]) == 3 else 0.0
+    l1b = l1b if 0.3 <= l1b <= e1 - MIN_ON else 0.0
+    # the scarcity words of the offer sentence ("Free shipping, handcrafted in small batches."): when the voice reaches
+    # them, the brand's scarcity line takes Line 5's place (typeset.restyle, owner Nov 17)
+    i5 = lm["line5"] - 1; l5s = 0.0
+    if i5 < len(sents) and "," in sents[i5]:
+        l5s = at(lm["line5"], sents[i5].split(",", 1)[1], "Line 5 scarcity", report=False)
+        l5s = max(l5s, l5 + 0.9) if l5s > l5 else 0.0  # the offer stays long enough to read
+        l5s = l5s if l5s <= cta - 0.8 else 0.0
+    out.update(line1=[0, e1], line1b=l1b, line5s=l5s, line2=l2, line3=[l3, l4], line4=[l4, l5], line5=[l5, cta],
                line3b=min(l3b, l4 - 0.5), timing="voice recogniser" if wt else "letter estimate")
     return out
+
+
+def add_text_track(d, seg, m, src=None):
+    """A copy of a text clip (segment seg of material m; src = the draft they come from, default d) on a new text
+    track of d. Its animations come along. Returns (new segment, new material)."""
+    src = src or d
+    nm = copy.deepcopy(m); nm["id"] = uid(); d["materials"]["texts"].append(nm)
+    ns = copy.deepcopy(seg); ns["id"] = uid(); ns["material_id"] = nm["id"]; refs = []
+    for x in seg.get("extra_material_refs", []):
+        kind, xm = next(((k, y) for k, v in src["materials"].items() if isinstance(v, list)
+                         for y in v if isinstance(y, dict) and y.get("id") == x), (None, None))
+        if xm is None: continue
+        cp = copy.deepcopy(xm); cp["id"] = uid(); d["materials"].setdefault(kind, []).append(cp); refs.append(cp["id"])
+    ns["extra_material_refs"] = refs
+    tr = copy.deepcopy(next(t for t in d["tracks"] if t["type"] == "text")); tr["id"] = uid(); tr["segments"] = [ns]
+    d["tracks"].append(tr)
+    return ns, nm
+
+
+def flatten_title(d, r, inner):
+    """Line 2 as plain text clips on the timeline instead of the house edit's animated title clip (a compound clip).
+    The owner replaced the title clip by hand with two text lines in six of twelve videos of the 13/11 set (Nov 17):
+    plain text can be edited in place and reads cleanly. The setup and the payoff keep their style, place and time."""
+    c = role_seg(d, r, "compound"); c0, cd = c["target_timerange"]["start"], c["target_timerange"]["duration"]
+    k = (c.get("clip") or {}).get("scale", {}).get("x", 1.0)
+    for t in inner["tracks"]:
+        if t["type"] != "text": continue
+        for s in t["segments"]:
+            a = s["target_timerange"]["start"]
+            if a >= cd: continue
+            ns, _ = add_text_track(d, s, mat(inner, "texts", s["material_id"]), inner)
+            ns["target_timerange"] = {"start": c0 + a, "duration": min(s["target_timerange"]["duration"], cd - a)}
+            if k != 1.0:
+                for ax in ("x", "y"): ns["clip"]["scale"][ax] *= k
+    for t in d["tracks"]:
+        if c in t["segments"]: t["segments"].remove(c)
+    d["materials"]["drafts"] = [x for x in d["materials"].get("drafts", []) if x["id"] != r["compound"]]
+    d["tracks"] = [t for t in d["tracks"] if t["segments"]]
 
 
 TEXT_GAP = 0.05  # one line leaves this long before the next comes in
@@ -762,19 +813,24 @@ def cuts_to_pieces(cuts, total, folder, shots=None, own=None, notes=None, pool=N
 
 
 def add_transitions(d, segs, at_times, zooms):
-    """A Slide Blur into the shot that starts at each given time (on the shot before it, as CapCut keeps it), and the
+    """The punchline transition (templates/transitions.json) into the shot that starts at each given time (on the shot before it, as CapCut keeps it), and the
     edit plan's punch-in zoom on each shot. Returns the times that got no transition (effect not downloaded)."""
     for s, z in zip(segs, zooms):
         if isinstance(z, dict):  # a crop: {"zoom": 2.4, "cx": 0.21, "cy": 0.65} keeps that point of the frame centred
             k = z["zoom"]; s["clip"]["scale"] = {"x": k, "y": k}; s["uniform_scale"] = {"on": True, "value": 1.0}
             s["clip"]["transform"] = {"x": 2 * (0.5 - z["cx"]) * k, "y": 2 * (z["cy"] - 0.5) * k}
         elif z != 1.0: s["clip"]["scale"] = {"x": z, "y": z}; s["uniform_scale"] = {"on": True, "value": 1.0}
-    tp = json.load(open(HERE + "/templates/transition_slide_blur.json", encoding="utf-8"))
-    path = EFFECTS + "/" + tp.pop("path_rel")
+    # the first transition CapCut has downloaded, in the owner's order (templates/transitions.json: Pale Clarity, the
+    # owner's own pick on Nov 17, then the house edit's Slide Blur)
+    base = json.load(open(HERE + "/templates/transition_slide_blur.json", encoding="utf-8")); base.pop("path_rel")
+    tp, path = None, ""
+    for o in json.load(open(HERE + "/templates/transitions.json", encoding="utf-8"))["order"]:
+        o = dict(o); p = EFFECTS + "/" + o.pop("path_rel")
+        if os.path.exists(p): tp, path = dict(base, **o), p; break
     missing = []
     for t in at_times:
         prev = next((s for s in segs if abs(s["target_timerange"]["start"] + s["target_timerange"]["duration"] - us(t)) < us(0.06)), None)
-        if prev is None or not os.path.exists(path): missing.append(t); continue
+        if prev is None or tp is None: missing.append(t); continue
         m = copy.deepcopy(tp); m["id"] = uid(); m["path"] = path
         d["materials"].setdefault("transitions", []).append(m); prev["extra_material_refs"].append(m["id"])
     return missing
@@ -962,8 +1018,8 @@ class Timeline:
                 st = ed["times"]["starts"]
                 at = lambda x: x if not isinstance(x, str) else st[int(x[1]) - 1] + (float(x[3:]) if "+" in x else 0.0)
                 ed["cuts"] = [[at(c[0])] + list(c[1:]) for c in ed["cuts"]]
-                fmt = dict(FORMATS.get(cfg.get("format", ""), {}))  # a calm format (ritual) has no Slide Blur
-                if "transitions" in STRUCTURES.get(cfg.get("structure", ""), {}):  # nor a follow or a tableau
+                fmt = dict(FORMATS.get(cfg.get("format", ""), {}))  # a format or structure may set its own ([] = none: follow)
+                if "transitions" in STRUCTURES.get(cfg.get("structure", ""), {}):  # follow cuts on action, no transition
                     fmt["transitions"] = STRUCTURES[cfg["structure"]]["transitions"]
                 ed["transitions"] = [at(t) for t in ed.get("transitions", fmt.get("transitions", [ed["times"]["punch"]]))]
         if any(isinstance(c[0], str) for c in ed.get("cuts", [])):
@@ -986,7 +1042,7 @@ class Timeline:
                 if bad: self.notes.append("%s %.2f-%.2f s uses a bad stretch: %s" % (os.path.basename(f)[-28:], a, a + length, bad[0][2]))
                 elif length / shown < 0.75: self.notes.append("%s from %.2f s slowed to %.2fx to fill %.1f s; split the sentence into two shots"
                                                               % (os.path.basename(f)[-28:], a, length / shown, shown))
-            if missing: self.notes.append("transition Slide Blur not downloaded in CapCut, left out at %s s" % missing)
+            if missing: self.notes.append("no punchline transition downloaded in CapCut (Pale Clarity or Slide Blur), left out at %s s" % missing)
         elif shots and shots.get(os.path.basename(src), {}).get("checked"):
             pieces, self.notes = plan_footage(src, total / US, shots, pool)
             lay_footage(d, r, pieces, media_dir)
@@ -995,7 +1051,11 @@ class Timeline:
             spec = copy.deepcopy(spec); spec["line1"].pop("case0", None)
         if spec:  # the type system: this ad's style instead of the one house look (references/typography.md)
             tn = []
-            typeset.restyle(d, r, dict(cfg, _cta=cfg.get("cta") or brand["cta"]), spec, K, EFFECTS, mat, seg_of, tn, inner=inner)
+            tm = self.times or {}
+            typeset.restyle(d, r, dict(cfg, _cta=cfg.get("cta") or brand["cta"], _line1b=tm.get("line1b", 0.0),
+                                       _line5s=tm.get("line5s", 0.0) if cfg.get("scarcity", True) else 0.0,
+                                       _scarcity=brand.get("scarcity_on_screen")),
+                            spec, K, EFFECTS, mat, seg_of, tn, inner=inner, clone=lambda s, m: add_text_track(d, s, m))
             self.notes = (self.notes or []) + ["type: %s" % self.style] + tn
         self.pilot_sfx = None
         if cfg.get("pilot"):
@@ -1014,6 +1074,8 @@ class Timeline:
         track = pick_music(brand, cfg, slot); self.music_name = track["name"] if track else "-"
         self.music = add_music(d, track) if track else None
         self.sfx = add_sfx(d, self.pilot_sfx if self.pilot_sfx is not None else sfx_events(d, r)) if cfg.get("sfx", True) else (0, [])
+        if spec and not cfg.get("pilot") and inner is not None:  # the type styles: Line 2 as plain text (owner, Nov 17)
+            flatten_title(d, r, inner); self.compound = None
         self.d = d
 
     @staticmethod
@@ -1071,11 +1133,12 @@ def replace_in(project, tls, backup_root):
         shutil.copytree(folder, os.path.join(backup, tid))
         t.d["id"] = tid; raw = json.dumps(t.d, ensure_ascii=False)
         for p in (name, name + ".bak", "template-2.tmp"): open(folder + "/" + p, "w", encoding="utf-8").write(raw)
-        sub_id, inner = t.compound; sub = out + "/subdraft/" + sub_id
-        os.makedirs(sub, exist_ok=True); shutil.copy(HERE + "/templates/compound/draft_cover.jpg", sub)
-        open(sub + "/draft_content.json", "w", encoding="utf-8").write(json.dumps(inner, ensure_ascii=False))
-        sc = json.load(open(HERE + "/templates/compound/sub_draft_config.json", encoding="utf-8")); sc.update({"id": sub_id, "project_id": sub_id})
-        open(sub + "/sub_draft_config.json", "w", encoding="utf-8").write(json.dumps(sc))
+        if t.compound:  # the house look's animated title clip (the type styles lay Line 2 as plain text)
+            sub_id, inner = t.compound; sub = out + "/subdraft/" + sub_id
+            os.makedirs(sub, exist_ok=True); shutil.copy(HERE + "/templates/compound/draft_cover.jpg", sub)
+            open(sub + "/draft_content.json", "w", encoding="utf-8").write(json.dumps(inner, ensure_ascii=False))
+            sc = json.load(open(HERE + "/templates/compound/sub_draft_config.json", encoding="utf-8")); sc.update({"id": sub_id, "project_id": sub_id})
+            open(sub + "/sub_draft_config.json", "w", encoding="utf-8").write(json.dumps(sc))
         if lay["timelineIds"][0] == tid:  # the project's main copy mirrors its first timeline
             for p in (name, name + ".bak", "template-2.tmp"): open(out + "/" + p, "w", encoding="utf-8").write(raw)
         print("replaced:", t.name)
@@ -1099,11 +1162,12 @@ def save(project, tls):
         shutil.copytree(tmpl, folder)
         t.d["id"] = tid; raw = json.dumps(t.d, ensure_ascii=False)
         for p in files: open(folder + "/" + p, "w", encoding="utf-8").write(raw)
-        sub_id, inner = t.compound; sub = out + "/subdraft/" + sub_id
-        os.makedirs(sub); shutil.copy(HERE + "/templates/compound/draft_cover.jpg", sub)
-        open(sub + "/draft_content.json", "w", encoding="utf-8").write(json.dumps(inner, ensure_ascii=False))
-        sc = json.load(open(HERE + "/templates/compound/sub_draft_config.json", encoding="utf-8")); sc.update({"id": sub_id, "project_id": sub_id})
-        open(sub + "/sub_draft_config.json", "w", encoding="utf-8").write(json.dumps(sc))
+        if t.compound:
+            sub_id, inner = t.compound; sub = out + "/subdraft/" + sub_id
+            os.makedirs(sub); shutil.copy(HERE + "/templates/compound/draft_cover.jpg", sub)
+            open(sub + "/draft_content.json", "w", encoding="utf-8").write(json.dumps(inner, ensure_ascii=False))
+            sc = json.load(open(HERE + "/templates/compound/sub_draft_config.json", encoding="utf-8")); sc.update({"id": sub_id, "project_id": sub_id})
+            open(sub + "/sub_draft_config.json", "w", encoding="utf-8").write(json.dumps(sc))
         entries.append({"create_time": now, "id": tid, "is_marked_delete": False, "name": t.name, "update_time": now})
     shutil.rmtree(tmpl)
     raw = json.dumps(tls[0].d, ensure_ascii=False)
