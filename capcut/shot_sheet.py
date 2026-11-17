@@ -3,6 +3,8 @@
 time under each frame, plus the hard cuts (yellow) and Negen's crossfades (orange), which it finds itself. Claude
 looks at each sheet and writes the bad stretches and where the video's person is on screen into shots.json; the CapCut
 build then keeps every cut out of them and replaces them with clean footage from the spare or the group's other videos.
+Each sheet is headed by the week's product photo for that video's SKU (work/<week>/product-photos/, else
+work/product-photos/), so drift shows against the real outline; with no photo the sheet starts at the frames.
 
   python capcut/shot_sheet.py work/<week>          ->  work/<week>/shots/<video>.jpg  and  work/<week>/shots.json
 
@@ -53,7 +55,19 @@ def cuts(ffmpeg, path):
     return [round(float(t), 2) for t in re.findall(r"lavfi\.scd\.time: ([\d.]+)", out)]
 
 
-def sheet(ffmpeg, path, dst, cut_times, fade_times=()):
+def product_photo(week, video):
+    """The week's product photo for this video's product: the SKU from the codified name (" - <SKU> - "), matched in
+    work/<week>/product-photos/ first, then work/product-photos/ (as cut_sheet.py does). None when there is none."""
+    m = re.search(r" - ([A-Z][A-Z0-9]{5,}) - ", os.path.basename(video))
+    if not m: return None
+    sku = re.compile(r"(?<![A-Z0-9])%s(?![A-Z0-9])" % m.group(1))
+    for d in (os.path.join(week, "product-photos"), os.path.join(os.path.dirname(os.path.abspath(week)), "product-photos")):
+        for p in sorted(glob.glob(os.path.join(d, "*"))):
+            if p.lower().endswith((".jpg", ".jpeg", ".png", ".webp")) and sku.search(os.path.basename(p)): return p
+    return None
+
+
+def sheet(ffmpeg, path, dst, cut_times, fade_times=(), photo=None):
     from PIL import Image, ImageDraw
     dur = mp4_info(path)[0]
     times = [round(i * STEP + STEP / 2, 2) for i in range(int(dur / STEP))]
@@ -65,9 +79,17 @@ def sheet(ffmpeg, path, dst, cut_times, fade_times=()):
                         "-vf", "scale=%d:-2" % THUMB_W, f], check=True)
         thumbs.append(Image.open(f).convert("RGB"))
     th = thumbs[0].height; lab = 22; rows = (len(thumbs) + PER_ROW - 1) // PER_ROW
-    img = Image.new("RGB", (PER_ROW * THUMB_W, rows * (th + lab)), "white"); dr = ImageDraw.Draw(img)
+    ph = None
+    if photo:  # the product photo heads the sheet: every frame below is judged against its outline
+        ph = Image.open(photo).convert("RGB"); ph.thumbnail((THUMB_W * 3, th))
+    top = ph.height + lab if ph else 0
+    img = Image.new("RGB", (PER_ROW * THUMB_W, top + rows * (th + lab)), "white"); dr = ImageDraw.Draw(img)
+    if ph:
+        img.paste(ph, (0, 0)); px = ph.width + 12; ph.close()
+        dr.text((px, 10), "PRODUCT PHOTO: every frame below must match this outline", fill="#c00000")
+        dr.text((px, 28), os.path.basename(photo), fill="black")
     for i, (t, im) in enumerate(zip(times, thumbs)):
-        x, y = (i % PER_ROW) * THUMB_W, (i // PER_ROW) * (th + lab)
+        x, y = (i % PER_ROW) * THUMB_W, top + (i // PER_ROW) * (th + lab)
         img.paste(im, (x, y))
         cut = any(t - STEP / 2 <= c < t + STEP / 2 for c in cut_times)
         fade = any(a <= t <= b for a, b in fade_times)
@@ -93,8 +115,9 @@ def main():
         entry = data.setdefault(name, {"bad": [], "checked": False}); entry["cuts"] = c
         entry["fades"] = fades(ffmpeg, v)
         dst = os.path.join(out_dir, os.path.splitext(name)[0] + ".jpg")
-        sheet(ffmpeg, v, dst, c, entry["fades"])
-        print("%-60s cuts %s fades %d  ->  %s" % (name[:60], c, len(entry["fades"]), dst))
+        photo = product_photo(week, v)
+        sheet(ffmpeg, v, dst, c, entry["fades"], photo)
+        print("%-60s cuts %s fades %d%s  ->  %s" % (name[:60], c, len(entry["fades"]), "" if photo else "  (no product photo)", dst))
     json.dump(data, open(jpath, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
     print("saved:", jpath)
 
