@@ -1,5 +1,5 @@
 {
- "_about": "Shot structures: how an ad is filmed and cut, picked per video from what its script argues (ad-brief-compiler section 2). A video's format (templates/formats.json) is the argument; its structure is the camera and the edit. Each: what it is, which arguments it serves, the 8 scene rows (A01-B04, [size, move, what the row shows]; 'argued' has one map per format), the edit's pace, whether the punchline gets the 1.15 zoom and a Slide Blur ('transitions': [] for none; left out = the format's), whether the size must change at every cut (cut_sheet.py prints SAME SIZE), and the risk to write against. An explore group uses at least two structures across V1-V3; an iterate group keeps the control's unless structure is its variable.",
+ "_about": "Shot structures: how an ad is filmed and cut, picked per video from what its script argues (ad-brief-compiler section 2). A video's format (templates/formats.json) is the argument; its structure is the camera and the edit. Each: what it is, which arguments it serves, the 8 scene rows (A01-B04, [size, move, what the row shows]; 'argued' has one map per format), the edit's pace, whether the punchline gets the 1.15 zoom and a Slide Blur ('transitions': [] for none; left out = the format's), whether the size must change at every cut (cut_sheet.py prints SAME SIZE), and the risk to write against. Every structure fits Negen's Conversion Creative V3 skill, which cuts each 10 s part into about three shots with real cuts and wants a visible event in the first 1-2 s: no structure is one continuous take, and none opens on a static beauty shot or a slow decorative push-in. An explore group uses at least two structures across V1-V3; an iterate group keeps the control's unless structure is its variable.",
  "argued": {
   "name": "Argued cuts",
   "idea": "each sentence its own shot size and camera move, the shot proving what the sentence says; the size changes at every cut",
@@ -13,7 +13,7 @@
     [
      "MEDIUM",
      "push-in",
-     "hook (a problem hook: WIDE on the before-state)"
+     "hook (a problem hook: WIDE on the before-state); an event in the first second (ACTOR A doing something), not a decorative push-in"
     ],
     [
      "WIDE",
@@ -55,7 +55,7 @@
     [
      "MEDIUM",
      "handheld follow",
-     "the moment or doubt"
+     "the moment or doubt; an event in the first second (ACTOR A doing something), not a decorative push-in"
     ],
     [
      "WIDE",
@@ -97,7 +97,7 @@
     [
      "MEDIUM",
      "push-in",
-     "the promise"
+     "the promise; an event in the first second (ACTOR A doing something), not a decorative push-in"
     ],
     [
      "CLOSE",
@@ -139,7 +139,7 @@
     [
      "MEDIUM",
      "push-in",
-     "the belief: ACTOR A doubting, no product of ours"
+     "the belief: ACTOR A doubting, no product of ours; an event in the first second (ACTOR A doing something), not a decorative push-in"
     ],
     [
      "WIDE",
@@ -181,7 +181,7 @@
     [
      "WIDE",
      "slow dolly-in",
-     "the finished room with ACTOR A"
+     "the finished room with ACTOR A; an event in the first second (ACTOR A doing something), not a decorative push-in"
     ],
     [
      "MEDIUM",
@@ -223,7 +223,7 @@
     [
      "MEDIUM",
      "slow push-in",
-     "a morning moment"
+     "a morning moment; an event in the first second (ACTOR A doing something), not a decorative push-in"
     ],
     [
      "WIDE",
@@ -265,7 +265,7 @@
     [
      "MEDIUM",
      "push-in",
-     "who it is for: the person at home"
+     "who it is for: the person at home; an event in the first second (ACTOR A doing something), not a decorative push-in"
     ],
     [
      "WIDE",
@@ -306,39 +306,39 @@
   }
  },
  "follow": {
-  "name": "One-take follow",
-  "idea": "one continuous handheld moment: the camera follows ACTOR A through the room and arrives at the product; the size flows from wide to close as they reach it, and each row continues the last one's action and position",
+  "name": "Follow, cut on action",
+  "idea": "one lived moment with one person, filmed handheld and cut on action: every cut carries on the movement of the shot before (she sets the cup down, cut, her hand lets go, cut, she sits back), the size stepping wide, medium, close as she reaches the product; about three shots a part, never one continuous take",
   "fits": "story, ritual: a lived moment, first person, the product as part of the day",
-  "pace": "few cuts: one at the punchline and where the two generated parts meet; each shot runs long",
+  "pace": "cut on action: one shot a sentence, each cut continuing the movement before it; no punch zoom, no Slide Blur",
   "punch_zoom": false,
   "transitions": [],
-  "size_changes": false,
-  "risk": "one long action gives the model time to drift people and the product: every row repeats ACTOR A's clothes and the product's outline and place",
+  "size_changes": true,
+  "risk": "Negen's Conversion Creative V3 rejects a part that is one continuous camera move: write separate rows joined by the action, never 'one take'; one long action also lets people and the product drift, so every row repeats ACTOR A's clothes and the product's outline and place",
   "rows": [
    [
+    "MEDIUM",
+    "handheld follow",
+    "hook event: ACTOR A already doing something with the product in the first second (sets a cup down, drops onto the seat)"
+   ],
+   [
     "WIDE",
-    "handheld follow",
-    "ACTOR A walks into the room, the product ahead of them"
-   ],
-   [
-    "MEDIUM",
-    "handheld follow",
-    "still walking, the room's problem or moment in passing"
-   ],
-   [
-    "MEDIUM",
-    "handheld follow, closing in",
-    "ACTOR A reaches the product"
+    "handheld, cut on action",
+    "the same movement carried on, the room around them"
    ],
    [
     "CLOSE",
-    "handheld",
+    "handheld push-in, cut on action",
     "their hand on the part the sentence names, body in frame"
    ],
    [
     "MEDIUM",
-    "handheld, easing back",
-    "the same action carried on as they settle"
+    "handheld follow",
+    "the action carried on as they settle (A04 ends mid-action)"
+   ],
+   [
+    "CLOSE",
+    "handheld, cut on action",
+    "B01 continues A04's action from the same state, a detail of it"
    ],
    [
     "WIDE",
@@ -359,18 +359,18 @@
  },
  "tableau": {
   "name": "Still-life tableaux",
-  "idea": "composed, near-still frames like a catalogue page in a lived room: the product centred, ACTOR A stepping into and out of frame, slow push-ins, the light doing the work",
+  "idea": "an event on the hook, then composed, calm frames like a catalogue page in a lived room: the product centred, ACTOR A stepping into and out of frame, slow slides and push-ins, the light doing the work; a hard cut between frames",
   "fits": "gift, aspiration, a premium piece, an offer-led ad: the piece as something worth owning",
-  "pace": "one slow shot a sentence, clean hard cuts, no zoom",
+  "pace": "an event on the hook, then one composed shot a sentence, clean hard cuts, no zoom",
   "punch_zoom": false,
   "transitions": [],
-  "size_changes": false,
-  "risk": "near-still frames make Negen copy the poster and barely move: every row names a slow push-in or a slow slide, and ACTOR A moves",
+  "size_changes": true,
+  "risk": "Negen's Conversion Creative V3 rejects a static beauty shot or a slow decorative push-in as the opening: the hook is an event (ACTOR A sets the piece's last object in place, steps into frame), the calm frames come after; near-still frames also make Negen copy the poster, so every row names a slow move and ACTOR A moves",
   "rows": [
    [
     "MEDIUM",
-    "slow push-in",
-    "ACTOR A beside the product, a quiet moment"
+    "cut on action",
+    "hook event: ACTOR A sets something on the product or steps into the frame beside it in the first second"
    ],
    [
     "WIDE",
@@ -384,8 +384,8 @@
    ],
    [
     "MEDIUM",
-    "slow push-in",
-    "ACTOR A steps in and uses it"
+    "slow slide",
+    "ACTOR A uses it"
    ],
    [
     "TOP-DOWN",
@@ -420,8 +420,8 @@
   "rows": [
    [
     "MEDIUM",
-    "POV walk-in",
-    "ACTOR A's view entering the room, the product ahead"
+    "POV push-in",
+    "hook event: ACTOR A's own hands set something on the product in the first second, the room ahead"
    ],
    [
     "MEDIUM",
@@ -466,13 +466,13 @@
   "fits": "after, turn, myth: a visible change to the room",
   "pace": "hold the before, a hard match cut on the turn, then the argued rows",
   "punch_zoom": false,
-  "size_changes": true,
+  "size_changes": false,
   "risk": "the model plays two framings in reverse or dissolves them (section 1): the before and the after are separate rows (A02, A03), the framing written in the same words in both",
   "rows": [
    [
     "MEDIUM",
-    "push-in",
-    "hook: ACTOR A in the room"
+    "handheld follow",
+    "hook event: ACTOR A in the before-room, doing something the problem gets in the way of"
    ],
    [
     "WIDE",
@@ -523,7 +523,7 @@
    [
     "MEDIUM",
     "push-in",
-    "the promise: ACTOR A with the product"
+    "the promise, on an event: ACTOR A already using the product in the first second"
    ],
    [
     "CLOSE",

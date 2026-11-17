@@ -2,6 +2,29 @@
 
 Changes to how the fast lane works, newest first: what changed, why, and what it was tested on.
 
+## 2026-11-17 (owner) - Shot structures fit Negen's own skill
+
+**Why:** the owner asked whether Negen's skill needs changing so the shot rules are built in. Read on Nov 17,
+Negen's Conversion Creative V3 skill (the one every video batch runs) already asks for what the shot rules want:
+- each 10 s part is an edited sequence of about three shot states with at least two real cuts (hard cut,
+  cut-on-action, match cut, wide to detail); a part that is one continuous camera move is rejected;
+- the first 1-2 s show a visible event, never a static beauty shot, a slow decorative push-in or an unchanged
+  product orbit.
+
+Our "SIZE / MOVE:" rows reach it as written. The skill is shared by the team, so it is left as it is. Two of our
+structures clashed with it.
+
+**New rule (`capcut/templates/structures.json`, `ad-brief-compiler` section 2):**
+- **follow** is now "Follow, cut on action": one lived moment, handheld, every cut continuing the movement before
+  it, about three shots a part, never one take.
+- **tableau** opens on an event (ACTOR A sets something down or steps into the frame); the calm composed frames come
+  after the hook.
+- **The hook row of every structure** names what ACTOR A does in the first second (argued, match and montage
+  included).
+- **Size checks:** follow and tableau now change size at every cut. match does not, because its before and after
+  share one framing on purpose.
+- **PASTE CHECK:** a new line says A01 names a visible event and no row is one continuous take.
+
 ## 2026-11-17 (owner) - Shot structures, picked per script
 
 **Why:** the owner, on the shot map below: "consider this as one of the structure (or format) of the ad creative. We
@@ -12,7 +35,7 @@ specific one."
 - **`capcut/templates/structures.json`:** six shot structures, each with its 8 scene rows, edit pace, punchline zoom,
   transition and the risk to write against:
   - argued: the shot map below, one per format;
-  - follow: a one-take handheld follow;
+  - follow: a handheld follow, cut on action;
   - tableau: still-life tableaux;
   - pov: first-person;
   - match: before/after match cuts;

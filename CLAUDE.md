@@ -335,7 +335,7 @@ size if a batch has two). Put the script on the timeline as `"vo"` and give it a
   it): for each sentence a clean shot that shows what is said (shelves when it says shelves), from the video, its
   spare or the group's other videos, never a bad stretch; the punchline (`"s3"`) starts on a hard cut to a different
   shot than the opening, zoom 1.15 where the structure's `"punch_zoom"` is true (the format's when the structure has none). The edit follows the video's shot structure
-  (`"pace"` in `capcut/templates/structures.json`; the format's `"pace"` when it has none): argued and montage cut on every sentence, follow and tableau hold long shots, pov cuts on the hand actions; so a group's three
+  (`"pace"` in `capcut/templates/structures.json`; the format's `"pace"` when it has none): argued and montage cut on every sentence, follow cuts on action, tableau holds one calm frame a sentence after its hook, pov cuts on the hand actions; so a group's three
   timelines never cut alike. In formats with a before-state, the tension (`"s2"`) and any sentence that states a problem get a shot of the problem (the before-state
   or a stand-in), never a shot of our product (ad-brief-compiler, 8). That holds for the hook too: Negen starts
   PART A from the product picture, so a hook that states a problem (most turn and myth hooks) opens on before-state

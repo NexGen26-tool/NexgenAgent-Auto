@@ -11,8 +11,8 @@ show the product only. Look at every row before saving.
 
 Each row also names the scene row the cut comes from (A01-B04) and its shot size from the brief's camera direction
 ("CLOSE / slow slide: ..."; older rows: the size word in the direction), and the script prints SAME SIZE where two cuts
-in a row show the same size, when the timeline's "structure" is one that changes size at every cut (argued, match,
-montage; capcut/templates/structures.json).
+in a row show the same size, when the timeline's "structure" is one that changes size at every cut (argued, follow,
+tableau, montage; capcut/templates/structures.json).
 """
 import glob, json, os, re, subprocess, sys, tempfile
 
@@ -100,7 +100,7 @@ def main():
             ph = Image.open(photos[0]).convert("RGB"); ph.thumbnail((W * 3, H)); sheet.paste(ph, (0, 0))
             d.text((ph.width + 8, 8), "PRODUCT PHOTO: every frame below must match this outline", fill="#c00000")
         sizes = [row_of(rows, f, a + min(length, 1.0) / 2) for f, a, length, _ in pieces]
-        same = []  # only where the video's shot structure changes size at every cut (argued, match, montage)
+        same = []  # only where the video's shot structure changes size at every cut (argued, follow, tableau, montage)
         for r in range(1, len(pieces)) if bp.STRUCTURES.get(t.get("structure", ""), {}).get("size_changes") else []:
             (f0, a0, l0, _), (f1, a1, _, _) = pieces[r - 1], pieces[r]
             run_on = f0 == f1 and abs(a0 + l0 - a1) < 0.15  # the same shot carried on (a fill), not a new cut

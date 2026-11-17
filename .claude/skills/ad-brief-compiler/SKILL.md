@@ -62,8 +62,8 @@ test, depending on the script and the argument").
 | Key | Structure | What it is | Serves |
 |---|---|---|---|
 | argued | Argued cuts | each sentence its own size and move, the shot proving the sentence; the size changes at every cut | turn, myth, list, after: a problem, a turn, reasons to show |
-| follow | One-take follow | one continuous handheld moment, following ACTOR A to the product; wide flowing to close | story, ritual: a lived moment, first person |
-| tableau | Still-life tableaux | composed near-still frames, the product centred, ACTOR A stepping in and out, slow push-ins | gift, aspiration, a premium piece, an offer-led ad |
+| follow | Follow, cut on action | one lived moment, handheld, every cut carrying on the movement before it; wide, medium, close as ACTOR A reaches the product | story, ritual: a lived moment, first person |
+| tableau | Still-life tableaux | an event on the hook, then composed calm frames, the product centred, ACTOR A stepping in and out, slow slides and push-ins | gift, aspiration, a premium piece, an offer-led ad |
 | pov | First-person | the camera is ACTOR A's eyes; their hands from the bottom edge at table height | ritual, list, story: use and convenience |
 | match | Before/after match cuts | the same framing without, then with, the product; the match cut is the punchline | after, turn, myth: a visible change to the room |
 | montage | Detail montage | quick 1-1.5 s beats on details and uses, building to the whole | list: many reasons, comparing buyers |
@@ -96,9 +96,13 @@ The "argued" map, by sentence job (each format's version is in `structures.json`
 In every structure:
 - Each row shows what its sentence says; fit the structure's row to the sentence (a reason about the top is
   TOP-DOWN, a reason about the base is CLOSE).
-- Where the structure changes size at every cut (argued, match, montage), never two rows in a row share a size and a
-  move; B01 continues A04's action in a new size. In follow and tableau the size may flow or hold, but every row
-  still moves.
+- Every structure fits Negen's Conversion Creative V3 skill, which edits each 10 s part into about three shots with
+  real cuts and rejects a part that is one continuous camera move, and wants a visible event in the first 1-2 s (an
+  action, a contrast, a before-state), never a static beauty shot or a slow decorative push-in as the opening. So no
+  row says "one take", and A01 always names what ACTOR A is doing in the first second.
+- Where the structure changes size at every cut (argued, follow, tableau, montage), never two rows in a row share a
+  size and a move; B01 continues A04's action in a new size. In match the before and the after share one framing on
+  purpose; in pov the size may hold while the hands act, but every row still moves.
 - ACTOR A is in at least 4 of the 8 rows (in pov, their hands count): the lived-in look stays. Layered depth in
   medium and wide rows: something in the foreground, the product, the room behind.
 - TOP-DOWN only over a surface the sentence names (a table top with the cup and book, a shelf with its bottles),
@@ -450,7 +454,8 @@ B04 | End frame | 2 | <camera direction>
 - Offer is verified or blank: YES/NO
 - The video's shot structure is picked from its script and written in `"structure"`; an explore group uses at least two: YES/NO
 - Every row starts with "SIZE / MOVE:" from that structure, fitted to its sentence; only B04 locked-off: YES/NO
-- argued, match, montage: the size changes at every row; every structure: ACTOR A (pov: their hands) in at least 4 rows: YES/NO
+- argued, follow, tableau, montage: the size changes at every row; every structure: ACTOR A (pov: their hands) in at least 4 rows: YES/NO
+- A01 names a visible event in the first second; no row is one continuous take: YES/NO
 - Every reason row shows the part its sentence names (CLOSE, TOP-DOWN or LOW): YES/NO
 - Wide product kept inside the central 70%: YES/NO/N/A
 - Every row with a hand says where ACTOR A's body is; no hands from below to wall height: YES/NO
