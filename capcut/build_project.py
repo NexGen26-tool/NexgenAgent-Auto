@@ -47,6 +47,8 @@ CTA_HOLD = 1.5  # the CTA stays this long after the voice-over ends; the timelin
 VO_SPEED = 1.08 # the Negen voice-over is a little slow for a ~16 s ad
 BRANDS = json.load(open(ROOT + "/brand/brands.json", encoding="utf-8"))
 ROLES = json.load(open(HERE + "/templates/house_edit_roles.json", encoding="utf-8"))
+sys.path.insert(0, HERE)
+import typeset  # noqa: E402  the type system (templates/type_styles.json) and the key-word timing
 UUID = re.compile(r"^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$")
 
 # fonts and animations the house edit uses; CapCut downloads them the first time they are picked in the app
@@ -509,6 +511,39 @@ def lay_footage(d, r, pieces, media_dir):
     return segs
 
 
+LEAD = 0.1  # a line comes up this much before the voice says its first key word (the eye reads as the ear hears)
+MIN_ON = 0.8  # and stays at least this long
+
+
+def key_onsets(cfg, times, spans, vo_path, total, notes):
+    """Each line appears when the voice says the first word it carries (typeset.onset), not at the start of its
+    sentence: Windows' own speech recogniser finds the words in the voice-over (capcut/vo_align.ps1); elsewhere the
+    word's place among the sentence's letters estimates it. A line whose words the voice never says in its sentence is
+    reported (TEXT-VOICE): the on-screen line must echo the voice's own words."""
+    lm = line_map(cfg)
+    if not lm or not cfg.get("vo"): return times
+    sents = [x for x in re.split(r"(?<=[.?!])\s+", cfg["vo"].strip()) if x]
+    st = list(times["starts"]) + [total - CTA_HOLD]
+    wt = typeset.align_windows(vo_path, sents, find_ffmpeg())
+    flat = lambda x: " ".join(x) if isinstance(x, list) else str(x)
+    def at(n, text, label, report=True):
+        i = n - 1; a, b = st[i], st[min(i + 1, len(st) - 1)]
+        w = [on_timeline(spans, t) for t in wt[i]] if i in wt else None
+        t, word = typeset.onset(text, sents[i], w, a, b)
+        if word is None and report: notes.append("TEXT-VOICE: %s \"%s\" carries no word the voice says in sentence %d (\"%s\"): "
+                                      "write it from the voice's own words" % (label, text, n, sents[i][:50]))
+        return max(a, t - LEAD)
+    l2 = at(lm["line2"], flat(cfg["line2"]), "Line 2"); l3 = at(lm["line3"], flat(cfg["line3"]), "Line 3")
+    l3b = at(lm["line3"], flat(cfg["line3"][1]), "Line 3 right", report=False)
+    l4 = at(lm["line4"], flat(cfg["line4"]), "Line 4"); l5 = at(lm["line5"], flat(cfg["line5"]), "Line 5")
+    cta = times["cta"]
+    l5 = min(l5, cta - MIN_ON); l4 = min(l4, l5 - MIN_ON); l3 = min(l3, l4 - MIN_ON); l2 = min(l2, l3 - MIN_ON)
+    out = dict(times)
+    out.update(line1=[0, l2], line2=l2, line3=[l3, l4], line4=[l4, l5], line5=[l5, cta],
+               line3b=min(max(l3b, l3 + 0.4), l4 - 0.5), timing="voice recogniser" if wt else "letter estimate")
+    return out
+
+
 def role_seg(d, r, role):  # the title clip's segment points at its draft through extra_material_refs
     return next(s for t in d["tracks"] for s in t["segments"] if r[role] == s["material_id"] or r[role] in s["extra_material_refs"])
 
@@ -519,7 +554,8 @@ def place_times(d, r, times, total):
     def place(role, a, b): role_seg(d, r, role)["target_timerange"] = {"start": us(a), "duration": us(b) - us(a)}
     place("line1", *times["line1"])
     role_seg(d, r, "compound")["target_timerange"]["start"] = us(times["line2"])
-    a3, e3 = times["line3"]; place("line3a", a3, e3); place("line3b", min(a3 + 0.9, e3 - 0.8), e3)
+    a3, e3 = times["line3"]; place("line3a", a3, e3)
+    place("line3b", times["line3b"] if "line3b" in times else min(a3 + 0.9, e3 - 0.8), e3)
     place("line4", *times["line4"]); place("line5", *times["line5"]); place("cta", times["cta"], total / US)
 
 
@@ -626,6 +662,16 @@ def smooth(pieces, zooms, notes=None, before=None):
 
 
 def before_of(f, shots): return (shots or {}).get(os.path.basename(f), {}).get("before")
+
+
+def tension_of(cfg, times):
+    """Where the before-state may (and must) play on the timeline: the tension sentence (s2), or from the first
+    sentence when the hook itself states the problem (edit plan "problem_from": "s1"; owner, Nov 16: a problem hook
+    over our own product reads as ours being the problem)."""
+    st = (times or {}).get("starts") or []
+    if len(st) <= 2: return None
+    first = 0 if ((cfg.get("edit") or {}).get("problem_from") == "s1") else 1
+    return (st[first], st[2])
 
 
 def cuts_to_pieces(cuts, total, folder, shots=None, own=None, notes=None, pool=None, tension=None):
@@ -762,7 +808,9 @@ class Timeline:
         src =os.path.expanduser(cfg["video"]); ed = dict(cfg.get("edit") or {})
         if not ed.get("times") and cfg.get("vo"):  # times from the script's sentences and the voice's own pauses
             ed["times"] = vo_times(cfg["vo"], spans, total / US, self.vo, ed.get("ends"), line_map(cfg))
-            self.times = ed["times"]
+            self.times = ed["times"]; self.text_notes = []
+            if self.times and "starts" in self.times:  # each line up with its own words (key_onsets)
+                self.times = ed["times"] = key_onsets(cfg, self.times, spans, self.vo, total / US, self.text_notes)
             if self.times and ed.get("line1_end") == "s2":  # Line 1 leaves when the before-state starts (a product hook
                 self.times["line1"][1] = self.times["starts"][1]  # must not stand over the room without the product)
             if self.times and "starts" in self.times:  # the last sentence spoken far faster than the rest: the voice was cut off
@@ -782,7 +830,7 @@ class Timeline:
         if ed.get("times"): place_times(d, r, ed["times"], total)
         if ed.get("cuts"):  # Claude's edit plan: footage chosen per sentence of the voice-over
             moved = []
-            tens = (self.times["starts"][1], self.times["starts"][2]) if self.times and len(self.times.get("starts", [])) > 2 else None
+            tens = tension_of(cfg, self.times)
             pieces, zooms = cuts_to_pieces(ed["cuts"], total / US, os.path.dirname(src), shots, own=src, notes=moved, pool=pool, tension=tens)
             segs = lay_footage(d, r, pieces, media_dir)
             missing = add_transitions(d, segs, ed.get("transitions", []), zooms)
@@ -799,6 +847,13 @@ class Timeline:
         elif shots and shots.get(os.path.basename(src), {}).get("checked"):
             pieces, self.notes = plan_footage(src, total / US, shots, pool)
             lay_footage(d, r, pieces, media_dir)
+        self.style, spec = typeset.style_for(cfg)
+        if spec:  # the type system: this ad's style instead of the one house look (references/typography.md)
+            tn = []
+            typeset.restyle(d, r, dict(cfg, _cta=cfg.get("cta") or brand["cta"]), spec, K, EFFECTS, mat, seg_of, tn, inner=inner)
+            self.notes = (self.notes or []) + ["type: %s" % self.style] + tn
+        if getattr(self, "text_notes", None):
+            self.notes = (self.notes or []) + ["text timing: %s" % (self.times or {}).get("timing", "-")] + self.text_notes
         add_vo(d, self.vo, spans)
         track = pick_music(brand, cfg, slot); self.music_name = track["name"] if track else "-"
         self.music = add_music(d, track) if track else None

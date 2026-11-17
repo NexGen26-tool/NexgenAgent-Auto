@@ -2,6 +2,46 @@
 
 Changes to how the fast lane works, newest first: what changed, why, and what it was tested on.
 
+## 2026-11-16 (owner, the 13/11 set) - A type system, text on its words, the product planted, real props, the store's name
+
+**Why:** the owner on the 13/11 set: the text overlays "follow too strictly with my very first example. Every video use
+the same color, font, positioning"; text "tends to appear way before the scripts say anything related"; a list ad
+whose hook (three reasons) got no payoff, the body listing features; a myth hook ("Big bookcases swallow small rooms")
+over our own bookcase; blank white books; a bookcase against the wall in one shot and mid-room in the next; a side
+table that glided and one whose shape changed between hook and body; three different women in one video; cloned
+wine bottles; a wall piece whose shape drifted; "at Spry" (the store is Spry Interior, spryinterior.com); "code FS"
+on screen (free shipping applies to every order, no code).
+
+**What changed:**
+- Type system (`references/typography.md`, `capcut/templates/type_styles.json`, `capcut/typeset.py`): five styles
+  picked by the ad's format (statement for turn/myth, editorial for story/ritual, counter for list, keepsake for gift,
+  contrast for after), each with its own face pairing, size hierarchy, colour and one emphasis, placement and soft
+  shadow; `"type"` on a timeline overrides it, `"type": "house"` keeps the first look. Rules: two faces at most, one
+  accent per line, safe area, words from the voice.
+- Text on its words (`capcut/build_project.py` key_onsets, `capcut/vo_align.ps1`): each line comes up 0.1 s before the
+  voice says its first key word, found with Windows' own speech recogniser on the voice-over (no install; a letter
+  estimate elsewhere). Cause found: lines were placed at the start of their sentence, and the words they carry come
+  later in it. TEXT-VOICE is printed for a line whose words the voice never says in its sentence.
+- Briefs (`ad-brief-compiler` 1, 8, 9 and Formats; `references/video-direction.md`): a sentence that states a problem
+  or a belief against the product never plays over our product, the hook included (A01 shows the problem); the
+  product stays planted in one place with one shape in every row; books, bottles and other repeated props are real
+  and varied; a list's three reasons each answer its promise in the buyer's experience.
+- Edit: Negen starts PART A from the product picture, so a problem hook can never be shot product-free; the edit plan
+  plays a problem hook (turn, myth) over the before-state footage (the video's and its spare's A02, or another
+  variant's before-state shot with no person), never over the opening shot.
+- Brand and offer (`brand/brands.json`, `ad-brief-compiler` OFFER and CTA): `name` is said and written in full
+  ("Spry Interior", never "Spry" or spry.com); `offer.on_screen` ("Free shipping on every order") is what the ad shows;
+  `offer.sheet_code` (FS) is only for the sheet and the video name, never shown.
+- Shot check (bad list): a product that slides, glides or moves between shots, a wall piece that leaves its wall, a
+  shape change between shots of one video, cloned props (identical blank books, identical bottles), more than one
+  person playing ACTOR A. Written in `capcut/shot_sheet.py`'s check list and in CLAUDE.md 6b.
+- CLAUDE.md 7 (on the person's word, Nov 17): the type system and the offer/name rule after the line parts, text on
+  its words under `"times"`, and the problem hook over before-state footage (`"problem_from": "s1"`) under `"cuts"`.
+
+**Applied to:** the 13/11 set, V3-V12 (V1, V2 already exported, left alone): V4-V12 made again in Negen ("R2"
+batches), V3 re-voiced with a list that pays its promise, every timeline rebuilt with the type system and the new
+timing.
+
 ## 2026-11-10 (owner) - The products are picked, not asked: the sheet's assignment first, then what sells on Meta
 
 **Why:** the owner: "nên có 1 rule để pick sản phẩm: check xem có được assign trên sheet chưa -> nếu chưa thì tự pick

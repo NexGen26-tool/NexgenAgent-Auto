@@ -11,6 +11,13 @@ shots.json: {"<video file name>": {"cuts": [2.25, 5.21], "fades": [[3.3, 4.5], .
 "fades" is written by this script; "bad" and "person" by Claude at the shot check (CLAUDE.md step 6b). "person" is
 where the video's own person is on screen: another variant of the group may borrow this video's footage only outside
 it, so one timeline never shows two different people. Running it again keeps "bad" and "person".
+
+Besides the bad kinds of CLAUDE.md 6b, mark as bad (owner, 2026-11-16, references/rule-changes.md):
+- the product moving by itself: it slides or glides across the floor, or stands in another place than in the shot
+  before (a wall piece that left its wall and stands mid-room);
+- the product's shape changing between shots of one video (compare the hook with the body, not only with the photo);
+- cloned props: rows of identical blank books, bottles that are copies of each other (same shape, glass, label);
+- a different person playing ACTOR A (another face, hair or clothes), counted across the video and its spare.
 """
 import glob, json, os, re, subprocess, sys, tempfile
 

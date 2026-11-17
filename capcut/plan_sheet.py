@@ -133,7 +133,7 @@ def main():
         cuts = [[at(c[0])] + list(c[1:]) for c in ed.get("cuts", [])]
         if not cuts:
             print("  no edit plan cuts: the footage plays as generated"); continue
-        pieces, _ = bp.cuts_to_pieces(cuts, total, os.path.dirname(video), shots, own=video, pool=bp.group_pool(cfg, t, shots), tension=(times["starts"][1], times["starts"][2]) if times and len(times.get("starts", [])) > 2 else None)
+        pieces, _ = bp.cuts_to_pieces(cuts, total, os.path.dirname(video), shots, own=video, pool=bp.group_pool(cfg, t, shots), tension=bp.tension_of(t, times))
         frames = []
         for f, a, length, shown in pieces:
             bad = [b for b in bp.blocked(f, shots, video) if a < b[1] and b[0] < a + length]

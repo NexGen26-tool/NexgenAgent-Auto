@@ -8,9 +8,12 @@
     "cta": "Explore the Collection",
     "voice": "Evan",
     "voices": {"man": "Evan"},
+    "name": "ET Woodcrafts",
     "offer": {
       "line": "Free shipping",
-      "code": "FS"
+      "on_screen": "Free shipping on every order",
+      "sheet_code": "FS",
+      "_note": "Free shipping applies to every order, no code. sheet_code is only the naming/sheet code (references/naming.md); never say it or show it."
     },
     "scarcity": "Handcrafted in small monthly batches",
     "negen_brand_prefix": "cbc46335",
@@ -62,9 +65,13 @@
     "cta": "Shop now",
     "voice": "Dawn",
     "voices": {"woman": "Dawn", "man": "Evan"},
+    "name": "Spry Interior",
+    "_name_note": "Spoken and written as \"Spry Interior\" (website spryinterior.com). Never \"Spry\" alone, never spry.com.",
     "offer": {
       "line": "Free delivery",
-      "code": "FS"
+      "on_screen": "Free delivery on every order",
+      "sheet_code": "FS",
+      "_note": "Free delivery applies to every order, no code. sheet_code is only the naming/sheet code (references/naming.md); never say it or show it."
     },
     "scarcity": "Made to order in limited monthly runs",
     "negen_brand_prefix": "9dbb2f20",

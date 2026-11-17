@@ -260,6 +260,13 @@ has none): the build plays only those stretches under the tension sentence and n
   merging into furniture; feet floating; physics that cannot happen (a door swinging the wrong way, a hand through
   an object). Look at hands and feet in every frame with a person, not only at the product.
 - a product feature the page does not have: lit shelves on a product with no lights, extra drawers, a second piece.
+- the product moving by itself: it slides or glides across the floor, or stands somewhere else than in the shot
+  before (a wall piece that left its wall and stands mid-room);
+- a shape change between shots of one video: compare the hook with the body, not only each frame with the photo;
+- cloned props: rows of identical blank white books, wine bottles that are copies of each other (same shape, glass
+  and label), cups or vases repeated as identical copies;
+- a different person playing the video's ACTOR A (another face, hair or clothes), counted across the video and its
+  spare: one video shows one person.
 Mark the whole stretch, frame to frame; judge the spares too, they are the replacement footage. A video with
 `"checked": false` is used as it is. Do not ask the person about each stretch; list what was cut in `log.md`.
 
@@ -278,6 +285,14 @@ for replacements; older weeks used "<SKU> <angle>"), `"format"` (the video's) an
 - `line4`: one line, no trailing period.
 - `line5` [first, punch]: the punch is the second line, bigger and yellow. ["Every piece is", "one of a kind"].
 - `cta`: the brief's call to action.
+These parts say what each line says; how it looks is the type system (`references/typography.md`): the build sets
+every timeline in the style its `"format"` picks in `capcut/templates/type_styles.json` (statement for turn and myth,
+editorial for story and ritual, counter for list, keepsake for gift, contrast for after), each with its own faces,
+size hierarchy, colour, one emphasis and placement, so a week's ads do not all look like the first one. `"type"` on a
+timeline picks another style; `"type": "house"` keeps the original house look. Two faces at most, one accent per
+line, text inside the safe area and never over a face or the product's outline. On screen the offer is the brand's
+`offer.on_screen` ("Free shipping on every order"), never a code such as FS, and the store is named in full ("Spry
+Interior", "ET Woodcrafts"), never "Spry" alone or spry.com.
 First run `python capcut/build_project.py --check`. If it says CapCut keeps its projects encrypted, run
 `python capcut/text_sheet.py work/<week>/capcut.json` instead and give the person `work/<week>/text-sheet.md` with
 the videos folder: every line, time and style to type in by hand. Otherwise ask the person to quit CapCut (Mac:
@@ -305,14 +320,21 @@ size if a batch has two). Put the script on the timeline as `"vo"` and give it a
   overrides it). Without a format: Line 2 on sentence 3 of a 7-sentence script, sentence 2 of a 6-sentence one. It prints the
   starts and which sentence is the punchline; when a start is off (the voice ran two sentences together and
   paused at a comma), give `"ends"`: where each sentence but the last ends in the voice file, in seconds; give
-  `"times"` by hand only if they look wrong;
+  `"times"` by hand only if they look wrong. Inside its sentence a line comes up 0.1 s before the voice says the
+  first word it carries, never at the sentence's start, and stays at least 0.8 s: the build finds the words with
+  Windows' own speech recogniser (`capcut/vo_align.ps1`; a letter estimate on a Mac) and prints "text timing". A
+  TEXT-VOICE line means a line's words are never said in its sentence: rewrite the line from the voice's words;
 - `"cuts"` `[[when, video, source s, zoom?], ...]`, `when` = `"s3"` (sentence 3 starts) or `"s3+1.4"` (1.4 s into
   it): for each sentence a clean shot that shows what is said (shelves when it says shelves), from the video, its
   spare or the group's other videos, never a bad stretch; the punchline (`"s3"`) starts on a hard cut to a different
   shot than the opening, zoom 1.15 where the format's `"punch_zoom"` is true. The edit follows the format's
   `"pace"`: list cuts on every sentence, ritual holds one slow shot a sentence, story stays handheld; so a group's three
   timelines never cut alike. In formats with a before-state, the tension (`"s2"`) and any sentence that states a problem get a shot of the problem (the before-state
-  or a stand-in), never a shot of our product (ad-brief-compiler, 8). Look at the shot sheets to pick them. A shot is never run on into a bad stretch or the video's
+  or a stand-in), never a shot of our product (ad-brief-compiler, 8). That holds for the hook too: Negen starts
+  PART A from the product picture, so a hook that states a problem (most turn and myth hooks) opens on before-state
+  footage (the video's or its spare's A02, or another variant's before-state shot with no person), never on the
+  opening shot, with `"problem_from": "s1"` in the edit block so the build allows the before-state from sentence 1.
+  Look at the shot sheets to pick them. A shot is never run on into a bad stretch or the video's
   next generated part (it would flash other footage): when the clean footage runs out the build fills the rest of
   the sentence itself with clean footage of the same scene (the video and its spare first, then the group's other
   videos outside their person; the before-state only from the before-state) and prints each fill; a planned shot that

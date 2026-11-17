@@ -46,7 +46,7 @@ def main():
         st = times["starts"] if times and "starts" in times else None
         at = lambda x: x if not isinstance(x, str) else st[int(x[1]) - 1] + (float(x[3:]) if "+" in x else 0.0)
         cuts = [[at(c[0])] + list(c[1:]) for c in ed["cuts"]]
-        pieces, zooms = bp.cuts_to_pieces(cuts, total, os.path.dirname(video), shots, own=video, pool=bp.group_pool(cfg, t, shots), tension=(times["starts"][1], times["starts"][2]) if times and len(times.get("starts", [])) > 2 else None)
+        pieces, zooms = bp.cuts_to_pieces(cuts, total, os.path.dirname(video), shots, own=video, pool=bp.group_pool(cfg, t, shots), tension=bp.tension_of(t, times))
         sents = [x for x in re.split(r"(?<=[.?!])\s+", t.get("vo", "").strip()) if x]
         starts = (st or [0.0])[1:]; tl, at_t = [], 0.0
         for p in pieces: tl.append(at_t); at_t += p[3]

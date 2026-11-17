@@ -41,6 +41,15 @@ empty room, a light sweep, or a macro with no action, rewrite it as such a momen
 For wall-mounted products the hook is ACTOR A seen from behind or the side, arms visible up to the shoulders, never
 two hands rising from below the frame.
 
+Exception: when sentence 1 states a problem or a belief against the product ("Books stacked on your floor?", "Big
+bookcases swallow small rooms, right?"), A01 shows that problem with ACTOR A in it and no product of our kind (see 8):
+a problem sentence never plays over our product, the first sentence included (owner, Nov 16: the myth hook "Big
+bookcases swallow small rooms" over our bookcase read as ours being the problem). The product then arrives on the
+punchline's hard cut. Negen starts PART A from the product picture, so its first shot shows the product whatever A01
+asks (all three R2 bookcase takes, Nov 16): the edit plan therefore plays a problem hook over the before-state
+footage (A02 of the video and of its spare, or another variant's before-state shot with no person), never over the
+opening shot, and the brief keeps A02 a clear, long problem shot.
+
 Avoid hooks that depend on the order of two framings, such as "empty wall, then the product appears" or "macro first, then reveal the whole piece". The video model often plays these in reverse or blends them with a dissolve.
 
 ### 2. Camera: moving, but the room stays readable
@@ -147,6 +156,20 @@ line played over our own console, so the viewer read ours as the plain one.
 - The answer sentence opens on a hard cut to our product (A03, the punchline).
 - No named competitor and no stand-in that resembles a real brand's product.
 - A hook that raises a doubt ("Too beautiful to sit in?") is answered by the next sentence and the footage.
+- This holds for every sentence that states a problem, a doubt or a belief against the product, the hook included:
+  its row shows the problem (A01 and A02 in a myth, A01 in a turn whose hook is the problem), never our product.
+
+### 9. The product stays put; props are real
+The video model slides furniture across the floor, moves a wall unit into the middle of the room between shots and
+redraws the piece in another shape (owner, Nov 16: a side table that glided, a tree bookcase against the wall in one
+shot and standing mid-room in the next, a side table whose shape changed between hook and body). It also fills shelves
+with identical blank props (rows of white books, cloned wine bottles), which reads as fake.
+- Every row with the product says where it stands, the same place in every row: "against the same plaster wall",
+  "on the rug beside the sofa arm". A piece is never carried or moved on camera.
+- Every row that shows books, bottles or other repeated props describes them as real and varied: "books with spines
+  of different colours and heights, some lying flat", "bottles of different shapes, glass colours and labels".
+- The standing direction (`references/video-direction.md`) says the same for every batch; the shot check cuts any
+  glide, any jump of place and any clone props (CLAUDE.md 6b).
 
 ---
 
@@ -230,6 +253,10 @@ format's key into the video's `"format"` in `week.json` and on its timeline in `
   in A02. Story, list, ritual and gift have no before-state: their A02 shows the persona's situation with the
   product, and `"before"` in the shot check stays `[]` unless a stretch plays under a problem sentence.
 - "after" opens on the finished room with the product, so its edit plan sets `"line1_end": "s2"`.
+- "list" pays its promise: sentence 1 promises something about the buyer's life ("Three reasons my mornings slowed
+  down"), and each of the three reasons answers that promise in the buyer's own experience, with a product fact as its
+  cause ("My coffee has a wide, warm place to land"). Three features in a row do not pay a promise (owner, Nov 16: the
+  hook opened on three reasons, then the body listed the table's features, unrelated to it).
 - The scene rows follow the format's sentences in order (SCENES below): each row shows what its sentence says.
 - A new format is added in both places at once: a row here and a row in `capcut/templates/formats.json`.
 
@@ -251,9 +278,14 @@ The brand's store-wide offer from `brand/brands.json` (`offer`, set by the owner
 states (for example "Custom sizing available on request."). With neither, write: LEAVE BLANK. Never invent
 discounts, shipping, warranty, returns or deadlines. The scarcity line (`scarcity` in `brands.json`) never carries a
 number or a deadline.
+On screen and in the voice-over the offer is `offer.on_screen` / `offer.line` ("Free shipping on every order"):
+it applies to every order and has no code. `offer.sheet_code` (FS) is only the code in the sheet and the video
+name; never say it or show it (owner, Nov 16: "There is no FS code for Free shipping").
 
 ### CALL TO ACTION
-Short. Spry: "Shop the <product>" (for example "Shop the shelf"). ET Woodcrafts: "Explore the Collection".
+Short. The store is named by `name` in `brand/brands.json`, spoken and written in full: "Spry Interior" (website
+spryinterior.com), never "Spry" alone or "spry.com"; "ET Woodcrafts". Spry Interior: "Shop the <product>" on screen,
+"Shop the <product> at Spry Interior." in the voice-over. ET Woodcrafts: "Explore the Collection".
 
 ### VO SCRIPT (Write my own): an argument, not a feature list
 We write the voice-over; Negen's "AI writes it" writes its own words, which then do not match the on-screen text.
@@ -270,7 +302,7 @@ creative team's Oct 31 copy) move from a tension to a turn to a reason, then cle
 | 4 | Reason | the one product fact that makes the turn true, said with "so" or "because" | "An oval top over a single S-curve, so guests see a shape." |
 | 5 | Doubt cleared | the question a buyer has before buying (fit, size, use, care), answered with a page fact | "Six widths, so it fits the wall you have." |
 | 6 | Offer or scarcity | the brand's verified offer and scarcity line (`brand/brands.json`), or a proof line if the brand has none | "Free delivery, made to order in limited runs." |
-| 7 | Call to action | the CTA | "Choose your width at Spry." |
+| 7 | Call to action | the CTA | "Choose your width at Spry Interior." |
 
 - 40-46 words, about 16-18 s at 2.5 words a second (the batch uses "Keep speed"; the CapCut build speeds the voice to
   1.08x and shortens its pauses, about 15-16 s).

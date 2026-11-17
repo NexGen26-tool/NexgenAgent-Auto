@@ -554,6 +554,48 @@
    "angle": "A sculpture you sit in — the piece the room is seen by, and the seat the evening ends in",
    "tier": "P1",
    "status": "NEW (sheet row sent to the owner 2026-10-23)"
+  },
+  "STB-01": {
+   "family": "STB — Side Table  (codes from the sheet's Persona dropdown, written here 2026-11-16; first SKU SITHTTCM025)",
+   "name": "Evening ritualist — a lamp, a cup and a book at the end of the day, with nowhere good to set them",
+   "awareness": "Solution-Aware",
+   "desire": "enjoyment, #1 comfort",
+   "barrier": "\"a side table is a side table\"",
+   "angle": "The small table your evening ritual lands on (the sheet's \"Ritual Table\")",
+   "tier": "P1",
+   "status": "MAPPED (sheet: ETW Ritual Table rows, Pilot and Huy Agent, Nov 2026)"
+  },
+  "STB-02": {
+   "family": "STB — Side Table  (codes from the sheet's Persona dropdown, written here 2026-11-16; first SKU SITHTTCM025)",
+   "name": "Everyday-use sitter — cup on the floor, phone on the sofa arm, the remote lost in the cushions; the chair or sofa has nothing beside it",
+   "awareness": "Problem→Solution",
+   "desire": "#1 comfort, convenience",
+   "barrier": "\"it's small, will it hold anything / is it worth it for a little table\"",
+   "angle": "Everything you reach for, right beside you (the sheet's \"Small Table Big Use\", \"Everyday Convenience\")",
+   "tier": "P1",
+   "status": "MAPPED (sheet: ETW rows by Thảo and Huy Agent, Nov 2026)"
+  },
+  "DSK-01": {
+   "family": "DSK — Desk  (codes from the sheet's Persona library, written here 2026-11-16; first SKU RTTHTTDE069)",
+   "name": "Works from home at an old desk that has gone worn and wobbly, cables and clutter everywhere; unsure a new desk changes anything",
+   "awareness": "Problem-Aware",
+   "desire": "#5 comfortable living, individuality, self-improvement",
+   "barrier": "\"the old desk still works, is replacing it really worth it?\"",
+   "angle": "Workspace Refresh: replace the one thing you use every day",
+   "hook_seed": "\"Sometimes the easiest way to refresh your home is replacing the one thing you use every day\"",
+   "tier": "P1",
+   "status": "MAPPED (sheet Persona library DSK-01)"
+  },
+  "DSK-02": {
+   "family": "DSK — Desk  (codes from the sheet's Persona library, written here 2026-11-16; first SKU RTTHTTDE069)",
+   "name": "Works from home or a studio, 25-40, cares about design and wood; does not want the workspace to look like an office",
+   "awareness": "Solution-Aware",
+   "desire": "#5 comfortable living",
+   "barrier": "\"I need a desk that works every day and still gives the room character\"",
+   "angle": "A desk with character, not an office desk",
+   "hook_seed": "\"Your desk can be more than just a workspace\"",
+   "tier": "P1",
+   "status": "MAPPED (sheet Persona library DSK-02; ETW 'The Open Side' rows Oct 2026)"
   }
  },
  "objections": {
