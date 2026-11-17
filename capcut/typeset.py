@@ -130,8 +130,8 @@ def restyle(d, r, cfg, spec, K, effects, mat, seg_of, notes, inner=None):
     place(seg_of(d, m["id"]), parts, F, K, s1["align"], s1["y"], s1["max_w"])
 
     # Line 2: the punchline title (setup + payoff); numbered: "1" over the first reason
-    s2 = spec["line2"]; setup, payoff = cfg["line2"]
-    if num: setup, payoff = "1", join(cfg["line2"])
+    s2 = spec["line2"]; setup, payoff = cfg["line2"][0], in_sentence(cfg["line2"][1])
+    if num: setup, payoff = "1", join([cfg["line2"][0], payoff])
     if inner is not None:
         sm, pm = mat(inner, "texts", r["setup"]), mat(inner, "texts", r["payoff"])
         al = spec["line3"]["align"]
@@ -146,7 +146,7 @@ def restyle(d, r, cfg, spec, K, effects, mat, seg_of, notes, inner=None):
 
     # Line 3: two halves, stacked (or the house split on the edges)
     s3 = spec["line3"]; a, b = cfg["line3"]
-    if num: a, b = "2", join(cfg["line3"])
+    if num: a, b = "2", "\n".join(join(x) for x in cfg["line3"])  # the two halves on two lines, never run together
     (fa, za, ca), (fb, zb, cb) = s3["parts"]
     pa, pb = [(a, fa, za, ca)], [(b, fb, zb, cb)]
     ma, mb = mat(d, "texts", r["line3a"]), mat(d, "texts", r["line3b"])
@@ -168,6 +168,15 @@ def restyle(d, r, cfg, spec, K, effects, mat, seg_of, notes, inner=None):
     parts = [(ct, fc, zc, cc)]
     m = mat(d, "texts", r["cta"]); set_rich(m, parts, F, fin, sc["align"], sc.get("spacing"))
     place(seg_of(d, m["id"]), parts, F, K, sc["align"], sc["y"], sc["max_w"])
+
+
+def in_sentence(p):
+    """The house edit capitalises Line 2's payoff ("Give it a Focal point"); in the type styles the payoff continues its
+    setup's sentence, so it keeps the sentence's case ("Your cup has a home", "Now I reach for it first"). "I", an
+    acronym and the store names keep their capitals."""
+    w = (p.strip().split() or [""])[0]
+    if w in ("I", "I'm", "I'd", "I've", "I'll") or (len(w) > 1 and w.isupper()) or w in ("Spry", "ET"): return p
+    return p[:1].lower() + p[1:] if p[:1].isupper() else p
 
 
 # ---------------------------------------------------------------------------------------------------- key words

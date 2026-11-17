@@ -102,6 +102,15 @@ def main():
         if t.get("mode") not in ("explore", "iterate"): print("CHECK: %s has no \"mode\" (explore or iterate)" % t["name"][-24:])
         if not t.get("format"): print("CHECK: %s has no \"format\" (ad-brief-compiler, Formats)" % t["name"][-24:])
         elif t["format"] not in bp.FORMATS: print("CHECK: %s format \"%s\" is not in capcut/templates/formats.json" % (t["name"][-24:], t["format"]))
+        if t.get("structure") and t["structure"] not in bp.STRUCTURES:
+            print("CHECK: %s structure \"%s\" is not in capcut/templates/structures.json" % (t["name"][-24:], t["structure"]))
+    by_group = {}  # an explore group films its three videos in at least two shot structures (ad-brief-compiler 2)
+    for t in tl:
+        if t.get("mode") == "explore": by_group.setdefault(t.get("group"), []).append(t.get("structure"))
+    for g, ss in sorted(by_group.items()):
+        if any(ss) and len(ss) > 1 and len(set(ss)) < 2:
+            print("SAME: explore group %s films all its videos as \"%s\": pick another structure for one, from its script" % (g, ss[0]))
+        elif any(ss) and not all(ss): print("CHECK: explore group %s: a timeline has no \"structure\"" % g)
     print("Clean stretches (what shots.json leaves):")
     for name, entry in sorted(shots.items()):
         folder = os.path.join(week, "videos", "spare" if " - spare" in name else "")
@@ -116,12 +125,13 @@ def main():
         vo = bp.extract_vo(video, out_dir)
         spans = bp.speech_spans(vo, bp.mp4_info(vo)[0])
         total = sum(b - a for a, b in spans) / bp.VO_SPEED + bp.CTA_HOLD
-        times = ed.get("times") or (bp.vo_times(t["vo"], spans, total, vo, ed.get("ends"), bp.line_map(t)) if t.get("vo") else None)
+        times = ed.get("times") or (bp.pilot_times(t, spans, total, vo, ed.get("ends")) if t.get("pilot") else
+                                      bp.vo_times(t["vo"], spans, total, vo, ed.get("ends"), bp.line_map(t)) if t.get("vo") else None)
         print("\n" + t["name"])
         if not times or "starts" not in times:
             print("  CHECK: no sentence starts (give \"ends\" or \"times\" in the edit plan)"); continue
         st = times["starts"] + [total - bp.CTA_HOLD]
-        sentences = [s for s in re.split(r"(?<=[.?!])\s+", t["vo"].strip()) if s]
+        sentences = list(t["pilot"]["parts"]) if t.get("pilot") else [s for s in re.split(r"(?<=[.?!])\s+", t["vo"].strip()) if s]
         rates = [len(re.sub(r"[^A-Za-z0-9]", "", s)) / max(st[i + 1] - st[i], 0.01) for i, s in enumerate(sentences)]
         median = sorted(rates[:-1])[len(rates[:-1]) // 2]
         for i, s in enumerate(sentences):

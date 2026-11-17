@@ -1,0 +1,565 @@
+{
+ "_about": "Shot structures: how an ad is filmed and cut, picked per video from what its script argues (ad-brief-compiler section 2). A video's format (templates/formats.json) is the argument; its structure is the camera and the edit. Each: what it is, which arguments it serves, the 8 scene rows (A01-B04, [size, move, what the row shows]; 'argued' has one map per format), the edit's pace, whether the punchline gets the 1.15 zoom and a Slide Blur ('transitions': [] for none; left out = the format's), whether the size must change at every cut (cut_sheet.py prints SAME SIZE), and the risk to write against. An explore group uses at least two structures across V1-V3; an iterate group keeps the control's unless structure is its variable.",
+ "argued": {
+  "name": "Argued cuts",
+  "idea": "each sentence its own shot size and camera move, the shot proving what the sentence says; the size changes at every cut",
+  "fits": "turn, myth, list, after: an argument with a problem, a turn and reasons to show",
+  "pace": "one or two shots a sentence, a hard cut to a new size on every sentence",
+  "punch_zoom": true,
+  "size_changes": true,
+  "risk": "close-ups of a sculptural product drift: keep where the part meets the rest in frame",
+  "by_format": {
+   "turn": [
+    [
+     "MEDIUM",
+     "push-in",
+     "hook (a problem hook: WIDE on the before-state)"
+    ],
+    [
+     "WIDE",
+     "slow dolly-out",
+     "tension: the before-state, no product of ours"
+    ],
+    [
+     "MEDIUM",
+     "push-in",
+     "turn: hard cut to our product whole"
+    ],
+    [
+     "CLOSE",
+     "slow slide",
+     "reason: the part the sentence names"
+    ],
+    [
+     "TOP-DOWN",
+     "push down",
+     "reason, continued: the top and what sits on it (or LOW for height)"
+    ],
+    [
+     "WIDE",
+     "parallax",
+     "doubt cleared: ACTOR A beside it for scale"
+    ],
+    [
+     "MEDIUM",
+     "arc",
+     "offer: the piece in use"
+    ],
+    [
+     "WIDE",
+     "locked-off",
+     "end frame: the product whole"
+    ]
+   ],
+   "story": [
+    [
+     "MEDIUM",
+     "handheld follow",
+     "the moment or doubt"
+    ],
+    [
+     "WIDE",
+     "handheld follow",
+     "what I expected"
+    ],
+    [
+     "CLOSE",
+     "handheld push-in",
+     "what happened: the product in use"
+    ],
+    [
+     "MEDIUM",
+     "handheld follow",
+     "the detail that won me over: the action"
+    ],
+    [
+     "CLOSE",
+     "handheld",
+     "the detail itself"
+    ],
+    [
+     "WIDE",
+     "handheld follow",
+     "who I'd tell: the room and ACTOR A"
+    ],
+    [
+     "MEDIUM",
+     "slow arc",
+     "offer: the piece in use"
+    ],
+    [
+     "WIDE",
+     "locked-off",
+     "end frame: the product whole"
+    ]
+   ],
+   "list": [
+    [
+     "MEDIUM",
+     "push-in",
+     "the promise"
+    ],
+    [
+     "CLOSE",
+     "slide",
+     "reason one (punchline)"
+    ],
+    [
+     "TOP-DOWN",
+     "push down",
+     "reason two"
+    ],
+    [
+     "MEDIUM",
+     "arc",
+     "reason two: ACTOR A doing it"
+    ],
+    [
+     "LOW",
+     "slow push-in",
+     "reason three"
+    ],
+    [
+     "WIDE",
+     "dolly",
+     "reason three: ACTOR A in the room"
+    ],
+    [
+     "MEDIUM",
+     "arc",
+     "offer: the piece in use"
+    ],
+    [
+     "WIDE",
+     "locked-off",
+     "end frame: the product whole"
+    ]
+   ],
+   "myth": [
+    [
+     "MEDIUM",
+     "push-in",
+     "the belief: ACTOR A doubting, no product of ours"
+    ],
+    [
+     "WIDE",
+     "slow dolly-out",
+     "what people settle for: the before-state"
+    ],
+    [
+     "MEDIUM",
+     "push-in",
+     "the truth: hard cut to our product whole"
+    ],
+    [
+     "CLOSE",
+     "slow slide",
+     "the proof: the part the sentence names"
+    ],
+    [
+     "TOP-DOWN",
+     "push down",
+     "the proof, continued (or LOW for height)"
+    ],
+    [
+     "WIDE",
+     "parallax",
+     "the fit: ACTOR A beside it for scale"
+    ],
+    [
+     "MEDIUM",
+     "arc",
+     "offer: the piece in use"
+    ],
+    [
+     "WIDE",
+     "locked-off",
+     "end frame: the product whole"
+    ]
+   ],
+   "after": [
+    [
+     "WIDE",
+     "slow dolly-in",
+     "the finished room with ACTOR A"
+    ],
+    [
+     "MEDIUM",
+     "handheld follow",
+     "the before: the problem, no product of ours"
+    ],
+    [
+     "WIDE",
+     "arc",
+     "the change: hard cut back to the finished room"
+    ],
+    [
+     "CLOSE",
+     "slow slide",
+     "what made the difference: the part named"
+    ],
+    [
+     "TOP-DOWN",
+     "push down",
+     "what made the difference, continued (or LOW)"
+    ],
+    [
+     "WIDE",
+     "parallax",
+     "the fit: ACTOR A beside it for scale"
+    ],
+    [
+     "MEDIUM",
+     "arc",
+     "offer: the piece in use"
+    ],
+    [
+     "WIDE",
+     "locked-off",
+     "end frame: the product whole"
+    ]
+   ],
+   "ritual": [
+    [
+     "MEDIUM",
+     "slow push-in",
+     "a morning moment"
+    ],
+    [
+     "WIDE",
+     "slow dolly",
+     "an evening moment"
+    ],
+    [
+     "CLOSE",
+     "slow push-in",
+     "what it is in my day"
+    ],
+    [
+     "TOP-DOWN",
+     "slow push down",
+     "the reason: the surface and what sits on it"
+    ],
+    [
+     "MEDIUM",
+     "slow arc",
+     "the reason, continued"
+    ],
+    [
+     "WIDE",
+     "slow parallax",
+     "doubt cleared: scale"
+    ],
+    [
+     "MEDIUM",
+     "slow arc",
+     "offer: the piece in use"
+    ],
+    [
+     "WIDE",
+     "locked-off",
+     "end frame: the product whole"
+    ]
+   ],
+   "gift": [
+    [
+     "MEDIUM",
+     "push-in",
+     "who it is for: the person at home"
+    ],
+    [
+     "WIDE",
+     "slow dolly-out",
+     "why they'd never buy it: their routine"
+    ],
+    [
+     "CLOSE",
+     "push-in",
+     "so you give it: the piece as the gift"
+    ],
+    [
+     "MEDIUM",
+     "arc",
+     "what it changes: the person using it"
+    ],
+    [
+     "TOP-DOWN",
+     "push down",
+     "what it changes, continued: what sits on it"
+    ],
+    [
+     "WIDE",
+     "parallax",
+     "the choice: size and finish, the person beside it"
+    ],
+    [
+     "MEDIUM",
+     "arc",
+     "offer: the piece in use"
+    ],
+    [
+     "WIDE",
+     "locked-off",
+     "end frame: the product whole"
+    ]
+   ]
+  }
+ },
+ "follow": {
+  "name": "One-take follow",
+  "idea": "one continuous handheld moment: the camera follows ACTOR A through the room and arrives at the product; the size flows from wide to close as they reach it, and each row continues the last one's action and position",
+  "fits": "story, ritual: a lived moment, first person, the product as part of the day",
+  "pace": "few cuts: one at the punchline and where the two generated parts meet; each shot runs long",
+  "punch_zoom": false,
+  "transitions": [],
+  "size_changes": false,
+  "risk": "one long action gives the model time to drift people and the product: every row repeats ACTOR A's clothes and the product's outline and place",
+  "rows": [
+   [
+    "WIDE",
+    "handheld follow",
+    "ACTOR A walks into the room, the product ahead of them"
+   ],
+   [
+    "MEDIUM",
+    "handheld follow",
+    "still walking, the room's problem or moment in passing"
+   ],
+   [
+    "MEDIUM",
+    "handheld follow, closing in",
+    "ACTOR A reaches the product"
+   ],
+   [
+    "CLOSE",
+    "handheld",
+    "their hand on the part the sentence names, body in frame"
+   ],
+   [
+    "MEDIUM",
+    "handheld, easing back",
+    "the same action carried on as they settle"
+   ],
+   [
+    "WIDE",
+    "handheld drift",
+    "ACTOR A at home with it, the room around"
+   ],
+   [
+    "MEDIUM",
+    "slow handheld arc",
+    "the product whole in use"
+   ],
+   [
+    "WIDE",
+    "locked-off",
+    "end frame: the product whole"
+   ]
+  ]
+ },
+ "tableau": {
+  "name": "Still-life tableaux",
+  "idea": "composed, near-still frames like a catalogue page in a lived room: the product centred, ACTOR A stepping into and out of frame, slow push-ins, the light doing the work",
+  "fits": "gift, aspiration, a premium piece, an offer-led ad: the piece as something worth owning",
+  "pace": "one slow shot a sentence, clean hard cuts, no zoom",
+  "punch_zoom": false,
+  "transitions": [],
+  "size_changes": false,
+  "risk": "near-still frames make Negen copy the poster and barely move: every row names a slow push-in or a slow slide, and ACTOR A moves",
+  "rows": [
+   [
+    "MEDIUM",
+    "slow push-in",
+    "ACTOR A beside the product, a quiet moment"
+   ],
+   [
+    "WIDE",
+    "slow slide",
+    "the room composed around the product"
+   ],
+   [
+    "CLOSE",
+    "slow push-in",
+    "the piece itself, centred, outline in frame"
+   ],
+   [
+    "MEDIUM",
+    "slow push-in",
+    "ACTOR A steps in and uses it"
+   ],
+   [
+    "TOP-DOWN",
+    "slow push down",
+    "what sits on it, arranged"
+   ],
+   [
+    "WIDE",
+    "slow slide",
+    "ACTOR A beside it for scale"
+   ],
+   [
+    "MEDIUM",
+    "slow push-in",
+    "the product whole, ACTOR A stepping out of frame"
+   ],
+   [
+    "WIDE",
+    "locked-off",
+    "end frame: the product whole"
+   ]
+  ]
+ },
+ "pov": {
+  "name": "First-person",
+  "idea": "the camera is ACTOR A's eyes at standing or sitting height: the viewer does what they do (sets the cup down, reaches for the book); their own hands come in from the bottom edge at waist or table height",
+  "fits": "ritual, list, story: use and convenience, what it is like to live with it",
+  "pace": "one or two shots a sentence, cuts on the hand actions",
+  "punch_zoom": true,
+  "size_changes": false,
+  "risk": "hands: only from the bottom edge to waist or table height (section 6); ACTOR A is seen whole only in a mirror-free WIDE or the end frame",
+  "rows": [
+   [
+    "MEDIUM",
+    "POV walk-in",
+    "ACTOR A's view entering the room, the product ahead"
+   ],
+   [
+    "MEDIUM",
+    "POV, looking down",
+    "the problem or moment in front of them, their hands at table height"
+   ],
+   [
+    "CLOSE",
+    "POV push-in",
+    "their hand sets something on the product"
+   ],
+   [
+    "TOP-DOWN",
+    "POV looking down",
+    "the top and what sits on it, their hand reaching"
+   ],
+   [
+    "MEDIUM",
+    "POV",
+    "they sit or step back: the product beside them"
+   ],
+   [
+    "WIDE",
+    "slow dolly",
+    "ACTOR A seen whole beside it for scale"
+   ],
+   [
+    "MEDIUM",
+    "arc",
+    "the product whole in use"
+   ],
+   [
+    "WIDE",
+    "locked-off",
+    "end frame: the product whole"
+   ]
+  ]
+ },
+ "match": {
+  "name": "Before/after match cuts",
+  "idea": "the same framing twice: the room without the product, then a hard cut to the identical frame with it; the change is the punchline",
+  "fits": "after, turn, myth: a visible change to the room",
+  "pace": "hold the before, a hard match cut on the turn, then the argued rows",
+  "punch_zoom": false,
+  "size_changes": true,
+  "risk": "the model plays two framings in reverse or dissolves them (section 1): the before and the after are separate rows (A02, A03), the framing written in the same words in both",
+  "rows": [
+   [
+    "MEDIUM",
+    "push-in",
+    "hook: ACTOR A in the room"
+   ],
+   [
+    "WIDE",
+    "locked, slow push-in",
+    "the before: the wall or corner without our product, framing named exactly"
+   ],
+   [
+    "WIDE",
+    "the same slow push-in",
+    "the after: the identical frame, our product in it (hard cut)"
+   ],
+   [
+    "CLOSE",
+    "slow slide",
+    "the part that made the difference"
+   ],
+   [
+    "MEDIUM",
+    "arc",
+    "ACTOR A using it"
+   ],
+   [
+    "WIDE",
+    "parallax",
+    "ACTOR A beside it for scale"
+   ],
+   [
+    "MEDIUM",
+    "arc",
+    "the product whole in use"
+   ],
+   [
+    "WIDE",
+    "locked-off",
+    "end frame: the product whole"
+   ]
+  ]
+ },
+ "montage": {
+  "name": "Detail montage",
+  "idea": "quick beats of 1-1.5 s on details and uses, a cut on every beat, building to the product whole",
+  "fits": "list: many reasons, comparing buyers; a product with several features to show",
+  "pace": "two or three shots a sentence, a hard cut on every beat",
+  "punch_zoom": true,
+  "size_changes": true,
+  "risk": "many close-ups mean more drift: every close row keeps the outline in frame, and the shot check is strict on them",
+  "rows": [
+   [
+    "MEDIUM",
+    "push-in",
+    "the promise: ACTOR A with the product"
+   ],
+   [
+    "CLOSE",
+    "slide",
+    "detail one"
+   ],
+   [
+    "TOP-DOWN",
+    "push down",
+    "detail two: the top in use"
+   ],
+   [
+    "LOW",
+    "slow push-in",
+    "detail three: its height or base"
+   ],
+   [
+    "CLOSE",
+    "slide",
+    "a hand using it, body in frame"
+   ],
+   [
+    "WIDE",
+    "dolly",
+    "ACTOR A in the room with it"
+   ],
+   [
+    "MEDIUM",
+    "arc",
+    "the product whole"
+   ],
+   [
+    "WIDE",
+    "locked-off",
+    "end frame: the product whole"
+   ]
+  ]
+ }
+}

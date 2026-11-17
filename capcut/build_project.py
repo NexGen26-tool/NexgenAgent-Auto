@@ -252,6 +252,8 @@ def on_timeline(spans, x):
 
 
 FORMATS = json.load(open(HERE + "/templates/formats.json", encoding="utf-8"))
+# how an ad is filmed and cut, picked per video (ad-brief-compiler section 2); its "transitions" override the format's
+STRUCTURES = {k: v for k, v in json.load(open(HERE + "/templates/structures.json", encoding="utf-8")).items() if k != "_about"}
 
 
 def line_map(t):
@@ -270,7 +272,8 @@ def vo_times(vo_text, spans, total, path=None, ends=None, lines=None):
     tension, turn, reason, doubt cleared, offer, CTA) put Line 2 on sentence 3, 6 sentences (older briefs) sentence
     n on Line n. "starts" holds every sentence's start for cuts named "s1".."s9". Some voices (Negen's default) pause
     under SENT_PAUSE between sentences; then a finer pass over the file finds them."""
-    sentences = [s for s in re.split(r"(?<=[.?!])\s+", vo_text.strip()) if s]
+    # a list is a script already split into its parts (a "pilot" timeline: the parts end at ; and , too)
+    sentences = list(vo_text) if isinstance(vo_text, list) else [s for s in re.split(r"(?<=[.?!])\s+", vo_text.strip()) if s]
     if len(sentences) < 5 or (not lines and len(sentences) < 6): return None
     # "ends" in the edit plan: where each sentence but the last ends in the voice file, in seconds, when the match
     # picked a comma pause (the voice can run two sentences together and pause at a comma instead)
@@ -539,8 +542,43 @@ def key_onsets(cfg, times, spans, vo_path, total, notes):
     cta = times["cta"]
     l5 = min(l5, cta - MIN_ON); l4 = min(l4, l5 - MIN_ON); l3 = min(l3, l4 - MIN_ON); l2 = min(l2, l3 - MIN_ON)
     out = dict(times)
+    # a numbered style (list) shows Line 3 as its number over the whole reason: the reason comes with its number
+    # (owner, Nov 17: the "2" stood alone for 1.2 s while the voice already said the reason)
+    if (typeset.style_for(cfg)[1] or {}).get("numbered"): l3b = l3 + 0.15
+    else: l3b = max(l3b, l3 + 0.4)
     out.update(line1=[0, l2], line2=l2, line3=[l3, l4], line4=[l4, l5], line5=[l5, cta],
-               line3b=min(max(l3b, l3 + 0.4), l4 - 0.5), timing="voice recogniser" if wt else "letter estimate")
+               line3b=min(l3b, l4 - 0.5), timing="voice recogniser" if wt else "letter estimate")
+    return out
+
+
+TEXT_GAP = 0.05  # one line leaves this long before the next comes in
+
+
+def trim_title(d, r, inner):
+    """Line 2, the animated title clip, has a fixed length (3.3 s) from the house edit. With each line timed to its own
+    words, Line 3 often comes in sooner; the type styles stack both in one place, so the title ran over Line 3 (owner,
+    Nov 17: "1" over "2", "It first" over "Blocks joined"). The title (and its inner draft) now ends when Line 3
+    starts. Then every pair of lines on screen at once is reported (TEXT-OVERLAP), Line 3's two halves excepted."""
+    seg = lambda role: role_seg(d, r, role)
+    c, a3 = seg("compound"), seg("line3a")["target_timerange"]["start"]
+    c0, cdur = c["target_timerange"]["start"], c["target_timerange"]["duration"]
+    new = min(cdur, a3 - us(TEXT_GAP) - c0)
+    if us(0.6) <= new < cdur:
+        c["target_timerange"]["duration"] = new; c["source_timerange"]["duration"] = new
+        if inner is not None:
+            inner["duration"] = new
+            for t in inner["tracks"]:
+                for s in t["segments"]:
+                    s["target_timerange"]["duration"] = min(s["target_timerange"]["duration"], new)
+                    if s.get("source_timerange"): s["source_timerange"]["duration"] = min(s["source_timerange"]["duration"], new)
+    rng = {k: (seg(k)["target_timerange"]["start"] / US, (seg(k)["target_timerange"]["start"] + seg(k)["target_timerange"]["duration"]) / US)
+           for k in ("line1", "compound", "line3a", "line3b", "line4", "line5", "cta")}
+    out, ks = [], list(rng)
+    for i, a in enumerate(ks):
+        for b in ks[i + 1:]:
+            if {a, b} == {"line3a", "line3b"}: continue
+            o = min(rng[a][1], rng[b][1]) - max(rng[a][0], rng[b][0])
+            if o > 0.1: out.append("TEXT-OVERLAP: %s and %s on screen together for %.1f s at %.1f s" % (a, b, o, max(rng[a][0], rng[b][0])))
     return out
 
 
@@ -667,8 +705,13 @@ def before_of(f, shots): return (shots or {}).get(os.path.basename(f), {}).get("
 def tension_of(cfg, times):
     """Where the before-state may (and must) play on the timeline: the tension sentence (s2), or from the first
     sentence when the hook itself states the problem (edit plan "problem_from": "s1"; owner, Nov 16: a problem hook
-    over our own product reads as ours being the problem)."""
+    over our own product reads as ours being the problem). An edit plan's "tension" [["s4", "s5"], ...] names the
+    windows itself (a script whose problem or doubt is not sentence 2); then a list of windows comes back."""
     st = (times or {}).get("starts") or []
+    win = (cfg.get("edit") or {}).get("tension")
+    if win and st:
+        at = lambda x: st[int(x[1:]) - 1] if int(x[1:]) <= len(st) else 99.0
+        return [(at(a), at(b)) for a, b in win]
     if len(st) <= 2: return None
     first = 0 if ((cfg.get("edit") or {}).get("problem_from") == "s1") else 1
     return (st[first], st[2])
@@ -689,7 +732,8 @@ def cuts_to_pieces(cuts, total, folder, shots=None, own=None, notes=None, pool=N
         end = cuts[i + 1][0] if i + 1 < len(cuts) else total
         f = find(c[1]); shown = end - c[0]; start = c[2]
         sh = (shots or {}).get(os.path.basename(f), {}); block = blocked(f, shots, own)
-        bef = before_of(f, shots); in_t = tension and tension[0] - 0.05 <= c[0] < tension[1] - 0.05
+        wins = tension if isinstance(tension, list) else ([tension] if tension else [])
+        bef = before_of(f, shots); in_t = any(w[0] - 0.05 <= c[0] < w[1] - 0.05 for w in wins)
         if bef is not None:  # the shot check marked where this video shows the before-state (no product)
             if in_t and not any(a <= start < b for a, b in bef) and notes is not None:
                 notes.append("NOT A BEFORE-STATE: %s at %.2f s plays under the tension sentence" % (os.path.basename(f)[-28:], start))
@@ -736,8 +780,92 @@ def add_transitions(d, segs, at_times, zooms):
     return missing
 
 
+# ------------------------------------------------------------------------------------------------ pilot card lists
+# A "pilot" timeline carries a script written elsewhere, word for word (the head-to-head week of 27/11/2026): its hook
+# overlay and a list of cards, each card mapped to the voice-over part it comes in with. capcut.json timeline:
+#   "pilot": {"parts": [hook VO, body VO 1, body VO 2, ...],          the script split at the writer's own numbering
+#             "cards": [{"text": ["line", "line 2"], "vo": 1}, ..., {"logo": true}]}
+# with "line1" [big, small, accent] = the hook overlay's own words. Each card comes on LEAD before the voice starts
+# its part and stays until the next card; the hook overlay stays until the first card; a {"logo": true} card shows
+# the brand logo alone (no words added) for CTA_HOLD after the voice. The cards' words are the writer's, not the
+# voice's, so they are not checked against the voice (no TEXT-VOICE). Every card is set in the style's Line 4 face.
+
+def pilot_cfg(cfg):
+    """A pilot timeline gets placeholder Lines 2-5 so the house edit can be filled; their clips are removed later."""
+    if not cfg.get("pilot"): return cfg
+    return dict(cfg, line2=["·", "·"], line3=["·", "·"], line4="·", line5=["·", "·"], cta="·")
+
+
+def pilot_times(cfg, spans, total, vo_path, ends=None):
+    """Where each part of a pilot script starts on the timeline: the pauses (vo_times on the parts), then the first
+    word of each part from the speech recogniser where it found the part (more exact at a ; or , joint)."""
+    parts = cfg["pilot"]["parts"]
+    times = vo_times(parts, spans, total, vo_path, ends, None)
+    if not times: return None
+    s = list(times["starts"])
+    if not ends:
+        wt = typeset.align_windows(vo_path, parts, find_ffmpeg())
+        for i in range(1, len(parts)):
+            if i in wt and wt[i]:
+                t = on_timeline(spans, wt[i][0])
+                if s[i - 1] + 0.3 < t < (s[i + 1] if i + 1 < len(s) else total) - 0.3: s[i] = t
+        times["timing"] = "voice recogniser" if wt else "pauses"
+    times["starts"] = s
+    return times
+
+
+def pilot_cards(d, r, cfg, times, total, spec, notes):
+    """Lay the pilot cards on the timeline (see above) as copies of Line 4 in the style; remove the house edit's
+    Lines 2-5 and CTA clips. Returns the sound-effect events [(time, kind)]."""
+    P = cfg["pilot"]; st = times["starts"]; T = total / US; voice_end = T - CTA_HOLD
+    cards = [c for c in P["cards"] if not c.get("logo")]; logo = any(c.get("logo") for c in P["cards"])
+    ons = []
+    for c in cards:
+        t = max(0.6, st[c["vo"]] - LEAD) if c["vo"] < len(st) else voice_end - MIN_ON
+        ons.append(max(t, ons[-1] + MIN_ON) if ons else t)
+    role_seg(d, r, "line1")["target_timerange"] = {"start": 0, "duration": us(ons[0] - TEXT_GAP)}
+    base = role_seg(d, r, "line4"); bm = mat(d, "texts", r["line4"])
+    track = next(t for t in d["tracks"] if base in t["segments"])
+    F = typeset.fonts(EFFECTS, notes) if spec else None
+    events = []
+    for k, c in enumerate(cards):
+        a = ons[k]
+        b = ons[k + 1] - TEXT_GAP if k + 1 < len(cards) else (voice_end + 0.1 if logo else T)
+        m = copy.deepcopy(bm); m["id"] = uid(); d["materials"]["texts"].append(m)
+        s = copy.deepcopy(base); s["id"] = uid(); s["material_id"] = m["id"]; refs = []
+        for x in s["extra_material_refs"]:
+            an = next((y for y in d["materials"]["material_animations"] if y["id"] == x), None)
+            if an is None: refs.append(x); continue
+            an = copy.deepcopy(an); an["id"] = uid(); d["materials"]["material_animations"].append(an); refs.append(an["id"])
+        s["extra_material_refs"] = refs
+        s["target_timerange"] = {"start": us(a), "duration": us(b) - us(a)}
+        track["segments"].append(s)
+        text = "\n".join(x.strip() for x in c["text"])  # the writer's words and case, as written
+        if spec:
+            s4 = spec["line4"]; f, z, col = s4["parts"][0]
+            parts = [(text, f, z, col)]
+            typeset.set_rich(m, parts, F, spec.get("finish", "shadow"), s4["align"], s4.get("spacing"))
+            typeset.place(s, parts, F, typeset_K(), s4["align"], s4["y"], s4["max_w"])
+        else:
+            set_text(m, [(text, 0)])
+        events.append((a, "card"))
+    for role in ("compound", "line3a", "line3b", "line4", "line5", "cta"):
+        sg = role_seg(d, r, role)
+        for t in d["tracks"]:
+            if sg in t["segments"]: t["segments"].remove(sg)
+    d["tracks"] = [t for t in d["tracks"] if t["segments"] or t["type"] not in ("text",)]
+    d["tracks"] = [t for t in d["tracks"] if t["segments"]]
+    track["segments"].sort(key=lambda s: s["target_timerange"]["start"])
+    if logo: events.append((voice_end + 0.1, "cta"))
+    return events
+
+
+def typeset_K(): return K
+
+
 class Timeline:
     def __init__(self, cfg, media_dir, shots=None, pool=(), slot=0):
+        cfg = pilot_cfg(cfg)
         self.name = cfg["name"]
         brand = BRANDS[cfg["brand"]]
         video = link_media(os.path.expanduser(cfg["video"]), media_dir)
@@ -806,7 +934,19 @@ class Timeline:
         # shot check: bad stretches (shots.json) cut out or replaced with clean footage from the spare / the group
         self.notes = None; self.times = None
         src =os.path.expanduser(cfg["video"]); ed = dict(cfg.get("edit") or {})
-        if not ed.get("times") and cfg.get("vo"):  # times from the script's sentences and the voice's own pauses
+        if cfg.get("pilot") and not ed.get("times"):  # a pilot card list: parts start where the voice starts them
+            ed["times"] = pilot_times(cfg, spans, total / US, self.vo, ed.get("ends"))
+            self.times = ed["times"]; self.text_notes = []
+            if self.times:
+                parts = cfg["pilot"]["parts"]; st = list(self.times["starts"]) + [total / US - CTA_HOLD]
+                rate = [len(re.sub(r"[^A-Za-z0-9]", "", x)) / max(st[i + 1] - st[i], 0.01) for i, x in enumerate(parts[:len(st) - 1])]
+                if len(rate) > 2: self.vo_cut = rate[-1] > 1.5 * sorted(rate[:-1])[len(rate[:-1]) // 2]
+                if ed.get("cuts"):
+                    st = ed["times"]["starts"]
+                    at = lambda x: x if not isinstance(x, str) else st[int(x[1:].split("+")[0]) - 1] + (float(x.split("+")[1]) if "+" in x else 0.0)
+                    ed["cuts"] = [[at(c[0])] + list(c[1:]) for c in ed["cuts"]]
+                    ed["transitions"] = [at(t) for t in ed.get("transitions", [])]
+        elif not ed.get("times") and cfg.get("vo"):  # times from the script's sentences and the voice's own pauses
             ed["times"] = vo_times(cfg["vo"], spans, total / US, self.vo, ed.get("ends"), line_map(cfg))
             self.times = ed["times"]; self.text_notes = []
             if self.times and "starts" in self.times:  # each line up with its own words (key_onsets)
@@ -822,12 +962,15 @@ class Timeline:
                 st = ed["times"]["starts"]
                 at = lambda x: x if not isinstance(x, str) else st[int(x[1]) - 1] + (float(x[3:]) if "+" in x else 0.0)
                 ed["cuts"] = [[at(c[0])] + list(c[1:]) for c in ed["cuts"]]
-                fmt = FORMATS.get(cfg.get("format", ""), {})  # a calm format (ritual) has no Slide Blur
+                fmt = dict(FORMATS.get(cfg.get("format", ""), {}))  # a calm format (ritual) has no Slide Blur
+                if "transitions" in STRUCTURES.get(cfg.get("structure", ""), {}):  # nor a follow or a tableau
+                    fmt["transitions"] = STRUCTURES[cfg["structure"]]["transitions"]
                 ed["transitions"] = [at(t) for t in ed.get("transitions", fmt.get("transitions", [ed["times"]["punch"]]))]
         if any(isinstance(c[0], str) for c in ed.get("cuts", [])):
             raise SystemExit("%s: could not find where each sentence of the voice-over starts. Give \"times\" by hand "
                              "in the edit plan (CLAUDE.md step 7)." % self.name)
-        if ed.get("times"): place_times(d, r, ed["times"], total)
+        if ed.get("times") and not cfg.get("pilot"): place_times(d, r, ed["times"], total)
+        self.text_overlaps = [] if cfg.get("pilot") else trim_title(d, r, inner)  # Line 2 leaves when Line 3 comes in (owner, Nov 17)
         if ed.get("cuts"):  # Claude's edit plan: footage chosen per sentence of the voice-over
             moved = []
             tens = tension_of(cfg, self.times)
@@ -848,16 +991,29 @@ class Timeline:
             pieces, self.notes = plan_footage(src, total / US, shots, pool)
             lay_footage(d, r, pieces, media_dir)
         self.style, spec = typeset.style_for(cfg)
+        if spec and cfg.get("pilot"):  # a pilot script's words keep the writer's case (no upper-casing by the style)
+            spec = copy.deepcopy(spec); spec["line1"].pop("case0", None)
         if spec:  # the type system: this ad's style instead of the one house look (references/typography.md)
             tn = []
             typeset.restyle(d, r, dict(cfg, _cta=cfg.get("cta") or brand["cta"]), spec, K, EFFECTS, mat, seg_of, tn, inner=inner)
             self.notes = (self.notes or []) + ["type: %s" % self.style] + tn
+        self.pilot_sfx = None
+        if cfg.get("pilot"):
+            if not self.times: raise SystemExit("%s: could not find where each part of the pilot script starts. Give "
+                                                "\"ends\" in the edit plan." % self.name)
+            pn = []; self.pilot_sfx = pilot_cards(d, r, cfg, self.times, total, spec, pn)
+            st = self.times["starts"]
+            self.notes = (self.notes or []) + pn + ["pilot cards: hook 0.00-%s, %s%s (%s)" % (
+                "%.2f" % self.pilot_sfx[0][0], ", ".join("%.2f" % t for t, k in self.pilot_sfx if k == "card"),
+                ", logo %.2f" % self.pilot_sfx[-1][0] if self.pilot_sfx[-1][1] == "cta" else "",
+                self.times.get("timing", "pauses"))]
         if getattr(self, "text_notes", None):
             self.notes = (self.notes or []) + ["text timing: %s" % (self.times or {}).get("timing", "-")] + self.text_notes
+        if getattr(self, "text_overlaps", None): self.notes = (self.notes or []) + self.text_overlaps
         add_vo(d, self.vo, spans)
         track = pick_music(brand, cfg, slot); self.music_name = track["name"] if track else "-"
         self.music = add_music(d, track) if track else None
-        self.sfx = add_sfx(d, sfx_events(d, r)) if cfg.get("sfx", True) else (0, [])
+        self.sfx = add_sfx(d, self.pilot_sfx if self.pilot_sfx is not None else sfx_events(d, r)) if cfg.get("sfx", True) else (0, [])
         self.d = d
 
     @staticmethod

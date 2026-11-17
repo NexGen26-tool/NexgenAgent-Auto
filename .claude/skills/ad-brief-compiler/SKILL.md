@@ -52,16 +52,62 @@ opening shot, and the brief keeps A02 a clear, long problem shot.
 
 Avoid hooks that depend on the order of two framings, such as "empty wall, then the product appears" or "macro first, then reveal the whole piece". The video model often plays these in reverse or blends them with a dissolve.
 
-### 2. Camera: moving, but the room stays readable
-Every scene row names ONE clear camera move, written first, that a real camera operator would make in that room:
-push-in, handheld follow of ACTOR A, dolly or parallax slide past a foreground object, orbit up to 45 degrees,
-short crane to eye level. Keep the storyboard panel's move when it is one of these.
+### 2. Shot structure: how the ad is filmed and cut, picked per script
+A video has a format (its argument, "Formats" below) and a shot structure (how it is filmed and cut). The structure
+is picked per video from what its script argues, from `capcut/templates/structures.json`, and written to the video's
+`"structure"` in `week.json` and on its timeline in `capcut.json` (owner, Nov 17: "dynamic, script + argument aligned
+scenes and shot decisions: wide, close, dolly, pushes, arc, top down", and "different kinds of structure across the
+test, depending on the script and the argument").
 
-- At least 5 of the 8 rows are eye-level medium or wide shots with ACTOR A and the product in the room; at most 2
-  close details (a part of the product named, a hand with its body placed).
-- Layered depth in medium and wide rows: something in the foreground, the product, the room behind.
-- No crash zooms, whip pans, top-down floor shots or extreme macros: they break the lived-in look.
-- Never two rows in a row with the same angle and move. Locked-off only on B04.
+| Key | Structure | What it is | Serves |
+|---|---|---|---|
+| argued | Argued cuts | each sentence its own size and move, the shot proving the sentence; the size changes at every cut | turn, myth, list, after: a problem, a turn, reasons to show |
+| follow | One-take follow | one continuous handheld moment, following ACTOR A to the product; wide flowing to close | story, ritual: a lived moment, first person |
+| tableau | Still-life tableaux | composed near-still frames, the product centred, ACTOR A stepping in and out, slow push-ins | gift, aspiration, a premium piece, an offer-led ad |
+| pov | First-person | the camera is ACTOR A's eyes; their hands from the bottom edge at table height | ritual, list, story: use and convenience |
+| match | Before/after match cuts | the same framing without, then with, the product; the match cut is the punchline | after, turn, myth: a visible change to the room |
+| montage | Detail montage | quick 1-1.5 s beats on details and uses, building to the whole | list: many reasons, comparing buyers |
+
+Pick it from the script, not by rotation: what does the argument need the viewer to see? A change to the room asks for
+match or argued; a lived moment for follow or pov; a gift or an aspiration for tableau; three reasons for montage or
+argued. An explore group uses at least two structures across V1-V3; an iterate group keeps the control's structure
+unless structure is its declared variable. Each structure's entry gives its 8 rows (A01-B04, `[size, move, what the
+row shows]`; "argued" has one map per format), its edit pace, its punchline zoom and transition, and the risk to write
+against.
+
+Every scene row starts with "SIZE / MOVE:", then what is in frame. Sizes: WIDE (the room, ACTOR A whole), MEDIUM
+(ACTOR A from the waist with the product), CLOSE (the part the sentence names), TOP-DOWN (straight down onto a surface
+and what sits on it), LOW (low angle, for height or presence). Moves: push-in, dolly-out, slide (along a part),
+parallax (past a foreground object), arc (30-45 degrees around the product), handheld follow (of ACTOR A), POV (the
+camera is ACTOR A's eyes), push down (top-down), locked-off (B04 only).
+
+The "argued" map, by sentence job (each format's version is in `structures.json`):
+
+| Sentence job | Size | Move | What it proves |
+|---|---|---|---|
+| Hook | MEDIUM on ACTOR A with the product; a problem hook: WIDE on the before-state | push-in or arc, moving from the first frame | who and where; stops the scroll |
+| Tension / before | WIDE | slow dolly-out, so the problem reads | the problem, with no product of ours |
+| Turn (punchline) | a different size from the row before | push-in on a hard cut | the product as the answer |
+| Reason / proof | CLOSE on the part the sentence names; TOP-DOWN for a top and what sits on it; LOW for height | slow slide or push | the fact itself, on screen |
+| Doubt cleared / fit / choice | WIDE with ACTOR A beside the product for scale | dolly or parallax | it fits the room and the person |
+| Offer | MEDIUM hero, ACTOR A in the room | arc around the product | the piece worth buying |
+| CTA (B04) | WIDE hero | locked-off | the end frame |
+
+In every structure:
+- Each row shows what its sentence says; fit the structure's row to the sentence (a reason about the top is
+  TOP-DOWN, a reason about the base is CLOSE).
+- Where the structure changes size at every cut (argued, match, montage), never two rows in a row share a size and a
+  move; B01 continues A04's action in a new size. In follow and tableau the size may flow or hold, but every row
+  still moves.
+- ACTOR A is in at least 4 of the 8 rows (in pov, their hands count): the lived-in look stays. Layered depth in
+  medium and wide rows: something in the foreground, the product, the room behind.
+- TOP-DOWN only over a surface the sentence names (a table top with the cup and book, a shelf with its bottles),
+  never over a floor with a hand in it (section 6).
+- CLOSE keeps where the part meets the rest in frame (sections 6 and 7): the outline is what drifts. A close row of a
+  sculptural product names the photo's outline again ("the same slab").
+- No crash zooms and no whip pans. Locked-off only on B04.
+- Keep a storyboard panel's staging (room, person, light); its move and size give way to the structure when they
+  differ.
 
 ### 3. Wide products stay inside the frame
 For long or wide products (TV stands, consoles, kitchen islands, sideboards, long wall panels), every wide shot must say "whole product inside the central 70% of the frame". The 9:16 crop otherwise cuts the ends and the AI check marks the video down.
@@ -144,8 +190,9 @@ things wrong (Oct 28: a third foot on the chair, a cupboard door swinging the wr
 
 ### 7. Organic and sculptural products
 Tree shelves, live-edge panels, wall sculptures and other organic shapes drift most in close-ups (a trunk turns into
-a pillar, a wide panel turns tall or into a thick box). For these keep at least 5 of the 8 rows medium or wide, name
-the part in frame for every close-up ("the trunk where it meets the bench"), and keep the product's orientation.
+a pillar, a wide panel turns tall or into a thick box). For these at most 3 of the 8 rows are CLOSE or TOP-DOWN
+(the reason rows of the shot map), each names the part in frame and where it meets the rest ("the trunk where it
+meets the bench"), and the product keeps its orientation. The edit keeps these shots short.
 
 ### 8. A problem line needs a picture of the problem
 A contrast argument is fine ("Most consoles are plain and say nothing"). What fails is the execution: on Oct 31 that
@@ -170,6 +217,13 @@ with identical blank props (rows of white books, cloned wine bottles), which rea
   of different colours and heights, some lying flat", "bottles of different shapes, glass colours and labels".
 - The standing direction (`references/video-direction.md`) says the same for every batch; the shot check cuts any
   glide, any jump of place and any clone props (CLAUDE.md 6b).
+- The product's name in the rows copies the outline of the product photo, not its category: what the silhouette is,
+  how many parts, what the edge and the base look like, and what it is not ("ONE smooth rounded hardwood slab with a
+  single long tapered arm to the right, a thick smooth rounded edge, on ONE low block base; no bark, no pale rim, no
+  cracks, no holes"). Category words such as "live-edge", "natural edge" or "organic" let the model draw the generic
+  piece of that category, and it drifts there after the first shot (owner, Nov 17: the coffee table matched the photo
+  for 2 s, then became a live-edge slab with bark, knot holes and cracks, lobed, then long on two blocks). Name the
+  outline in the hook, in every row that shows the whole piece, and again in close-ups ("the same slab").
 
 ---
 
@@ -245,7 +299,7 @@ format's key into the video's `"format"` in `week.json` and on its timeline in `
 | myth | Objection, then truth | 1 the belief said plainly ("Solid wood in a small hall? Too bulky."), 2 what people settle for (before-state), 3 the truth, 4 the proof, 5 the fit answer, 6 offer, 7 CTA | 3 | PD | a strong barrier in the persona |
 | after | After first | 1 the finished room ("This used to be my emptiest wall."), 2 the before (before-state), 3 the change, 4 what made the difference, 5 the fit answer, 6 offer, 7 CTA | 3 | BA | unaware buyers, big visual change |
 | ritual | A day with it | 1 a morning moment, 2 an evening moment, 3 what it is in my day, 4 the reason, 5 the doubt cleared, 6 offer, 7 CTA | 3 | UG | comfort and enjoyment desires |
-| gift | For someone | 1 who it is for ("For the friend with books on every floor."), 2 why it lands for them, 3 the one they would not buy themselves, 4 the reason, 5 the choice (size, finish), 6 offer, 7 CTA | 3 | PD | Nov-Dec, gift buyers |
+| gift | For someone | 1 who it is for, said to the giver ("Know someone who reads in the same chair every night?"), 2 why they would never buy it themselves, 3 so the viewer gives it (punchline), 4 what it changes for them every day, 5 the choice (size, finish), 6 offer, 7 CTA | 3 | PD | Nov-Dec, gift buyers |
 
 - Every format keeps the rules of the VO SCRIPT section below (40-46 words, spoken, an argument, page facts only);
   only the jobs and their order change. "list" has 6 sentences, every other format 7.
@@ -253,10 +307,23 @@ format's key into the video's `"format"` in `week.json` and on its timeline in `
   in A02. Story, list, ritual and gift have no before-state: their A02 shows the persona's situation with the
   product, and `"before"` in the shot check stays `[]` unless a stretch plays under a problem sentence.
 - "after" opens on the finished room with the product, so its edit plan sets `"line1_end": "s2"`.
+- "gift" speaks to the giver, who is the one watching: the person they picture (1), why that person would never buy
+  it themselves (2), so the viewer gives it (3), and what it changes for that person every day (4). "Know someone who
+  reads in the same chair every night? She'd never buy a side table just for herself. So be the one who gives it.
+  Now her tea sits within reach." holds. Two failures (owner, Nov 17): "...never buy one for herself, so the grain
+  wraps around the twist" (a product feature is not a reason to give), and "...never buy one for herself, so it's the
+  gift she'll use every night" (not buying it herself is a reason for the giver to act, not a reason she will use
+  it: two ideas glued with "so"). The hook names the person, not a problem: a gift ad has no before-state footage,
+  so "no place to set her tea" would play over a shot of the table already beside her.
 - "list" pays its promise: sentence 1 promises something about the buyer's life ("Three reasons my mornings slowed
   down"), and each of the three reasons answers that promise in the buyer's own experience, with a product fact as its
   cause ("My coffee has a wide, warm place to land"). Three features in a row do not pay a promise (owner, Nov 16: the
   hook opened on three reasons, then the body listed the table's features, unrelated to it).
+  Test each reason by saying the promise with "because" in front of it: "My mornings slowed down because I sit down
+  with my coffee instead of gulping it" holds; "...because I trace the grain while it cools" does not (owner, Nov 17:
+  a sensory detail is not a reason). A reason is a change in what the buyer does, which the product causes and the
+  persona wants (sit down instead of rushing, keep the whole ritual in one place, leave the phone), and it has a shot
+  that shows it.
 - The scene rows follow the format's sentences in order (SCENES below): each row shows what its sentence says.
 - A new format is added in both places at once: a row here and a row in `capcut/templates/formats.json`.
 
@@ -304,6 +371,17 @@ creative team's Oct 31 copy) move from a tension to a turn to a reason, then cle
 | 6 | Offer or scarcity | the brand's verified offer and scarcity line (`brand/brands.json`), or a proof line if the brand has none | "Free delivery, made to order in limited runs." |
 | 7 | Call to action | the CTA | "Choose your width at Spry Interior." |
 
+- **The chain test, on every script before the go-ahead** (owner, Nov 17: three scripts of one week broke here).
+  Join each sentence to the next with the word that really connects them ("so", "because", "but", "that's why",
+  "and now") and read the six joins aloud. A join that is false or needs a stretch is a broken script: rewrite the
+  later sentence, never the joining word. Write the joined chain under the script in `briefs.md` and as `"chain"` in
+  the brief (one line: "reads every night -> but would never buy one -> so you give it -> so her tea sits within
+  reach -> in her size -> free shipping -> explore"), and check three things on it:
+  - every sentence answers the one before; a sentence that only adds a picture ("Every night, same chair, same
+    book.") or a feature ("The grain wraps the twist.") is not a link;
+  - the "so" claims are true: the earlier sentence is the cause of the later one, not just next to it;
+  - each sentence fits the footage it will play over: a problem said over a shot that shows the product already
+    solving it is a contradiction (formats without a before-state never open on a problem).
 - 40-46 words, about 16-18 s at 2.5 words a second (the batch uses "Keep speed"; the CapCut build speeds the voice to
   1.08x and shortens its pauses, about 15-16 s).
 - No sentence only names a feature: a feature is the reason for the turn (4) or the answer to a doubt (5).
@@ -340,15 +418,17 @@ Each line 2-6 words, buyer-facing, no generic luxury words, no claims the produc
 - Job: choose only from Negen's dropdown: Hook, Why it matters, Detail, Bridge, Proof, In use, Payoff, End frame.
   Default mapping: A01 Hook, A02 Why it matters, A03 Detail, A04 Bridge, B01 Proof, B02 In use, B03 Payoff, B04 End frame.
 - Seconds: default 2, 3, 3, 2, 3, 2, 3, 2 (total 20). The total must be exactly 20.
-- Camera direction: one or two sentences, under about 200 characters. Start with the camera move. Then what is in frame: the room, ACTOR A and what they do with the product (body placed), or "No person." if none.
+- Camera direction: one or two sentences, under about 200 characters. Start with "SIZE / MOVE:" from the shot map
+  (section 2, from the video's shot structure), for example "CLOSE / slow slide:". Then what is in frame: the room, ACTOR A and what they do with the
+  product (body placed), or "No person." if none.
 - A04 ends mid-action; B01 continues the same action from the same state.
 - Each row shows what the VO is saying at that moment (the shelves when it says "open shelves"); write the rows
   from the VO sentences, not the other way round. For 7 sentences: A01 sentence 1, A02 sentence 2, A03 sentence 3
   (the punchline), A04 + B01 sentence 4, B02 sentence 5, B03 sentence 6 (the product whole, in use), B04 end frame;
   for "list": A01 promise, A02 reason one (the punchline), A03 + A04 reason two, B01 + B02 reason three, B03 offer,
   B04 end frame. The Job dropdown follows what each row now does (a reason row is Proof or Detail).
-- Camera and pacing follow the format's rhythm (`"pace"` in `capcut/templates/formats.json`): list cuts hard on
-  every sentence, ritual takes one slow move per row, story is handheld.
+- Size, move and pacing follow the video's shot structure (`capcut/templates/structures.json`: its rows and `"pace"`),
+  fitted to the format's sentences.
 - In a format with a before-state, A02 is the tension: a hard cut to the before-state in another part of the home (a bare hallway wall, bottles
   crowding a counter), and the row says "no <product>, no furniture against this wall" so the model does not draw
   ours or a look-alike. It is never a stand-in that resembles our product.
@@ -368,8 +448,10 @@ B04 | End frame | 2 | <camera direction>
 - Seconds add up to 20: YES/NO
 - Last on-screen line ends by 17 s: YES/NO
 - Offer is verified or blank: YES/NO
-- Every row starts with a camera move, only B04 locked-off: YES/NO
-- At least 5 rows are eye-level medium or wide with ACTOR A in the lived-in room; at most 2 close details: YES/NO
+- The video's shot structure is picked from its script and written in `"structure"`; an explore group uses at least two: YES/NO
+- Every row starts with "SIZE / MOVE:" from that structure, fitted to its sentence; only B04 locked-off: YES/NO
+- argued, match, montage: the size changes at every row; every structure: ACTOR A (pov: their hands) in at least 4 rows: YES/NO
+- Every reason row shows the part its sentence names (CLOSE, TOP-DOWN or LOW): YES/NO
 - Wide product kept inside the central 70%: YES/NO/N/A
 - Every row with a hand says where ACTOR A's body is; no hands from below to wall height: YES/NO
 - Simple poses only: standing, walking, sitting upright with both feet on the floor; nothing opened on camera: YES/NO

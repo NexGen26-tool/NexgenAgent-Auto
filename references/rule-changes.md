@@ -2,6 +2,147 @@
 
 Changes to how the fast lane works, newest first: what changed, why, and what it was tested on.
 
+## 2026-11-17 (owner) - Shot structures, picked per script
+
+**Why:** the owner, on the shot map below: "consider this as one of the structure (or format) of the ad creative. We
+need different kind of structure and format across the test, depending on the script and the argument of that
+specific one."
+
+**New rule:**
+- **`capcut/templates/structures.json`:** six shot structures, each with its 8 scene rows, edit pace, punchline zoom,
+  transition and the risk to write against:
+  - argued: the shot map below, one per format;
+  - follow: a one-take handheld follow;
+  - tableau: still-life tableaux;
+  - pov: first-person;
+  - match: before/after match cuts;
+  - montage: a detail montage.
+- **`ad-brief-compiler` section 2:** each video's structure is picked from what its script argues and written as
+  `"structure"` in `week.json` and `capcut.json`. An explore group uses at least two; an iterate group keeps the
+  control's unless structure is the variable.
+- **`formats.json`:** the argued maps moved from here to `structures.json`. The format is the argument; the structure
+  is the camera and the edit.
+- **CLAUDE.md:** steps 1, 3, the go-ahead table and step 7 carry the structure.
+- **The build:** a structure's `"transitions"` overrides the format's (follow and tableau have no Slide Blur).
+- **`plan_sheet.py`:** prints SAME when an explore group films all its videos in one structure, and CHECK for an
+  unknown structure.
+- **`cut_sheet.py`:** prints SAME SIZE only for structures that change size at every cut.
+
+## 2026-11-17 (owner) - Shots chosen by the argument: the shot map
+
+**Why:** the owner wants dynamic shots tied to the script: "dynamic and script + argument aligned scenes and shot
+decisions. Wide, close, camera movements like dolly, pushes, arc, top down". The Oct 28 rule had several limits:
+- most rows eye-level medium or wide;
+- at most two close details;
+- no top-down shots.
+
+It kept the lived-in look after the hand-led demos of Oct 28, but the rows looked alike, and the shot under a
+sentence often showed the room instead of what the sentence argued.
+
+**New rule:**
+- **`ad-brief-compiler` section 2 is now the shot map.** Each sentence's job picks its size and move:
+  - hook: a moving MEDIUM on ACTOR A with the product (a problem hook: a WIDE on the before-state);
+  - tension: a WIDE dolly-out;
+  - punchline: a hard cut to a new size;
+  - reason: a CLOSE, TOP-DOWN or LOW on the part named;
+  - fit: a WIDE dolly or parallax with ACTOR A;
+  - offer: a MEDIUM arc;
+  - end frame: a locked-off WIDE.
+- **Row format:** every row starts with "SIZE / MOVE:".
+- **Limits:**
+  - the size changes at every row;
+  - ACTOR A is in at least 4 rows;
+  - top-down only over a surface the sentence names;
+  - close-ups keep the outline in frame;
+  - no crash zooms or whip pans.
+- **Sculptural products** (section 7): at most 3 close or top-down rows, each naming where the part meets the rest
+  (was: at least 5 medium or wide).
+- **`capcut/templates/formats.json`:** each format has its map (`"shots"`, rows A01-B04 as [size, move, job]).
+- **`references/video-direction.md`:** "mostly eye-level medium and wide shots" is replaced by "each shot takes the
+  size and camera move its scene row names and moves from its first frame".
+- **`capcut/cut_sheet.py`:** each cut's row shows its scene row and size, and SAME SIZE is printed where two cuts in
+  a row repeat a size.
+- **`references/storyboard-camera-rule.md`** is updated with the history.
+
+**Watch:** close-ups drift most on sculptural products, so the owner's remake count on close-up drift is tracked
+(`references/improvement-plan.md`, change 2b).
+
+## 2026-11-17 (owner, the 13/11 set, Within Reach V2) - Every script passes the chain test before the go-ahead
+
+**Why:** three scripts of one week broke their own argument (V3 "I trace the grain", V8 twice). V8's second script
+still glued two ideas with "so" ("She'd never buy a side table for herself. So it's the gift she'll use every single
+night": not buying it herself is a reason for the giver to act, not a reason she will use it), spoke about the woman
+instead of to the giver who watches, filled a slot with a picture ("Every night, same chair, same book"), and opened
+on a problem (no place for her tea) over footage where the table already stands beside her. The owner: do not make
+the same coherence mistake in future batches.
+
+**New rule:**
+- `ad-brief-compiler` (VO SCRIPT): the chain test on every script. Join each sentence to the next with the word that
+  really connects them and read the joins; a false or stretched join, a picture-only or feature-only sentence, or a
+  problem said over footage of the product already solving it is rewritten. The joined chain is written under the
+  script in `briefs.md` and as `"chain"` in the brief.
+- `ad-brief-compiler` (Formats, "gift"): sentence jobs rewritten to speak to the giver: 1 the person they picture,
+  2 why that person would never buy it, 3 so you give it (punchline), 4 what it changes for them every day. The
+  example that wrongly passed ("...so it's the gift she'll use every single night") is now the failure example.
+- CLAUDE.md step 3 and the go-ahead: each brief passes the chain test, and the go-ahead table shows each video's chain
+  in one line, so the owner sees the argument before any spend.
+- V8 re-voiced: "Know someone who reads in the same chair every night? She'd never buy a side table just for herself.
+  So be the one who gives it. Now her tea sits within reach. Four sizes, four finishes. Free shipping, handcrafted in
+  small batches. Explore the collection." (62 credits, about $0.010).
+
+## 2026-11-17 (owner) - The built-in browser is the only browser
+
+**Why:** CLAUDE.md allowed "the built-in browser, or Claude in Chrome". With two Chrome browsers connected, the
+session stopped to ask which Chrome to use before opening Negen, a stop the route does not have.
+
+**New rule (CLAUDE.md, "Tools you use"):** every page of the week (Negen, the tracking sheet) is driven in the Claude
+desktop app's built-in browser (the browser pane) only, never in Claude in Chrome. `/fastlane` already opens Negen
+there; the person signs in to Negen in that pane once.
+
+## 2026-11-17 (owner, the 13/11 set, V7-V9) - One line on screen at a time; a gift ad's steps follow; one actor; false fades
+
+**Why:** V7-V9 text "all messed up": Line 2 (the animated title) has a fixed 3.3 s from the house edit, and with each
+line now on its own words Line 3 came in while it was still up; the type styles put both in one place, so "1" sat on
+"2" and "It first" on "Blocks joined". The payoff kept the house edit's capital mid-sentence ("Your cup has A home").
+V8's gift argument broke: no place for tea, then "they'd never buy this for themselves", then "because the grain wraps
+every twist". V7's hook showed the table gliding along the sofa. V9 cut to its spare, played by another man. And the
+shot sheets had marked slow push-ins on end shots as crossfades, which starved V8 of footage (an end shot frozen at
+0.08x).
+
+**What changed:**
+- `capcut/build_project.py` trim_title: Line 2's title clip (and its inner draft) ends 0.05 s before Line 3 comes in;
+  TEXT-OVERLAP is printed for any two lines on screen together (Line 3's halves excepted).
+- `capcut/typeset.py` in_sentence: in the type styles the payoff keeps the sentence's case ("one for herself"); "I",
+  acronyms and store names keep their capitals. The house look keeps the capital.
+- `ad-brief-compiler` (Formats, "gift"): each step answers the one before: the need, why they won't buy it themselves,
+  so why this is the right gift; a product feature is not a reason to give.
+- Shot check: a run of FADE labels over near-identical frames (a slow push-in) is not a crossfade: measure the frame
+  change (a crossfade is a burst; a push-in a steady trickle) and correct `"fades"` by hand. A global fix in
+  `shot_sheet.py` was tried and dropped: it also lost real crossfades.
+
+**Applied to:** V7 (hook now the man setting his phone down, the table still), V8 (re-voiced: "For the reader with no
+place to set her tea. Every night, same chair, same book. She'd never buy a side table for herself. So it's the gift
+she'll use every single night. ..."), V9 (one man), all three rebuilt with --replace.
+
+## 2026-11-17 (owner, the 13/11 set, V3) - A list's reasons pass the "because" test; the product named by its outline
+
+**Why:** V3's list "Three reasons my mornings slowed down" had "I trace the grain while it cools" as reason 2: a
+sensory detail, not a reason the morning slowed. And V3's coffee table matched the photo for 2 s, then turned into a
+live-edge slab with a pale rim, bark, knot holes and cracks, then lobed, then long on two blocks: the rows named it
+"one freeform hardwood slab top with thick natural edges", category words that let the model draw a generic slab.
+
+**What changed:**
+- `ad-brief-compiler` (Formats, "list"): each reason passes "<promise> because <reason>" and is a change in what the
+  buyer does, caused by the product, wanted by the persona, with a shot that shows it.
+- `ad-brief-compiler` 9: the product's name in the rows copies the photo's outline (silhouette, parts, edge, base, and
+  what it is not), never only category words ("live-edge", "natural edge", "organic"); repeated in close-ups.
+- `capcut/build_project.py` key_onsets and `capcut/typeset.py`: in a numbered style (list) Line 3's reason comes with its
+  number, not with its second half (the "2" stood alone for 1.2 s), and its two halves sit on two lines.
+
+**Applied to:** V3 of the 13/11 set, made again in Negen ("Nov17 - ... V3 R2") with the script "I sit down with my
+coffee instead of gulping it / There's room for breakfast, a book, a candle / And that grain beats scrolling my phone"
+and rows that name the slab's outline.
+
 ## 2026-11-16 (owner, the 13/11 set) - A type system, text on its words, the product planted, real props, the store's name
 
 **Why:** the owner on the 13/11 set: the text overlays "follow too strictly with my very first example. Every video use

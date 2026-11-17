@@ -91,7 +91,8 @@ Updates: `/fastlane-update` pulls the latest version and runs the check again.
 
 ## Tools you use
 
-- A browser you can drive: the Claude desktop app's built-in browser, or Claude in Chrome. Negen pages are read
+- The browser: the Claude desktop app's built-in browser (its browser pane), and only that one. Never Claude in
+  Chrome or another browser for Negen, the sheet or any page of the week (owner, Nov 17). Negen pages are read
   with get_page_text; forms are filled by running the routines in `negen/` with the javascript tool. Load each
   routine once per session instead of pasting it every call: on any Negen page run
   `localStorage.setItem('fl_<name>', String.raw`<file contents>`)`, then call it with
@@ -167,7 +168,7 @@ Write `week.json`:
 `{"week": "...", "name": "<output name>", "groups": [{"store": "etw|spry", "product": "...", "sku": "...", "pid": "...", "angle": "...",
 "persona": "", "mode": "explore|iterate", "variable": "first run|<what changes>", "control": "<codified name>|",
 "voice": "", "unlit": "", "storyboard_batch": "", "poster": "", "videos": [{"variant": "V1", "batch_name": "", "batch_id": "",
-"format": "turn|story|list|myth|after|ritual|gift", "brief": {}, "awareness": "TOF|MOF|BOF", "hook_type": "", "code": "",
+"format": "turn|story|list|myth|after|ritual|gift", "structure": "argued|follow|tableau|pov|match|montage", "brief": {}, "awareness": "TOF|MOF|BOF", "hook_type": "", "code": "",
 "name": "", "file": ""}, ...]}]}`. Persona codes are the sheet's Persona dropdown
 (e.g. TBS-01). Find the product id (`pid`): on a New batch page type the SKU into the product search and
 read the value of the matching `input[name=products]` checkbox.
@@ -191,15 +192,21 @@ the product > Details.
 group, V1-V3, for the group's persona and angle, by its mode: explore = three formats sharing only the product truth,
 the offer line and the CTA; iterate = the control's body with the declared variable changed, the same from sentence 2
 on, and three different hooks. Each brief carries its own voice-over script (`"vo"`): an argument of 40-46 words in its format's
-sentences (7, or 6 for "list"; never a feature list), and scene rows written from those sentences in order, keeping
-each storyboard panel's staging (the room, the person living in it, framing, light); in a format with a before-state
+sentences (7, or 6 for "list"; never a feature list) that passes the skill's chain test (each sentence joined to
+the next by the word that really connects them, "so", "because", "but"; a false or stretched join, a sentence that
+only adds a picture or a feature, or a problem said over footage that already shows the product, means rewrite it;
+the joined chain goes in `briefs.md` and the brief's `"chain"`), and scene rows written from those sentences in order, keeping
+each storyboard panel's staging (the room, the person living in it, light), with each row's shot size and camera move
+taken from the video's shot structure, picked from its script (skill section 2, `capcut/templates/structures.json`:
+argued, follow, tableau, pov, match, montage; an explore group uses at least two) and fitted to its sentence
+("SIZE / MOVE:" first); in a format with a before-state
 (turn, myth, after) A02 shows it without our product, and the punchline opens on a hard cut. The offer and scarcity lines come from
 `brand/brands.json` (`offer`, `scarcity`), set by the owner; nothing else counts as an offer. Write them straight into
 `week.json` and `work/<week>/briefs.md` with the file tools, no throwaway scripts. Do not ask about a draft plan while
 the storyboards run; finish the briefs first.
 
 **The go-ahead (the one stop before spending).** Show, per group, its line (persona, angle, mode, variable, control)
-and one short table (V1-V3: format, on-screen hook, who is on screen, delivery), then a single line with the batch names (checked against the naming
+and one short table (V1-V3: format, shot structure, on-screen hook, the chain in one line, who is on screen, delivery), then a single line with the batch names (checked against the naming
 rule by you, not by the person), time and cost. Full shot lists stay in `briefs.md`, linked, not pasted. Then one
 popup with a question per group: "Chạy cả 3 video (Khuyên dùng)", "Sửa hook", "Đổi angle, mode hoặc variable"; a fix they type goes in
 "Other". Start the approved groups while you fix the others.
@@ -273,7 +280,7 @@ Mark the whole stretch, frame to frame; judge the spares too, they are the repla
 **7. CapCut.** Write `work/<week>/capcut.json` (format: `capcut/example.json`) with `"project": "<Mon DD> - <output
 name>"` and `"media": "<Mon DD> <output name>"` (ask for the name if `week.json` has none), one timeline per video,
 named by the codified name without the date, with `"group": "<SKU>"` (the V1-V3 of a group share footage
-for replacements; older weeks used "<SKU> <angle>"), `"format"` (the video's) and `"mode"` (the group's) from
+for replacements; older weeks used "<SKU> <angle>"), `"format"` and `"structure"` (the video's) and `"mode"` (the group's) from
 `week.json`, turning each brief's on-screen lines into the house edit:
 - `line1` [big, small, accent]: the hook split into a short subject (2-4 words), the linking words, and the last
   1-3 words that carry the tension (shown in orange italic). No trailing period; a "?" is fine.
@@ -327,8 +334,8 @@ size if a batch has two). Put the script on the timeline as `"vo"` and give it a
 - `"cuts"` `[[when, video, source s, zoom?], ...]`, `when` = `"s3"` (sentence 3 starts) or `"s3+1.4"` (1.4 s into
   it): for each sentence a clean shot that shows what is said (shelves when it says shelves), from the video, its
   spare or the group's other videos, never a bad stretch; the punchline (`"s3"`) starts on a hard cut to a different
-  shot than the opening, zoom 1.15 where the format's `"punch_zoom"` is true. The edit follows the format's
-  `"pace"`: list cuts on every sentence, ritual holds one slow shot a sentence, story stays handheld; so a group's three
+  shot than the opening, zoom 1.15 where the structure's `"punch_zoom"` is true (the format's when the structure has none). The edit follows the video's shot structure
+  (`"pace"` in `capcut/templates/structures.json`; the format's `"pace"` when it has none): argued and montage cut on every sentence, follow and tableau hold long shots, pov cuts on the hand actions; so a group's three
   timelines never cut alike. In formats with a before-state, the tension (`"s2"`) and any sentence that states a problem get a shot of the problem (the before-state
   or a stand-in), never a shot of our product (ad-brief-compiler, 8). That holds for the hook too: Negen starts
   PART A from the product picture, so a hook that states a problem (most turn and myth hooks) opens on before-state
@@ -368,4 +375,5 @@ times (start/finish of each step) and any problem to `log.md` too.
 
 `references/negen-tool.md` (how Negen works, the settings that produced approved videos),
 `references/lessons.md` (what works and what fails), `references/time-per-video.md`,
-`references/storyboard-camera-rule.md`.
+`references/storyboard-camera-rule.md`, `references/improvement-plan.md` (how the lane gets closer to the main lane,
+week by week).
