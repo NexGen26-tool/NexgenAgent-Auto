@@ -7,7 +7,7 @@
     "logo_scale": 0.425,
     "cta": "Explore the Collection",
     "voice": "Evan",
-    "voices": {"man": "Evan"},
+    "voices": {"woman": "Dawn", "man": "Evan"},
     "name": "ET Woodcrafts",
     "offer": {
       "line": "Free shipping",

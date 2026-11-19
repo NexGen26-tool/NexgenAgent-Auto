@@ -41,6 +41,18 @@ plan, plan check and build 40, log 10). The steps below are the route, and a pro
 - New batches after the go-ahead only when a group has no clean shot left for a sentence; that is a spend, so ask.
 - Quality is caught before saving, at the plan check (step 7), not after the owner watches.
 
+## How to work (owner, Nov 18: "slow, cost too much and bugs all the time")
+
+- Deliver first. A fix the owner asked for (a voice, a line, a cut) goes into CapCut the same hour. Tool or rule changes
+  come after it, never instead of it; a fix that only exists in a folder is not delivered.
+- One video first. Every new step (a routine, a script change, a remake, a review) runs on one video and is checked
+  before it runs on the rest.
+- Estimate before spending. Before anything that costs Negen credits or a lot of usage (re-voices, remakes, reviews by
+  agents), give the owner one line: what, how many, the cost, and wait for a yes.
+- Start long steps together: Negen batches, downloads and reviews run at the same time, not one after another.
+- Calibrate to the owner early: ask for one example of the owner's own judgement before building a check around it.
+- Short, plain messages. What is NOT done goes first.
+
 ## Setup (first install, or when something is missing)
 
 This repo is the NexGen team's own tool. `setup_check.py` only checks the computer, installs the Python package
@@ -176,7 +188,8 @@ Then run `python brand/pick_cast.py work/<week>`: it gives every video its perso
 from `brand/cast.json`, matched to the group's persona (the casting band and homes come from the team's purchaser
 data), mixing relatable and aspirational, three different people per group, nobody from last week. The briefs use
 that person as ACTOR A. It also sets each video's `"voice"` from the person's gender (`"voices"` in
-`brand/brands.json`: Spry has Dawn for a woman, Evan for a man), so the voice matches who is on screen. To change who
+`brand/brands.json`: Spry has Dawn for a woman, Evan for a man; ETW the same), so the voice matches who is on screen: a woman on screen is voiced by a woman, a man
+by a man, never otherwise (owner, Nov 18); pick_cast.py stops when the brand has no voice for that gender. To change who
 appears, edit `brand/cast.json`, not the briefs.
 
 **2. Storyboards** (about 5-7 minutes, one batch can hold all 4 products):
@@ -273,8 +286,12 @@ has none): the build plays only those stretches under the tension sentence and n
 - a shape change between shots of one video: compare the hook with the body, not only each frame with the photo;
 - cloned props: rows of identical blank white books, wine bottles that are copies of each other (same shape, glass
   and label), cups or vases repeated as identical copies;
-- a different person playing the video's ACTOR A (another face, hair or clothes), counted across the video and its
-  spare: one video shows one person.
+- a different person playing the video's ACTOR A (another face, hair, glasses or clothes), counted across the video
+  and its spare: one video shows one person, two is a ban. Compare faces at full size against the cast's `"who"`,
+  not on the small sheet tiles (Nov 18: a younger man with no glasses took over desk V3 from 8.8 s);
+- a drawer, door or lid that opens or closes by itself, with no hand moving it (Nov 18, desk V3);
+- a shape or look word in the script that the product photo does not show (the page's title said "curved" on
+  straight blocks): rewrite the line.
 Mark the whole stretch, frame to frame; judge the spares too, they are the replacement footage. A video with
 `"checked": false` is used as it is. Do not ask the person about each stretch; list what was cut in `log.md`.
 
@@ -342,7 +359,9 @@ size if a batch has two). Put the script on the timeline as `"vo"` and give it a
   PART A from the product picture, so a hook that states a problem (most turn and myth hooks) opens on before-state
   footage (the video's or its spare's A02, or another variant's before-state shot with no person), never on the
   opening shot, with `"problem_from": "s1"` in the edit block so the build allows the before-state from sentence 1.
-  Look at the shot sheets to pick them. A shot is never run on into a bad stretch or the video's
+  Look at the shot sheets to pick them. Mark the group's best empty product shot (the piece in its best room, no
+  person, passed) `"hero": true` in `catalog.json`: the build puts it on the punchline and the end card (owner's V8,
+  Nov 19); close-ups and empty product shots may come from any take of the SKU. A shot is never run on into a bad stretch or the video's
   next generated part (it would flash other footage): when the clean footage runs out the build fills the rest of
   the sentence itself with clean footage of the same scene (the video and its spare first, then the group's other
   videos outside their person; the before-state only from the before-state) and prints each fill; a planned shot that
@@ -355,21 +374,29 @@ videos of an explore group share them or a format, or when the hooks of an itera
 them new), CHECK for a timeline without a known `"format"`, each timeline's sentence lengths (a "CHECK" means a sentence plays too fast or too slow for its words: the
 voice ran two sentences together, so give `"ends"`), the clean stretches of every video, and makes one sheet per group
 in `work/<week>/plan/` with every frame each timeline will actually show, every 0.6 s. Look at every frame for the
-bad list of step 6b, hands and feet above all. Then run `python capcut/text_preview.py work/<week>/capcut.json`: every moment the on-screen text changes, drawn over its frame in `work/<week>/plan/text/`. Look at each for text over a face or the product's defining part, an accent lost in the wood, a line too small or crowding the edge (`references/typography.md`, "The text preview"); fix the style's place or the words and preview again. Then run `python capcut/cut_sheet.py work/<week>/capcut.json`: the
+bad list of step 6b, hands and feet above all. Then look at `work/<week>/plan/text/` (written by every build: one tile per shot under each text, so a line that crosses a cut is judged on every shot it covers; the owner's design is `references/typography.md`, "The owner's text design"). Look at each tile for text over a face or the product's defining part, an accent lost in the wood, a line too small or crowding the edge (`references/typography.md`, "The text preview"); fix the style's place or the words and preview again. Then run `python capcut/cut_sheet.py work/<week>/capcut.json`: the
 first and last frames of every cut, 0.1 s apart, in `work/<week>/plan/cuts/`; no crossfade may show at a cut, and a
 row marked OTHER VARIANT shows the product only, and every row shows what its sentence says, with the sentence's
 feeling. A REPEAT from the plan check means an on-screen line reuses the last weeks' words: write it new. Anything bad: add the stretch to `shots.json`, pick another shot, run
 it again. When the build or the plan sheet says the voice-over is cut off (its last sentence plays far too fast), make
 a new voice-over in Negen (Review > the video > "New voice-over for video v1", pick the voice, Write my own, Keep
 speed; "Make voice-over again" repeats the old voice at once and costs a voice-over), export and download the batch
-again; the build takes the new file and its voice-over by itself. Save only when the sheets are clean and the build reports no bad stretch used.
+again; the build takes the new file and its voice-over by itself. **The fundamentals gate (before every save).** The dry run also writes `work/<week>/qc/`: one sheet per
+timeline with every shot of the final cut at full phone size (first, middle, last frame), the product photo and the
+cast. Every shot is judged against the reality tests in `references/fundamentals.md` (the product stays one solid
+thing; nothing moves without a hand; one person, the same person; possible bodies; the picture and the voice match
+the words and the person's gender; clean frames), by a fresh reviewer agent given only the sheets, that file and
+the photo. Verdicts go into `work/<week>/qc.json`; a failed shot is fixed in the week's material and the sheet made
+again. `--save` and `--replace` refuse any timeline whose exact cut has no passed review, whose voice is the other
+gender, or whose week has no product photo. These are fundamentals, not taste: the owner never has to find them.
+Save only when the gate passes, the sheets are clean and the build reports no bad stretch used.
 Saving: `--save` makes the project the first time; once it exists, `--replace` rebuilds its timelines in place (old
 timelines are backed up in `work/<week>/capcut-backup/`). Rule changes:
 `references/rule-changes.md`.
 The first time this runs on a Windows computer, say that the Windows build is new and ask them to check the whole
 first timeline carefully.
 
-**8. Log.** Write `work/<week>/sheet-rows.tsv` (one paste-ready row per video in the sheet's column order) and the
+**8. Log.** Run `python brand/sheet_rows.py work/<week>` (every dropdown cell one of the sheet's own options, read by `negen/read_options.js`; never typed by hand) for `sheet-rows-spry.tsv` / `sheet-rows-etw.tsv`, and write the
 fields table in `work/<week>/log.md`, both as `references/naming.md` describes; give the person the TSV path. Add the
 times (start/finish of each step) and any problem to `log.md` too.
 

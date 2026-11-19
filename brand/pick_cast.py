@@ -15,7 +15,7 @@ It also gives every video its voice-over voice ("voice"), so the voice matches t
 "voices" in brand/brands.json by the person's gender ("man", "woman"), else the brand's "voice" (a couple, or a
 brand with no voice for that gender). A voice set by hand on the video stays.
 """
-import glob, hashlib, json, os, re, sys
+import sys, glob, hashlib, json, os, re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -75,7 +75,9 @@ def main():
         m = re.search(r"\b(woman|man)\b", v["cast"]["who"]); gender = m.group(1) if m else "couple"
         v["cast"]["gender"] = gender
         if not v.get("voice_set_by_hand"):
-            v["voice"] = brand.get("voices", {}).get(gender) or g.get("voice") or brand.get("voice", "")
+            v["voice"] = brand.get("voices", {}).get(gender) or ("" if gender in ("man", "woman") else g.get("voice") or brand.get("voice", ""))
+            if not v["voice"]:  # owner, Nov 18: a woman on screen gets a woman's voice, a man a man's; never another
+                sys.exit("NO %s VOICE for %s in brand/brands.json \"voices\": add one before any batch starts" % (gender.upper(), g.get("store")))
     json.dump(week, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     for g, v in rows:
         print("%-16s %-16s %s  %-3s %-12s %-6s %-5s %s" % (g.get("product", "")[:16], g.get("angle", "")[:16], v["variant"],

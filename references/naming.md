@@ -40,6 +40,15 @@ How to choose:
 
 ## The sheet row
 
+**Every dropdown cell is one of the sheet's own options, exactly** (owner, Nov 18: "Wood Patio Sofa" and "Live Edge
+Console" were typed into the Collection column and the sheet marked them invalid). Read the lists from the sheet with
+`negen/read_options.js` (Spry and ETW tabs) into `work/<week>/sheet-options.json`, give every group of `week.json` a
+`"collection"` picked from its tab's Collection list, then run `python brand/sheet_rows.py work/<week>`: it writes
+`sheet-rows-spry.tsv` and `sheet-rows-etw.tsv` in each tab's own column order (the ETW tab has an extra Type Sync
+column) and refuses, writing nothing, when any dropdown value is not on the sheet's list. Never write the rows by hand.
+
+The column list below is the older reference; the tab's own header (in sheet-options.json) wins.
+
 One tab-separated line per video in `work/<week>/sheet-rows.tsv`, in the sheet's column order (the row id is left
 blank; the sheet numbers it):
 

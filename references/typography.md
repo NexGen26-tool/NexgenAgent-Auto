@@ -62,7 +62,8 @@ The owner finished V1-V12 by hand in CapCut. Each change they made across the vi
 - **Accents are light, bright yellows**, never a mid gold or amber. Our products are wood, and a gold or amber accent
   over walnut or oak disappears. The owner lifted them by hand (#FFA900, #FFDC49, #FFE68D, #FFD886), and the text
   preview showed the old ones vanishing.
-- **The shadow is stronger** (alpha 0.65), so white and yellow read over a bright window or pale wood.
+- **Every text has a soft dark shadow** (alpha 0.85, close and soft), in every style, so white and yellow read over
+  a bright window or pale wood (owner, Nov 18).
 - **Music sits under the voice at about 0.25.** The ETW tracks were at 1.0 and the owner turned each down to
   0.20-0.33.
 - **Every punchline gets a transition** (Pale Clarity, the owner's pick; Slide Blur when it is missing), ritual and
@@ -71,11 +72,33 @@ The owner finished V1-V12 by hand in CapCut. Each change they made across the vi
   comes from timing instead: the subject first, then the words as they are spoken, then the next line on its own
   words.
 
+## The owner's text design (Nov 18, console V2 "Every year / I redecorate")
+
+The owner reset the hook by hand to this, and every line follows it:
+- **One block, one edge.** The lines of a text sit together, aligned to the same edge (left in the example), never
+  scattered across the frame or centred on different axes.
+- **Hierarchy that reads in order.** A small setup line (sans, with its one accent word: "Every **year**") leads
+  into the big statement under it (display italic: "I redecorate"). Read top to bottom it is one sentence that says
+  something; the words are rewritten so it does (`"line1_order": "setup_first"` on the timeline, line1 written as
+  [statement, setup words, accent]).
+- **Close together.** Letters at normal tracking (letter spacing 0.02 at most), lines tight (line height 1.12 x
+  size), no gap between the parts of a block. Wide tracking and floating lines read as separate pieces.
+- **In the empty part of the picture, beside the person**, never on a face, a body or the product's defining part:
+  on the wall next to her, above the console, not over her head or across the slab.
+- **The logo is locked top centre**, in every video; only its light or dark version changes with the background.
+- **Fewer, fuller lines (desk V8/V9, Nov 19).** The hook repeats the voice word for word ("MY WORK STARTS / at a
+  clear desk now"; "Morning coffee / on clear wood", staggered left and right); the punchline is a full sentence that
+  names the product ("This solid wood office desk became / the steady part of my day", one accent word); a line that
+  only restates the picture ("Clutter / Out of sight") is dropped. Hooks and offer lines sit low (y -0.3 to -0.5).
+- **The CTA sits in a dark box** (white capitals on a filled background), low on the end card (y about -0.45).
+
 ## The text preview (plan check)
 
-Run `python capcut/text_preview.py work/<week>/capcut.json`. It makes one sheet per timeline in
-`work/<week>/plan/text/`, drawing every moment the text changes over the frame it plays on, with the safe area in red.
-Look at every frame:
+Every build writes one sheet per timeline in `work/<week>/plan/text/`: **one tile per shot under each text** (a
+line that stays up across two or three cuts gets two or three tiles). Judge every tile, not the first or the middle
+one: on Nov 18 a hook moved clear of the woman in one shot ran into her face in the next shot of the same line,
+because only one frame per line had been looked at. A place set by hand (`"text_y"`) must be clear in every tile of
+that line. Look at every tile:
 - text over a face, a hand at work or the product's defining part;
 - an accent that disappears into the wood behind it;
 - a line too small to read at phone size, or crowding the edge;

@@ -48,13 +48,16 @@ async (B) => {
   [...document.querySelectorAll('input[name=products]:checked')].forEach(b => { if (b.value !== B.pid) b.click(); }); await sleep(600);
   log.push('products=' + [...document.querySelectorAll('input[name=products]:checked')].map(b => b.value.slice(0, 8)).join(','));
 
-  // reference: replace the template's poster with this storyboard's poster
+  // reference: replace the template's poster with this storyboard's poster. B.keepRef: a reference already set on the
+  // page (an uploaded camera-reference frame, Nov 19) stays; B.poster is then its asset id
+  if (!B.keepRef) {
   const rm = [...document.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || '') === 'Remove reference 1');
   if (rm) { rm.click(); await sleep(600); }
   [...document.querySelectorAll('button')].find(b => b.innerText.trim() === 'Pick from media').click(); await sleep(900);
-  [...document.querySelectorAll('button')].find(b => b.innerText.trim() === 'Generated')?.click(); await sleep(1800);
+  [...document.querySelectorAll('button')].find(b => b.innerText.trim() === (B.mediaTab || 'Generated'))?.click(); await sleep(1800);  // 'All' for an uploaded frame
   let poster = null;
-  for (let pg = 0; pg < 15 && !poster; pg++) {
+  for (let pg = 0; pg < 60 && !poster; pg++) {  // Nov 19: a week-old poster sat on page 32
+
     const items = [...document.querySelectorAll('button[title]')].filter(x => x.querySelector('img') && x.offsetParent)
       .map(x => ({ b: x, id: ((x.querySelector('img').src.split('/media/')[1]) || '').split('/')[0] }));
     poster = items.find(i => i.id === B.poster);
@@ -65,9 +68,12 @@ async (B) => {
   }
   if (!poster) return 'POSTER NOT FOUND';
   poster.b.click(); await sleep(1500);
-  for (const lab of ['Style', 'Composition', 'Lighting']) {
+  // B.uses: which uses of the reference to tick. ['Style', 'Lighting'] leaves the camera free to stand on the person's
+  // side of a desk (Nov 18 chair-side test: Composition copied the catalogue front view with the drawers facing away)
+  for (const lab of (B.uses || ['Style', 'Composition', 'Lighting'])) {
     const bs = [...document.querySelectorAll('button,label')].filter(x => x.innerText.trim() === lab && x.offsetParent);
     bs[bs.length - 1]?.click(); await sleep(400);
+  }
   }
   // the image model that draws the start pictures also sees the storyboard itself, not only a summary of it
   let refs = JSON.parse(q('input[name=references]').value);

@@ -12,8 +12,9 @@ import copy, glob, json, os, re, subprocess, sys, tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 TS = json.load(open(os.path.join(HERE, "templates", "type_styles.json"), encoding="utf-8"))
 SAFE_X = 0.86          # text stays inside x +-0.86 of the canvas (Reels icons sit on the right edge)
-SHADOW = {"has_shadow": True, "shadow_color": "#000000", "shadow_alpha": 0.65, "shadow_smoothing": 0.6,
-          "shadow_distance": 5.0, "shadow_angle": -45.0, "shadow_point": {"x": 0.6363961030678928, "y": -0.6363961030678927}}
+LEAD = 1.12  # line height / size: stacked lines sit close, one block (owner, Nov 18: "don't put it too far")
+SHADOW = {"has_shadow": True, "shadow_color": "#000000", "shadow_alpha": 0.85, "shadow_smoothing": 0.9,
+          "shadow_distance": 3.0, "shadow_angle": -45.0, "shadow_point": {"x": 0.6363961030678928, "y": -0.6363961030678927}}
 STOP = set("a an the and or but so to of in on at for with by from it its it's is are was were my your our their this "
            "that these those i you we they me be as not no just one than then into up out all".split())
 DIGIT_WORD = {"1": "one", "2": "two", "3": "three", "4": "four", "5": "five", "6": "six", "7": "seven", "8": "eight",
@@ -72,7 +73,7 @@ def heights(parts, scale, K):
             if i: rows.append(cur); cur = 0.0
             cur = max(cur, size)
     rows.append(cur)
-    return sum(r * 100 * scale * K * 1.25 for r in rows if r) * (1080 / 1920)
+    return sum(r * 100 * scale * K * LEAD for r in rows if r) * (1080 / 1920)
 
 
 # ---------------------------------------------------------------------------------------------------- restyle
@@ -97,8 +98,9 @@ def set_rich(mat, parts, F, finish, align="center", spacing=None, italic=False):
     fid, fpath = F[parts[0][1]]
     mat.update(font_path=fpath, font_resource_id=fid, text_color=parts[0][3], alignment={"left": 0, "center": 1, "right": 2}[align])
     mat["border_width"] = 0.05 if finish == "outline" else 0.0
-    if finish == "shadow": mat.update(copy.deepcopy(SHADOW))
-    if spacing is not None: mat["letter_spacing"] = spacing
+    mat.update(copy.deepcopy(SHADOW))  # every text, every style: the overlay reads on any picture (owner, Nov 18)
+    mat["letter_spacing"] = min(spacing or 0.0, 0.02)  # letters close enough to read as one word (owner, Nov 18)
+    mat["line_spacing"] = 0.0
     for k in ("words", "current_words"): mat[k] = {"start_time": [], "end_time": [], "text": []}
 
 
@@ -151,12 +153,16 @@ def restyle(d, r, cfg, spec, K, effects, mat, seg_of, notes, inner=None, clone=N
     s1 = spec["line1"]; (f0, z0, c0), (f1, z1, c1), (f2, z2, c2) = s1["parts"]
     big, small, accent = cfg["line1"]
     head = [(cased(big.strip(), s1.get("case0")), f0, z0, c0)]
+    if small.strip() and (f1, z1) != (f2, z2): small = small.rstrip() + "  "  # a visible gap where the face or size changes (owner, Nov 18: "our eveningsmoved outside")
     rest = [(small, f1, z1, c1), (bare(accent), f2, z2, c2)]
     parts = [(head[0][0] + "\n",) + head[0][1:]] + rest
+    setup_first = (cfg.get("line1_order") or s1.get("order")) == "setup_first"
+    if setup_first:  # owner, Nov 18 ("Every year / I redecorate"): the small setup and its accent lead, the statement big under it
+        parts = [(small, f1, z1, c1), (bare(accent) + "\n", f2, z2, c2)] + head
     m = mat(d, "texts", r["line1"]); set_rich(m, parts, F, fin, s1["align"]); s = seg_of(d, m["id"])
     h = place(s, parts, F, K, s1["align"], s1["y"], s1["max_w"])
     t1 = cfg.get("_line1b") or 0.0
-    if t1 > 0 and clone is not None:
+    if t1 > 0 and clone is not None and not setup_first:
         sc = s["clip"]["scale"]["x"]; y = s["clip"]["transform"]["y"]
         ha, hb = heights(head, sc, K), heights(rest, sc, K)
         nb, mb = clone(s, m)
@@ -176,7 +182,7 @@ def restyle(d, r, cfg, spec, K, effects, mat, seg_of, notes, inner=None, clone=N
         set_rich(sm, ps, F, fin, al); set_rich(pm, pp, F, fin, al)
         ss, sp = seg_of(inner, sm["id"]), seg_of(inner, pm["id"])
         hs = place(ss, ps, F, K, al, 0, 1.6); hp = place(sp, pp, F, K, al, 0, s1["max_w"])
-        y = s2["y"]; ss["clip"]["transform"]["y"] = y + hp / 2 + hs / 2 + 0.01; sp["clip"]["transform"]["y"] = y
+        y = s2["y"]; ss["clip"]["transform"]["y"] = y + hp / 2 + hs / 2; sp["clip"]["transform"]["y"] = y
         comp = next(s for t in d["tracks"] for s in t["segments"] if r["compound"] == s["material_id"] or r["compound"] in s["extra_material_refs"])
         comp["clip"]["transform"] = {"x": 0.0, "y": 0.0}
 
@@ -190,8 +196,13 @@ def restyle(d, r, cfg, spec, K, effects, mat, seg_of, notes, inner=None, clone=N
     al3 = "center" if s3.get("layout") == "stagger" else s3["align"]
     set_rich(ma, pa, F, fin, al3); set_rich(mb, pb, F, fin, al3)
     sa, sb = seg_of(d, ma["id"]), seg_of(d, mb["id"])
-    ha = place(sa, pa, F, K, al3, s3["y"], s3["max_w"])
-    place(sb, pb, F, K, al3, 0, s3["max_w"], top=s3["y"] - ha / 2 - 0.01)
+    if num:  # the numeral sits right above its reason at the reason's own scale, never floating apart (owner, Nov 18)
+        place(sb, pb, F, K, al3, s3["y"], s3["max_w"]); scb = sb["clip"]["scale"]["x"]
+        hb = heights(pb, scb, K); hn = heights(pa, scb, K)
+        place_at(sa, pa, F, K, al3, scb, s3["y"] + hb / 2 + hn / 2 + 0.005)
+    else:
+        ha = place(sa, pa, F, K, al3, s3["y"], s3["max_w"])
+        place(sb, pb, F, K, al3, 0, s3["max_w"], top=s3["y"] - ha / 2)
     if s3.get("layout") == "stagger":
         edge = s3.get("edge", 0.8)
         wa = max(line_widths(pa, F, K, sa["clip"]["scale"]["x"])); wb = max(line_widths(pb, F, K, sb["clip"]["scale"]["x"]))

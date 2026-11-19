@@ -19,7 +19,7 @@ On a Mac use python3. Windows needs ffmpeg (setup_check.py says how to install i
 
 Config format: see capcut/example.json.
 """
-import json, os, sys, copy, shutil, subprocess, time, re, uuid, struct, glob, itertools
+import glob, json, os, sys, copy, shutil, subprocess, time, re, uuid, struct, itertools
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 for _s in (sys.stdout, sys.stderr): _s.reconfigure(encoding="utf-8", errors="replace")  # names can be Vietnamese
@@ -401,6 +401,55 @@ def sfx_events(d, r):
 
 MIN_PIECE = 0.5   # clean footage shorter than this is not used
 REPLACE_MIN = 1.0 # a bad stretch this long or longer is replaced; a shorter one (a blend) is simply cut out
+CAT, OWN_CTX = {}, {}  # the footage catalogue (capcut/inventory.py) and the timeline being built: {"actor", "rooms"}
+
+
+def load_catalog(week):
+    """catalog.json of the week: {file: [shot]}; a shot has a, b and, once reviewed, pass/why/size/room/person."""
+    p = os.path.join(week, "catalog.json")
+    CAT.clear()
+    if os.path.exists(p):
+        for f, e in json.load(open(p, encoding="utf-8")).items():
+            sh = e.get("shots", []); d = max([x["b"] for x in sh] or [0])
+            for x in sh: x["_dur"] = d; x["before"] = x.get("before") or (x.get("shows") or "").startswith("before")
+            CAT[f] = sh
+
+
+def catalog_blocks(name, own=None):
+    """What the catalogue keeps off a timeline (references/fundamentals.md): a shot that failed review, the gaps
+    between shots (cuts, crossfades), a person other than the timeline's actor, and, unless it is a close-up, a shot
+    in a room that is not one of the timeline's rooms (owner, Nov 18: reuse takes where the room does not change
+    much; close-ups first)."""
+    sh = CAT.get(os.path.basename(name))
+    if not sh:  # Nov 19: an unreviewed file counted as clean, so fills pulled unreviewed footage into desk V7-V9
+        return [(0.0, 9999.0, "not reviewed (no catalogue entry)")] if CAT else []
+    out, pos = [], 0.0
+    actor, rooms = OWN_CTX.get("actor"), OWN_CTX.get("rooms")
+    for x in sorted(sh, key=lambda x: x["a"]):
+        a, b = x["a"], x["b"]
+        if a - pos > 0.05: out.append((pos, a, "between catalogue shots"))
+        pos = max(pos, b)
+        if "pass" not in x: continue
+        why = x.get("why", "") or ""
+        if not x["pass"]:
+            ok = [(float(u), float(v)) for u, v in re.findall(r"(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)", why.split("clean", 1)[1])] if "clean" in why else []
+            pos2 = a  # a long shot that failed only at its crossfades keeps the clean stretches the reviewer listed
+            for u, v in sorted(ok):
+                if u - pos2 > 0.05: out.append((pos2, u, "catalogue: " + why[:60]))
+                pos2 = max(pos2, v)
+            if b - pos2 > 0.05: out.append((pos2, b, "catalogue: " + (why[:60] or "failed review")))
+            if not ok: continue  # with clean stretches listed, the person and room checks below still apply
+        m = re.search(r"trim (start|end) ([\d.]+)", why)
+        if m: out.append((a, a + float(m.group(2))) + ("catalogue: crossfade",) if m.group(1) == "start" else (b - float(m.group(2)), b, "catalogue: crossfade"))
+        if a > 0.05: out.append((a, a + 0.3, "catalogue: blend edge"))  # Negen blends hide in the first and last frames
+        if b < x.get("_dur", 99) - 0.05: out.append((b - 0.35, b, "catalogue: blend edge"))
+        # owner's V8 (Nov 19): a hand with no face in a close-up may come from another take, and another room counts
+        # only for a wide or medium that shows the video's person (empty product shots and close-ups travel)
+        if actor and x.get("person") not in (None, actor) and not x.get("hands_only"): out.append((a, b, "another person (%s)" % x.get("person")))
+        elif rooms and x.get("size") != "close" and x.get("person") and x.get("room") not in rooms: out.append((a, b, "another room (%s)" % x.get("room")))
+    return out
+
+
 FADE_PAD = 0.35   # Negen's crossfades last 0.8-1.0 s; a marked blend is widened this much on each side
 
 
@@ -417,18 +466,20 @@ def blocked(name, shots, own=None):
     e = (shots or {}).get(os.path.basename(name), {}); out = []
     for a, b, *why in e.get("bad", []):
         w = why[0] if why else "bad"
+        if w.startswith("first take: not used") and CAT.get(os.path.basename(name)): continue  # the catalogue judges it now
         pad = FADE_PAD if "blend" in w and not e.get("fades_padded") else 0.0  # "fades_padded": widened by hand already
         out.append((max(0.0, a - pad), b + pad, w))
     out += [(max(0.0, a - 0.1), b + 0.1, "crossfade (found by shot_sheet.py)") for a, b in e.get("fades", [])]
-    if own is not None and variant(name) != variant(own):
+    if own is not None and variant(name) != variant(own) and not OWN_CTX.get("actor"):
         out += [(a, b, "another variant's person") for a, b in e.get("person", [])]
+    out += catalog_blocks(name, own)
     return sorted(out)
 
 
 def clean_parts(name, dur, shots, own=None):
     """The usable stretches of one video, from its shot check: everything minus what blocked() lists, widened to a
     hard cut within 0.3 s."""
-    e = shots[name]; cut_at = e.get("cuts", [])
+    e = shots.get(name, {}); cut_at = e.get("cuts", [])
     def snap(t, side):
         near = [c for c in cut_at if abs(c - t) <= 0.3 and (c <= t if side < 0 else c >= t)]
         return min(near, key=lambda c: abs(c - t)) if near else t
@@ -650,7 +701,21 @@ def place_times(d, r, times, total):
 
 ROWS = [0, 2, 5, 8, 10, 13, 15, 18, 99]  # where Negen's 8 scene rows start in every 20 s video (2+3+3+2+3+2+3+2 s)
 TENSION_ROW = 1                          # row 2 (A02, 2-5 s): the before-state, filled only from the same row
-FILL_SLOW = 0.75                         # a shot that would play slower than this gets a second shot instead
+FILL_SLOW = 0.85                         # a shot that would play slower than this gets a second shot instead
+                                         # (owner's V8, Nov 19: he covered every shot slowed to 0.62-0.73x)
+
+
+def hero_shot(own, pool):
+    """The group's hero product shot (owner's V8, Nov 19): a catalogue shot marked "hero" (the empty piece at its best,
+    in its best room, no person) that passed review. Returns (file name, start) or None."""
+    names = {os.path.basename(p) for p in [own] + list(pool or [])}
+    best = None
+    for f, sh in CAT.items():
+        if f not in names: continue
+        for x in sh:
+            if x.get("hero") and x.get("pass") and x["b"] - x["a"] > 1.2:
+                if best is None or x["b"] - x["a"] > best[2]: best = (f, x["a"] + 0.3, x["b"] - x["a"])
+    return best[:2] if best else None
 
 
 def row_of(t): return max(i for i in range(8) if ROWS[i] <= t)
@@ -666,10 +731,14 @@ def group_pool(cfg, c, shots):
     for o in cfg["timelines"]:
         if o is not c and c.get("group") and o.get("group") == c["group"]:
             ov = os.path.expanduser(o["video"]); out += [ov] + spare(ov)
-    return [p for p in out if shots.get(os.path.basename(p), {}).get("checked")]
+    parts = os.path.basename(v).split(" - "); sku = parts[2] if len(parts) > 3 else ""  # "<Name> - <Angle> - <SKU> - <code> ..."
+    if sku:  # other generations of the same product: first takes (pool/) and earlier takes kept beside the videos
+        out += sorted(glob.glob(os.path.join(os.path.dirname(v), "pool", "*%s*.mp4" % sku)))
+        out += sorted(x for x in glob.glob(os.path.join(os.path.dirname(v), "*%s*take*.mp4" % sku)) if x not in out)
+    return [p for p in out if shots.get(os.path.basename(p), {}).get("checked") or CAT.get(os.path.basename(p))]
 
 
-def fill_short(pieces, zooms, pool, shots, own, notes):
+def fill_short(pieces, zooms, pool, shots, own, notes, tension=None):
     """A piece that runs out of clean footage before its sentence ends keeps its clean run and is followed by clean
     footage of the same scene row (the same video and its spare first, so the person stays the same, then the group's
     other videos outside their person stretches), footage the timeline does not use yet. The before-state row is
@@ -681,7 +750,13 @@ def fill_short(pieces, zooms, pool, shots, own, notes):
     def free(f, row, any_row):
         out = []
         for a, b in clean_parts(os.path.basename(f), mp4_info(f)[0], shots, own=own)[0]:
-            if any_row:  # any row but the before-state: its footage would put the problem under a later sentence
+            if any_row and os.path.basename(f) in CAT:  # a reviewed file names its own before-state (Nov 19: row 2 of
+                bef = [(x["a"], x["b"]) for x in CAT[os.path.basename(f)] if x.get("before")]  # a take is not always one)
+                for u0, u1 in bef:
+                    if u0 - 0.3 <= a < u1: a = u1
+                    if a < u0 < b: b = u0
+                if b - a < MIN_PIECE: continue
+            elif any_row:  # any row but the before-state: its footage would put the problem under a later sentence
                 if ROWS[TENSION_ROW] - 0.3 <= a < ROWS[TENSION_ROW + 1]: a = ROWS[TENSION_ROW + 1]
                 if a < ROWS[TENSION_ROW] < b: b = ROWS[TENSION_ROW]
             else: a, b = max(a, ROWS[row] + 0.1), min(b, ROWS[row + 1] + 0.5)
@@ -692,7 +767,11 @@ def fill_short(pieces, zooms, pool, shots, own, notes):
             if b - a >= MIN_PIECE: out.append((a, b))
         return out
     new_p, new_z = [], []
+    wins = tension if isinstance(tension, list) else ([tension] if tension else [])
+    t_at = 0.0
     for (f, a, l, shown), z in zip(pieces, zooms):
+        t0, t_at = t_at, t_at + shown
+        in_t = any(w[0] - 0.05 <= t0 < w[1] - 0.05 for w in wins) if wins else None
         if l >= FILL_SLOW * shown or shown - l < 0.2:
             new_p.append((f, a, l, shown)); new_z.append(z); continue
         row = row_of(a); left = shown - l; got = [(f, a, l, l)]
@@ -700,7 +779,7 @@ def fill_short(pieces, zooms, pool, shots, own, notes):
             new_p.append((f, a, l, shown)); new_z.append(z); continue  # the before-state is never patched with other footage
         if l < 0.3: left, got = shown, []  # a flash this short is dropped: the fill takes the whole sentence
         for any_row in (False, True):
-            if any_row and row == TENSION_ROW: break
+            if any_row and (in_t if in_t is not None else row == TENSION_ROW): break  # the tension sentence keeps its own row
             while left >= 0.3:
                 cands = [(variant(p) == variant(own), b - s, p, s) for p in {key(x): x for x in [own] + list(pool)}.values() for s, b in free(p, row, any_row)]
                 if not cands: break
@@ -774,7 +853,7 @@ def cuts_to_pieces(cuts, total, folder, shots=None, own=None, notes=None, pool=N
     or into the video's next generated part (its cuts in shots.json) or its next bad stretch (a blend usually marks the
     next scene) is slowed to fit instead."""
     def find(v):
-        for p in (v, os.path.join(folder, v), os.path.join(folder, "spare", v)):
+        for p in (v, os.path.join(folder, v), os.path.join(folder, "spare", v), os.path.join(folder, "pool", v)):
             for q in (p, p + ".mp4"):
                 if os.path.isfile(q): return q
         raise SystemExit("Edit plan: video not found: " + v)
@@ -804,7 +883,7 @@ def cuts_to_pieces(cuts, total, folder, shots=None, own=None, notes=None, pool=N
     if pool is not None and own is not None:
         if tension:  # a fill never brings before-state footage into another sentence (row-based fills keep to the row)
             shots = {k: dict(v, bad=v.get("bad", []) + [[a, b, "before-state"] for a, b in v.get("before", [])]) for k, v in shots.items()}
-        pieces, zooms = fill_short(pieces, zooms, pool, shots, own, notes)
+        pieces, zooms = fill_short(pieces, zooms, pool, shots, own, notes, tension)
         pieces, zooms = smooth(pieces, zooms, notes, {k: v.get("before") or [] for k, v in shots.items()})
         if notes is not None and len(pieces) > 10:
             notes.append("CHOPPY: %d shots in %.1f s; this video has too little clean footage of its own: regenerate it "
@@ -922,11 +1001,15 @@ def typeset_K(): return K
 class Timeline:
     def __init__(self, cfg, media_dir, shots=None, pool=(), slot=0):
         cfg = scripted_cfg(cfg)
-        self.name = cfg["name"]
+        self.name = cfg["name"]; self.cfg = cfg
+        OWN_CTX.clear(); CAT.clear()
+        if cfg.get("catalog", True):  # "catalog": false = a voice update: the footage as it already was in CapCut
+            OWN_CTX.update({k: cfg[k] for k in ("actor", "rooms") if cfg.get(k)})
+            load_catalog(os.path.dirname(os.path.dirname(os.path.abspath(os.path.expanduser(cfg["video"])))))
         brand = BRANDS[cfg["brand"]]
         video = link_media(os.path.expanduser(cfg["video"]), media_dir)
         logo = link_media(ROOT + "/brand/" + brand["logo"], media_dir)
-        self.vo = extract_vo(video, media_dir)
+        self.vo = extract_vo(os.path.expanduser(cfg["vo_from"]) if cfg.get("vo_from") else video, media_dir)  # "vo_from": the voice of another take (owner, Nov 18)
         raw = open(HERE + "/templates/house_edit.json", encoding="utf-8").read()
         raw = raw.replace(TEMPLATE_EFFECTS, EFFECTS).replace("{HOME}", HOME)
         d, idm = remap_ids(json.loads(raw)); r = {k: idm[v] for k, v in ROLES.items()}
@@ -1018,6 +1101,17 @@ class Timeline:
                 st = ed["times"]["starts"]
                 at = lambda x: x if not isinstance(x, str) else st[int(x[1]) - 1] + (float(x[3:]) if "+" in x else 0.0)
                 ed["cuts"] = [[at(c[0])] + list(c[1:]) for c in ed["cuts"]]
+                hero = hero_shot(src, pool) if cfg.get("hero", True) else None
+                if hero:  # owner's V8 (Nov 19): the punchline and the end card show the hero product shot
+                    p_at = at(ed["times"]["punch"]); end_at = total / US - CTA_HOLD
+                    pz = [c[3] for c in ed["cuts"] if abs(c[0] - p_at) < 0.05 and len(c) > 3]
+                    ed["cuts"] = [c for c in ed["cuts"] if not (abs(c[0] - p_at) < 0.05 or c[0] >= end_at - 0.05)]
+                    last = max([c for c in ed["cuts"] if c[0] < end_at], key=lambda c: c[0], default=None)
+                    ed["cuts"] += [[p_at, hero[0], hero[1]] + pz[:1]]
+                    if not (last and os.path.basename(str(last[1])) == hero[0]):  # already on the hero: it runs on
+                        ed["cuts"] += [[end_at, hero[0], hero[1]]]
+                    ed["cuts"].sort(key=lambda c: c[0])
+                    self.hero_note = "hero shot %s %.1f s on the punchline and the end card" % (hero[0][-28:], hero[1])
                 fmt = dict(FORMATS.get(cfg.get("format", ""), {}))  # a format or structure may set its own ([] = none: follow)
                 if "transitions" in STRUCTURES.get(cfg.get("structure", ""), {}):  # follow cuts on action, no transition
                     fmt["transitions"] = STRUCTURES[cfg["structure"]]["transitions"]
@@ -1032,8 +1126,10 @@ class Timeline:
             tens = tension_of(cfg, self.times)
             pieces, zooms = cuts_to_pieces(ed["cuts"], total / US, os.path.dirname(src), shots, own=src, notes=moved, pool=pool, tension=tens)
             segs = lay_footage(d, r, pieces, media_dir)
+            self.pieces = pieces
             missing = add_transitions(d, segs, ed.get("transitions", []), zooms)
             self.notes = ["edit plan: %d shots, %d transitions" % (len(pieces), len(ed.get("transitions", [])) - len(missing))] + moved
+            if getattr(self, "hero_note", ""): self.notes.append(self.hero_note)
             for f, a, length, shown in pieces:  # unusable footage in a planned shot, or a shot slowed below 0.75x, is reported
                 if variant(f) != variant(src) and "person" not in (shots or {}).get(os.path.basename(f), {}):
                     self.notes.append("%s is another variant's footage and its shot check has no \"person\" list: "
@@ -1046,6 +1142,7 @@ class Timeline:
         elif shots and shots.get(os.path.basename(src), {}).get("checked"):
             pieces, self.notes = plan_footage(src, total / US, shots, pool)
             lay_footage(d, r, pieces, media_dir)
+            self.pieces = pieces
         self.style, spec = typeset.style_for(cfg)
         if spec and cfg.get("scripted"):  # a scripted script's words keep the writer's case (no upper-casing by the style)
             spec = copy.deepcopy(spec); spec["line1"].pop("case0", None)
@@ -1076,6 +1173,13 @@ class Timeline:
         self.sfx = add_sfx(d, self.scripted_sfx if self.scripted_sfx is not None else sfx_events(d, r)) if cfg.get("sfx", True) else (0, [])
         if spec and not cfg.get("scripted") and inner is not None:  # the type styles: Line 2 as plain text (owner, Nov 17)
             flatten_title(d, r, inner); self.compound = None
+        if getattr(self, "pieces", None) and not cfg.get("text_fixed"):  # text placed by the picture (owner, Nov 18)
+            import text_fit
+            wk = os.path.dirname(os.path.dirname(os.path.abspath(os.path.expanduser(cfg["video"]))))
+            fn = []; text_fit.fit(d, self.pieces, K, find_ffmpeg(), fn, logo_mid=r.get("logo"),
+                                  preview=os.path.join(wk, "plan", "text", re.sub(r'[\/:*?"<>|]', "-", self.name) + ".jpg"), title=self.name,
+                                  logo_light=(lambda: link_media(ROOT + "/brand/" + brand["logo"].replace("black", "white").replace("brown", "white"), media_dir)) if os.path.exists(ROOT + "/brand/" + brand["logo"].replace("black", "white").replace("brown", "white")) else None, text_y=cfg.get("text_y"))
+            self.notes = (self.notes or []) + fn
         self.d = d
 
     @staticmethod
@@ -1228,6 +1332,8 @@ if __name__ == "__main__":
     slots, tls = {}, []  # the music pool rotates per brand, in the order the timelines are listed
     for c in cfg["timelines"]:
         slots[c["brand"]] = slots.get(c["brand"], -1) + 1
+        if c.get("locked"):  # finished or exported by hand (owner): never rebuilt, never replaced
+            print("%-34s LOCKED, left as it is: %s" % (c["name"], c["locked"])); continue
         tls.append(Timeline(c, media_dir, shots, pool(c), slots[c["brand"]]))
     for t in tls:
         miss, ok = t.check()
@@ -1243,8 +1349,18 @@ if __name__ == "__main__":
     gone = sorted({t.music_name for t in tls if t.music is False})
     if gone: print("NOTE: music not in CapCut yet, so left out: %s. Use it once in CapCut (Audio > search the name), "
                    "then build again." % ", ".join(gone))
-    if "--save" in sys.argv: save(cfg["project"], tls)
-    if "--only" in sys.argv:  # rebuild just these timelines (comma-separated parts of their names), leave the rest
+    import qc  # the fundamentals gate (references/fundamentals.md): every shot reviewed, the voice matches the person
+    wk = os.path.dirname(os.path.abspath(sys.argv[1]))
+    if "--save" not in sys.argv and "--replace" not in sys.argv:
+        qc.sheets(wk, tls, find_ffmpeg()); print("review sheets: %s (judge every shot against references/fundamentals.md, write qc.json)" % os.path.join(wk, "qc"))
+    if "--only" in sys.argv:
         want = sys.argv[sys.argv.index("--only") + 1].split(","); tls = [t for t in tls if any(w in t.name for w in want)]
-        print("only:", [t.name for t in tls])
+    if "--save" in sys.argv or "--replace" in sys.argv:
+        no = qc.gate(wk, tls)
+        if "--vo-update" in sys.argv:  # removed Nov 19: it rebuilt the footage too and saved desk V7-V9 unreviewed
+            print("NOT SAVED: --vo-update is gone. Every save passes the full gate (references/fundamentals.md)."); sys.exit(2)
+        if no:
+            print("NOT SAVED. The fundamentals gate refused:"); [print("  -", x) for x in no]; sys.exit(2)
+    if "--save" in sys.argv: save(cfg["project"], tls)
+    if "--only" in sys.argv: print("only:", [t.name for t in tls])  # rebuild just these timelines, leave the rest
     if "--replace" in sys.argv: replace_in(cfg["project"], tls, os.path.dirname(os.path.abspath(sys.argv[1])))

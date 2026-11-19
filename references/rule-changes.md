@@ -2,6 +2,176 @@
 
 Changes to how the fast lane works, newest first: what changed, why, and what it was tested on.
 
+## 2026-11-19 (owner's V9 hand edit) - The shot shows what the sentence says; fewer lines; a boxed CTA
+
+The owner kept the built V9's frame (hero on the punchline with zoom 1.15, the end card on the hero, the drawer pull,
+the borrowed empty desk) and changed:
+- **Shots that act out the words:** "Evenings, the laptop closes" got the take where he closes his laptop (facing
+  the camera, a glass-like top, another chair); "Its drawers keep the clutter" got him pulling a drawer from his
+  seat beside the unit; the offer lines got the over-the-shoulder shot with his mug. All three came from stretches
+  the reviewer had failed for a glass sheen on the top or an extra mug. **Calibration:** a thin glass-like sheen or
+  plate on the top in a close-up or medium is a small difference to the owner when the shot shows the sentence's
+  action; it is not a hard fail. Pick the shot that acts out the sentence first, then check it.
+- **Fewer, fuller lines:** the punchline became a full sentence that names the product, "This solid wood office
+  desk became / the steady part of my day" ("steady" accented); "Clutter / Out of sight" and the shipping line were
+  removed; the voice-over's offer sentence was shortened to fit. The hook stays split and staggered ("Morning
+  coffee" left, "on clear wood" right, y -0.29/-0.38).
+- **Low text:** "Made in the tone I chose" at y -0.47, the scarcity line at -0.51, the CTA at -0.45.
+- **CTA:** white capitals in a dark box (a filled background), not plain shadowed text.
+- **Length:** 14.2 s; only the hero end card plays slowed (0.66x).
+
+## 2026-11-19 - V9 remake: the proof line steers PART B's start picture
+
+Batch fb19ccad, started from "Edit & run again" of the V8 test batch so the uploaded camera-reference frame carried
+over (an uploaded reference is not in the media picker). With the Ad brief's **proof** rewritten to "seen from behind
+ACTOR A's chair on the drawer side, the drawer fronts facing him", PART B's start picture came out right too (both
+start pictures on the drawer side). The takes still had a glass plate and an extra mug in one stretch and a wide in
+another room; four review passes left 10 clean shots. For a drawer-side product: reference frame + proof line, and
+check both start pictures before the parts run.
+
+## 2026-11-19 - The build learns the V8 edit
+
+`capcut/build_project.py`, tested on V8 (dry run, compared with the owner's export):
+- **Hero shot:** a catalogue shot marked `"hero": true` (the empty piece in its best room, no person, passed) plays
+  on the punchline and on the end card (`hero_shot()`); `"hero": false` on a timeline turns it off.
+- **Fill before slowing:** `FILL_SLOW` 0.75 -> 0.85, so a short sentence gets another clean shot (other takes'
+  close-ups and empty product shots included) instead of slow motion. The before-state is still never patched.
+- **Catalogue rules:** "another room" blocks only wides and mediums with a person; `"hands_only": true` lets a
+  close-up of another take's hand through; fills read a reviewed file's own before-state marks instead of assuming
+  seconds 2-5 of every take are one.
+- **Result on V8:** punchline and end card on the hero desk, V7's drawer close-up, take2's hand on the top, no
+  footage below 0.85x except the before-state (0.65x, as the owner kept it) and two near-still shots (0.68x drawer
+  close-up, 0.77x hero hold). The owner's export is the delivered V8; the build was not saved over it.
+
+## 2026-11-19 (owner's V8 hand edit) - Hero product shots on the punchline and CTA, no slow motion, other takes' close-ups welcome
+
+The owner kept the built V8 (it passed the fundamentals gate) and laid an overlay track over four places:
+- **Punchline ("One swap reset the corner") and CTA:** the empty catalogue-view desk in the warm wood-panelled office
+  (take2 6.1 s) over the wide of her at the desk. The punchline and the end card show the product at its best, in
+  the best-looking room, with no person; a plain room is not a hero room.
+- **Every slowed shot covered:** the 0.73x drawer shot and the 0.62x end wide. Only the 0.65x before-state stayed.
+  Fill short sentences with more shots, not slow motion.
+- **Close-ups from other takes:** "Built-in drawers" over V7's three-drawer close-up and V7's drawer-opening close-up
+  (another woman's hand and a glass sheen on the top: he accepts a hand without a face in a close-up); "Four tones"
+  over her hand on the top by the U leg (take2 8.67 s, the other room). Room continuity matters for wides with a
+  person, not for close-ups and empty product shots.
+- **Text:** the hook echoes the voice word for word ("MY WORK STARTS / at a clear desk now"), low (y -0.32/-0.39);
+  "Four tones" smaller (scale 1.19); the offer lines low (y -0.34/-0.40); CTA y -0.30, scale 1.33, about 2 s. The
+  video ends at 15.6 s (the build had 17.1 s).
+- **Transitions:** Pale Clarity into the punchline, Vertical Blur II later.
+
+## 2026-11-19 - The start picture decides the camera side; a camera-reference frame fixes PART A
+
+**Tested on:** desk V8 (RTTHTTDE069), three batches. Scene rows that put the camera behind the chair, with the reference
+used for Style + Lighting only, still gave the catalogue front view (person behind drawers facing away) in both
+PARTs of V8 and V9. One batch with an uploaded frame of the right view (a person on the drawer side, from the Nov 18
+chair-side test) as the reference for Style + Composition + Lighting: PART A's start picture and footage came out
+right (about 10 s clean), PART B's start picture went back to the catalogue view. **Rule:** for a product whose
+catalogue photo shows the wrong side for use, give the batch a camera-reference frame (`fill_batch.js` `keepRef`
+after the frame is uploaded on the page) and check both start pictures (Review > Image) before the parts run; plan on
+PART A footage only until PART B can take its own reference. The browser cannot upload a local file into Negen, so
+the person drops the frame into References once.
+
+## 2026-11-19 (owner) - No save without a passed review; an unreviewed file is never "clean"
+
+**Why:** the desk V7-V9 timelines went into CapCut through `--vo-update`, a save mode that skipped the shot review,
+on timelines marked `"catalog": false`; and the build counted any file with no catalogue entry as clean, so its fills
+pulled unreviewed footage in. The owner found a four-drawer pedestal, a drawer opening by itself, a hand that fit no
+body, drawers facing away from every seated person and an impossible reach-around, after the lane called the job
+finished.
+
+**New rule:** `--vo-update` is removed; `qc.gate` refuses `"catalog": false`; a file with no catalogue entry is
+blocked whole once the week has a catalogue. Nothing is reported as finished while any timeline was saved without
+a passed review of its exact cut. Desk footage review (Nov 19) is in `catalog.json`; V8 and V9 are remade from the
+chair-side rows (`tools/remake_nov19.json`, reference used for Style + Lighting only, `fill_batch.js` `uses`).
+
+**From the owner's V7 hand edit (Nov 19):** the hook on her hands at the desk (no drawers in shot); the before-state
+borrowed from another take with the other woman's face cropped out by a 1.25 zoom; the punchline a wide of her on
+the drawer side; "Built-in drawers" (plural: three drawers) over a three-drawer close-up; offer lines low (y -0.35);
+an empty catalogue-view room is fine when no chair is in it; transitions Vertical Blur II and Wobbly Fade.
+
+## 2026-11-18 (owner) - How to work: deliver first, one video first, estimate before spending
+
+**Why:** the 20/11 rework took a day, cost usage and Negen credits, and broke often; a voice fix never reached CapCut
+and the owner cut it by hand. **New rule:** CLAUDE.md "How to work": fixes into CapCut the same hour; every new step
+on one video first; a one-line estimate and a yes before anything that costs; long steps in parallel; ask for the
+owner's example early; short messages with what is not done first.
+
+## 2026-11-18 (owner) - The fundamentals gate: reality tests on every shot before any save
+
+**Why:** product drift, two people in one first-person video, furniture moving with no one touching it, a man's
+voice on a woman: the owner found each by watching, after the lane had passed them. These are fundamentals, not
+taste; a list of symptoms fixed one at a time never ends, so the lane now tests reality itself.
+
+**New rule:** `references/fundamentals.md` (six reality tests: object permanence, causality, identity, bodies,
+picture/voice match, clean frames). Every dry run writes `work/<week>/qc/` (every shot of each final cut at full
+phone size, first/middle/last frame, with the product photo and the cast) and `plan/cut.json`. A fresh reviewer
+agent judges every shot and writes `qc.json`. `capcut/qc.py` makes `--save` and `--replace` refuse a timeline whose
+exact cut was not reviewed and passed, whose voice is the other gender, or whose week has no product photo. No skip
+flag. CLAUDE.md step 7 says so.
+
+**Tested on:** the 20/11 set. The gate refused all 9 unlocked timelines (no review yet) and, unprompted, the 4 ETW
+videos with a woman on screen voiced by Evan. The week folder held a product photo for the console only, which is
+why the sofa, desk and coffee table shots were never judged against their real shape.
+
+## 2026-11-18 (owner, after the 20/11 rebuild) - Judge every shot; the owner's text design; voice by gender; one person
+
+**What was wrong after the first Nov 18 fix:** text was placed and checked on one frame per line, so console V2's hook,
+moved clear of the woman in one shot, ran into her face in the next shot of the same line. The lines were scattered,
+widely spaced and read as pieces, not a message. Desk V3 had two different men and a drawer sliding out by itself;
+four ETW videos with a woman on screen were voiced by a man (ETW had only a man's voice); "curved" was said over a
+sofa of straight blocks. I had reported the text as fixed after looking at one frame per line.
+
+**New rules:**
+- The text preview and the placement work per shot: one tile for every shot under every line (`capcut/text_fit.py`);
+  a hand-set place must be clear in all of them (`references/typography.md`, "The text preview").
+- The owner's text design (`references/typography.md`): one block on one edge, a small setup with its accent leading
+  into the big statement (`"line1_order": "setup_first"`), tight tracking (0.02 at most) and leading (1.12), a soft
+  dark shadow on every text, text in the empty part of the picture beside the person. The logo is locked top centre.
+- Voice by gender: a woman on screen gets a woman's voice, a man a man's (`brand/brands.json` ETW now has Dawn for a
+  woman; `brand/pick_cast.py` stops when a brand lacks one).
+- Shot check (CLAUDE.md 6b): two people playing ACTOR A is a ban, compared face by face at full size against the
+  cast; a drawer, door or lid that moves by itself is drift; a look word the photo does not show is rewritten.
+- A timeline finished or exported by hand gets `"locked": "<why>"` in `capcut.json`; the build skips it and never
+  replaces it (the owner's console V4-V6, Nov 18).
+
+## 2026-11-18 (owner, the 20/11 set, sofa V1-V3) - A look word needs the photo, not only the page
+
+**What was wrong:** the sofa set's Negen page is titled "Curved Outdoor Lounge Seating" and says "fluid, curved
+lines", so the briefs said "curved" in all three sofa videos. The set is straight square blocks in the photo and in
+every take.
+
+**New rule (ad-brief-compiler, Product truth and the checklist):** a shape or look word is used only when the product
+photo shows it; the page's title and copy alone do not count. The VO, the lines and the rows describe the outline the
+photo shows.
+
+## 2026-11-18 (owner, the 20/11 set) - Text placed by the frame under it; drift and blends judged on the plan sheets
+
+**What was wrong:** every type style put each line at one fixed spot of the frame, blind to the shot, so lines sat
+over the product, over faces and people, and the dark logo vanished into foliage. Desk V1's CTA showed the desk
+gliding (a fill from desk V3: the drawer unit slides away from the leg) and the shot check had passed it.
+
+**New rule (CapCut step, `capcut/text_fit.py`, called by `capcut/build_project.py`):**
+- Texts on screen together move as one group, up or down inside the safe area, to the calmest band of the frames
+  they play over (few edges, little wood, not blinding white under light text), as close to the style's own spot
+  as the picture allows; the middle band, where the product and the person stand in a wide shot, costs extra.
+- The logo takes the top position (left, centre, right) with the calmest background, and the brand's light logo
+  when that background is dark.
+- Every build writes `work/<week>/plan/text/<timeline>.jpg`: each text group drawn over its frame. Look at every
+  tile; where a line still covers a face or the product's defining part, set `"text_y"` on the timeline (one y
+  per text group in order, `null` keeps the build's pick; canvas units, +0.70 top to -0.52 bottom). List items keep
+  one spot. `"text_fixed": true` turns the placement off.
+- A numbered list's numeral sits above its line at the line's own scale; a hook's small linking words keep two
+  spaces before the accent.
+- Plan check: on the group plan sheets, look for motion drift between frames of one shot (a product that slides,
+  glides or changes position), crossfades the fade marks missed, and a second person playing ACTOR A. Mark them in
+  the week's `shots.json` before saving.
+
+**Tested on:** the 20/11 set, 12 timelines rebuilt with `--replace`. Overrides set on 8 timelines; four more blends
+and one person swap (coffee table V3) found on the plan sheets and cut.
+
+**Still a compromise:** close-ups where the product fills the frame have no clean band; text there sits over wood.
+
 ## 2026-11-17 (owner, the 13/11 set) - The owner's hand edits are the build's text design; a text preview before saving
 
 **Why:** the owner: "bake them in. Also pay more attention to designing the text overlay so it looks nice and easy to

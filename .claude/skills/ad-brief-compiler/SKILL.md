@@ -117,8 +117,16 @@ In every structure:
 For long or wide products (TV stands, consoles, kitchen islands, sideboards, long wall panels), every wide shot must say "whole product inside the central 70% of the frame". The 9:16 crop otherwise cuts the ends and the AI check marks the video down.
 
 ### 4. Product truth
+- Real use (references/fundamentals.md, 1c): every row with a person places her on the side the piece is used from,
+  and every row says it. Drawers, doors and lids face her and open only under her hand on the handle ("ACTOR A sits
+  in the chair on the drawer side, the three drawers facing her knees"; "her hand pulls the top drawer toward her").
+  A row never shows a person behind a desk whose drawers face the camera. A product photo shot from the front shows
+  the catalogue view, not where the person sits: say in the row which side she is on and where the camera stands.
 - Only use features stated on the product page or clearly visible in the product photos.
 - If the storyboard mentions something the page does not support (for example "live edge", "drawers", a hidden interior), remove it or ask.
+- A shape or look word needs the page AND the photo. The page's title and copy are often written for search ("Curved
+  Outdoor Lounge Seating" on a set of straight square blocks): a word the photo contradicts is never used, in the VO,
+  the lines or the rows. Describe the outline the photo shows (owner, Nov 18: "curved" said over the sofa blocks).
 - Do not show the inside of closed storage unless the product photos show it. Prefer "the item goes behind the panel and the panel closes flush".
 - Product photos are often staged with lights the product does not have (lit wine-rack shelves). If the page does not
   sell lights, start every row where the product is in frame with "IMPORTANT: the <product> is completely UNLIT, no
@@ -467,6 +475,8 @@ B04 | End frame | 2 | <camera direction>
 - A02 shows the tension's before-state with no product of our kind in it: YES/NO
 - A03 opens on a hard cut back to our product in a different framing (the punchline): YES/NO
 - Product with staged lights in its photos but none on the page: the UNLIT note leads every row it is in: YES/NO/N/A
+- Every shape or look word in the VO and the lines is one the product photo shows (not only the page's title): YES/NO
+- Real use (fundamentals 1c), checked before Start: every row with a person says which side of the piece she is on and that its drawers/doors face her; no row puts her behind drawers that face the camera; every drawer or door that opens is opened by her hand in that row: YES/NO
 
 ---
 
