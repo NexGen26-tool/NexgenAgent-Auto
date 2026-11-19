@@ -90,7 +90,9 @@ The owner reset the hook by hand to this, and every line follows it:
   clear desk now"; "Morning coffee / on clear wood", staggered left and right); the punchline is a full sentence that
   names the product ("This solid wood office desk became / the steady part of my day", one accent word); a line that
   only restates the picture ("Clutter / Out of sight") is dropped. Hooks and offer lines sit low (y -0.3 to -0.5).
-- **The CTA sits in a dark box** (white capitals on a filled background), low on the end card (y about -0.45).
+- **The CTA is the clearest thing on the end card.** The owner did it with a dark box (white capitals on a filled
+  background, y about -0.45); a colour band, a clean area of the frame or a final still work too. Pick per style;
+  `references/editing-principles.md` gives the reasons behind these edits.
 
 ## The text preview (plan check)
 

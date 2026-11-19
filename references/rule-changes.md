@@ -2,6 +2,15 @@
 
 Changes to how the fast lane works, newest first: what changed, why, and what it was tested on.
 
+## 2026-11-19 (owner) - Learn the thinking, not the clicks
+
+**Owner:** "learn how I think and solve the problem, don't imitate me completely. Be creative." The reasons under
+the V7-V9 hand edits are in `references/editing-principles.md` (one viewer, one watch; the picture says the
+sentence; the product is the hero at the selling moments; energy over coverage; text carries a message; text serves
+the picture; use what exists; quality is ours). The entries below record what the owner did; the principles file
+says why, and the edit step applies the why with means chosen per video, logging any choice beyond the owner's
+pattern.
+
 ## 2026-11-19 (owner's V9 hand edit) - The shot shows what the sentence says; fewer lines; a boxed CTA
 
 The owner kept the built V9's frame (hero on the punchline with zoom 1.15, the end card on the hero, the drawer pull,

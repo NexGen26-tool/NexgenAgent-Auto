@@ -359,9 +359,12 @@ size if a batch has two). Put the script on the timeline as `"vo"` and give it a
   PART A from the product picture, so a hook that states a problem (most turn and myth hooks) opens on before-state
   footage (the video's or its spare's A02, or another variant's before-state shot with no person), never on the
   opening shot, with `"problem_from": "s1"` in the edit block so the build allows the before-state from sentence 1.
-  Look at the shot sheets to pick them. Mark the group's best empty product shot (the piece in its best room, no
-  person, passed) `"hero": true` in `catalog.json`: the build puts it on the punchline and the end card (owner's V8,
-  Nov 19); close-ups and empty product shots may come from any take of the SKU. A shot is never run on into a bad stretch or the video's
+  Look at the shot sheets to pick them, by meaning first: the shot that acts out the sentence's verb, then checked
+  against the fundamentals. The reasons behind the owner's hand edits are in `references/editing-principles.md`:
+  apply the reasons, vary the means per video, and log any choice that goes beyond the owner's own pattern. Mark the
+  group's best empty product shot `"hero": true` in `catalog.json` (the build puts it on the punchline and the end
+  card; vary its crop or reveal so a group of three does not end alike); close-ups and empty product shots may come
+  from any take of the SKU. A shot is never run on into a bad stretch or the video's
   next generated part (it would flash other footage): when the clean footage runs out the build fills the rest of
   the sentence itself with clean footage of the same scene (the video and its spare first, then the group's other
   videos outside their person; the before-state only from the before-state) and prints each fill; a planned shot that
